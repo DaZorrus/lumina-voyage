@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
-import { Level1_TheAscent } from '../levels/Level1_TheAscent.js';
 
 /**
  * Portal - Gateway to next level
@@ -225,8 +224,10 @@ export class Portal {
     }, 500);
     
     // Transition to Level 1 after showing message
-    setTimeout(() => {
+    setTimeout(async () => {
       if (this.engine) {
+        // Dynamic import to avoid circular dependency
+        const { Level1_TheAscent } = await import('../levels/Level1_TheAscent.js');
         this.engine.transitionToLevel(Level1_TheAscent);
       }
       // Remove overlay

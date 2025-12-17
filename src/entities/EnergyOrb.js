@@ -151,21 +151,52 @@ export class EnergyOrb {
     if (this.collected) return;
     
     this.collected = true;
-    console.log(`✨ Collected Energy Orb! +${this.healAmount} Lumen (Position: ${this.mesh.position.x.toFixed(1)}, ${this.mesh.position.y.toFixed(1)}, ${this.mesh.position.z.toFixed(1)})`);
+    console.log(`✨ Collected Energy Orb! +${this.healAmount} Lumen`);
     
-    // Notify player for progression (will be called from level)
+    // Hide outline immediately to avoid visual glitch
+    if (this.outlineMesh) {
+      this.outlineMesh.visible = false;
+    }
     
-    // Visual effect - expand and fade
-    const originalScale = this.mesh.scale.x;
-    const fadeOut = setInterval(() => {
-      this.mesh.scale.multiplyScalar(1.1);
-      this.mesh.material.opacity -= 0.1;
+    // Disable light immediately
+    this.light.intensity = 0;
+    
+    // Reset material state for clean animation
+    const mat = this.mesh.material;
+    mat.wireframe = false;
+    mat.color.setHex(0xFFD700);
+    mat.emissive.setHex(0xFFD700);
+    mat.emissiveIntensity = 2;
+    mat.opacity = 1;
+    
+    // Smooth shrink and fade animation using requestAnimationFrame
+    const startScale = this.mesh.scale.x;
+    const startTime = performance.now();
+    const duration = 200; // ms
+    
+    const animate = () => {
+      const elapsed = performance.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
       
-      if (this.mesh.material.opacity <= 0) {
-        clearInterval(fadeOut);
+      // Ease out cubic
+      const easeOut = 1 - Math.pow(1 - progress, 3);
+      
+      // Shrink to center (not expand)
+      const scale = startScale * (1 - easeOut * 0.8);
+      this.mesh.scale.setScalar(scale);
+      
+      // Fade out
+      mat.opacity = 1 - easeOut;
+      mat.emissiveIntensity = 2 * (1 - easeOut);
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
         this.destroy();
       }
-    }, 50);
+    };
+    
+    requestAnimationFrame(animate);
   }
 
   /**

@@ -48,6 +48,11 @@ export class CameraSystem {
 
   follow(targetEntity) {
     this.target = targetEntity;
+    
+    // Reset camera settings for new target
+    this.lookAheadOffset.set(0, 0, 0);
+    this.orbsCollected = 0;
+    
     // Set initial farther position
     if (this.target && this.target.mesh) {
       this.camera.position.set(

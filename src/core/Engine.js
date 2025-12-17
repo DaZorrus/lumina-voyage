@@ -4,6 +4,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 
 import { InputManager } from './InputManager.js';
+import { SceneManager } from './SceneManager.js';
 import { PhysicsSystem } from '../systems/PhysicsSystem.js';
 import { CameraSystem } from '../systems/CameraSystem.js';
 import { AudioSystem } from '../systems/AudioSystem.js';
@@ -23,6 +24,7 @@ export class Engine {
     this.physicsSystem = new PhysicsSystem();
     this.cameraSystem = null; // Will init after renderer
     this.audioSystem = new AudioSystem();
+    this.sceneManager = null; // Will init after other systems
     
     // State
     this.isRunning = false;
@@ -39,7 +41,7 @@ export class Engine {
     });
     
     this.renderer.setSize(window.innerWidth, window.innerHeight);
-    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit for performance
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.0;
     
@@ -47,6 +49,9 @@ export class Engine {
     
     // Setup camera system
     this.cameraSystem = new CameraSystem(window.innerWidth / window.innerHeight);
+    
+    // Setup scene manager
+    this.sceneManager = new SceneManager(this);
     
     // Setup post-processing
     this.setupPostProcessing();
@@ -157,77 +162,17 @@ export class Engine {
   }
 
   loadLevel(LevelClass) {
-    console.log('📦 Loading level...');
-    
-    // Unload current level
-    if (this.currentLevel) {
-      this.currentLevel.unload();
-    }
-    
-    // Load new level
-    this.currentLevel = new LevelClass(this);
-    this.currentLevel.load();
-    
-    // Update composer with new scene
-    // Remove old render pass
-    if (this.composer.passes.length > 0 && this.composer.passes[0] instanceof RenderPass) {
-      this.composer.passes.shift();
-    }
-    
-    // Add new render pass
-    const renderPass = new RenderPass(this.currentLevel.scene, this.cameraSystem.camera);
-    this.composer.passes.unshift(renderPass);
-    
-    // Set audio scale based on level
-    const levelIndex = this.currentLevel.name === 'The Void' ? 0 : 1;
-    this.audioSystem.setScaleByLevel(levelIndex);
-    
-    console.log(`✅ Level loaded: ${this.currentLevel.name}`);
+    // Delegate to SceneManager
+    this.currentLevel = this.sceneManager.loadLevel(LevelClass);
   }
 
   /**
-   * Transition to the next level
+   * Transition to the next level with effects
    * @param {Class} NextLevelClass - The level class to load next
+   * @param {Object} options - Transition options
    */
-  transitionToLevel(NextLevelClass) {
-    console.log('🌀 Transitioning to next level...');
-    
-    // Fade out effect
-    const overlay = document.createElement('div');
-    overlay.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: white;
-      opacity: 0;
-      z-index: 9999;
-      transition: opacity 1s ease;
-      pointer-events: none;
-    `;
-    document.body.appendChild(overlay);
-    
-    // Fade to white
-    requestAnimationFrame(() => {
-      overlay.style.opacity = '1';
-    });
-    
-    // After fade, load new level
-    setTimeout(() => {
-      this.loadLevel(NextLevelClass);
-      
-      // Show HUD for new level
-      document.getElementById('hud').classList.remove('hidden');
-      
-      // Fade back in
-      setTimeout(() => {
-        overlay.style.opacity = '0';
-        setTimeout(() => {
-          overlay.remove();
-        }, 1000);
-      }, 500);
-    }, 1000);
+  transitionToLevel(NextLevelClass, options = {}) {
+    this.sceneManager.transitionToLevel(NextLevelClass, options);
   }
 
   start() {

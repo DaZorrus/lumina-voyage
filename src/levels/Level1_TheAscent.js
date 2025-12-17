@@ -22,57 +22,63 @@ export class Level1_TheAscent extends BaseLevel {
     // Speed / Progress system
     this.currentSpeed = 0;
     this.maxSpeed = 100;           // Light speed threshold
-    this.baseAcceleration = 2;     // Slow passive acceleration
+    this.baseAcceleration = 1.5;   // Slow passive acceleration
     this.photonSpeedBoost = 5;     // Speed gained per photon
-    this.meteorSpeedPenalty = 15;  // Speed lost per meteor hit
+    this.meteorSpeedPenalty = 12;  // Speed lost per meteor hit
     
-    // Procedural generation
-    this.spawnAheadDistance = 80;  // How far ahead to spawn obstacles
-    this.despawnBehindDistance = 30; // When to cleanup passed obstacles
-    this.lastSpawnZ = 0;           // Track last spawn position
-    this.spawnInterval = 15;       // Z-distance between spawn waves
+    // === MAP BOUNDS (NARROWER) ===
+    this.mapWidth = 15;            // Half-width (was 25)
+    this.mapHeight = 8;            // Half-height (was 10)
     
-    // Difficulty scaling
+    // === PROCEDURAL GENERATION (OPTIMIZED) ===
+    this.spawnAheadDistance = 60;  // Reduced from 80
+    this.despawnBehindDistance = 20; // Cleanup faster
+    this.lastSpawnZ = 0;
+    this.spawnInterval = 20;       // Increased spacing between waves
+    this.maxActiveEntities = 50;   // Limit total entities for performance
+    
+    // === DIFFICULTY (GENTLER BLACK HOLES) ===
     this.difficultyMultiplier = 1;
-    this.maxDifficulty = 3;
+    this.maxDifficulty = 2.5;
+    this.blackHoleSpawnChance = 0.05; // Very rare (was 0.15)
+    this.blackHoleMinDifficulty = 1.8; // Only appear later (was 1.2)
+    this.lastBlackHoleZ = 0;       // Track to prevent clustering
+    this.blackHoleMinSpacing = 100; // Minimum Z distance between black holes
     
-    // Gameplay
+    // Gameplay state
     this.gameTime = 0;
-    this.invulnerableTime = 0;     // Brief invulnerability after hit
+    this.invulnerableTime = 0;
     this.screenShakeIntensity = 0;
     this.lightSpeedTriggered = false;
     
-    // Track blackhole effects (calculated per frame)
-    this.activeBlackholeEffect = null;
+    // === LIGHT SPEED BREAK STATE ===
+    this.isInLightSpeedSequence = false;
+    this.lightSpeedSequenceTime = 0;
+    this.lightSpeedDuration = 5;   // 5 seconds of free flight
+    this.finalPortal = null;
+    this.portalDistance = 500;     // Portal spawns this far ahead
     
     // Shadow comet tracking
-    this.nextCometTime = 10;       // First comet at 10 seconds
-    this.cometInterval = 8;        // Seconds between comets
+    this.nextCometTime = 15;       // First comet later
+    this.cometInterval = 12;       // Less frequent
   }
 
   setupEnvironment() {
-    // Deep space with distant stars
-    this.scene.fog = new THREE.Fog(0x000511, 50, 200);
+    this.scene.fog = new THREE.Fog(0x000511, 40, 150);
     this.scene.background = new THREE.Color(0x000511);
     
-    // Create infinite starfield
     this.createStarfield();
-    
-    // Speed lines (will intensify with speed)
     this.createSpeedLines();
   }
 
   setupLighting() {
-    // Ambient light
     const ambient = new THREE.AmbientLight(0x404060, 0.3);
     this.scene.add(ambient);
     
-    // Directional "sun" light from behind
     const directional = new THREE.DirectionalLight(0xffffcc, 0.5);
     directional.position.set(0, 10, 50);
     this.scene.add(directional);
     
-    // Forward directional (destination)
     const forwardLight = new THREE.DirectionalLight(0x88aaff, 0.3);
     forwardLight.position.set(0, 5, -100);
     this.scene.add(forwardLight);
@@ -86,52 +92,40 @@ export class Level1_TheAscent extends BaseLevel {
       new THREE.Vector3(0, 0, 0)
     );
     
-    // Level 1 settings - faster and more intense
     this.player.currentLumen = 100;
-    this.player.energyDecayRate = 0.1; // Slow decay during speed run
-    this.player.baseSpeed = 12;        // Faster lateral movement
-    this.player.speed = 12;
+    this.player.energyDecayRate = 0.1;
+    this.player.baseSpeed = 10;
+    this.player.speed = 10;
     
-    // Set camera to follow player with top-down tilt
     this.engine.cameraSystem.follow(this.player);
     this.setupCamera();
   }
 
   setupCamera() {
-    // Top-down tilted view for better forward visibility
-    const camera = this.engine.cameraSystem.camera;
-    
-    // Position camera above and behind player
     this.engine.cameraSystem.offset = new THREE.Vector3(0, 12, 18);
-    
-    // Look ahead of player
     this.engine.cameraSystem.lookAheadOffset = new THREE.Vector3(0, 0, -20);
   }
 
   spawnObjects() {
-    // Initial wave of obstacles
+    // Spawn fewer initial waves
     this.spawnWave(-30);
     this.spawnWave(-50);
-    this.spawnWave(-70);
-    
     console.log('🚀 Level 1 loaded: Race to Light Speed!');
   }
 
   createStarfield() {
-    const starCount = 1000;
+    const starCount = 500; // Reduced from 1000
     const positions = new Float32Array(starCount * 3);
     const colors = new Float32Array(starCount * 3);
     
     for (let i = 0; i < starCount; i++) {
-      // Spread stars in a cylinder around the path
       const angle = Math.random() * Math.PI * 2;
-      const radius = 50 + Math.random() * 150;
+      const radius = 40 + Math.random() * 100;
       
       positions[i * 3] = Math.cos(angle) * radius;
-      positions[i * 3 + 1] = (Math.random() - 0.3) * 100; // Mostly above
-      positions[i * 3 + 2] = Math.random() * 400 - 200;   // Along path
+      positions[i * 3 + 1] = (Math.random() - 0.3) * 80;
+      positions[i * 3 + 2] = Math.random() * 300 - 150;
       
-      // Blue-white stars
       const brightness = 0.5 + Math.random() * 0.5;
       colors[i * 3] = brightness * 0.9;
       colors[i * 3 + 1] = brightness * 0.95;
@@ -155,23 +149,20 @@ export class Level1_TheAscent extends BaseLevel {
   }
 
   createSpeedLines() {
-    const lineCount = 50;
-    const positions = new Float32Array(lineCount * 6); // 2 vertices per line
+    const lineCount = 30; // Reduced from 50
+    const positions = new Float32Array(lineCount * 6);
     
     for (let i = 0; i < lineCount; i++) {
-      const x = (Math.random() - 0.5) * 30;
-      const y = Math.random() * 15 - 2;
-      const z = Math.random() * -100;
+      const x = (Math.random() - 0.5) * this.mapWidth * 2;
+      const y = Math.random() * 10 - 2;
+      const z = Math.random() * -80;
       
-      // Line start
       positions[i * 6] = x;
       positions[i * 6 + 1] = y;
       positions[i * 6 + 2] = z;
-      
-      // Line end (stretched back)
       positions[i * 6 + 3] = x;
       positions[i * 6 + 4] = y;
-      positions[i * 6 + 5] = z + 3; // Length
+      positions[i * 6 + 5] = z + 3;
     }
     
     const geometry = new THREE.BufferGeometry();
@@ -180,106 +171,109 @@ export class Level1_TheAscent extends BaseLevel {
     const material = new THREE.LineBasicMaterial({
       color: 0x4488ff,
       transparent: true,
-      opacity: 0.0 // Start invisible, increase with speed
+      opacity: 0.0
     });
     
     this.speedLines = new THREE.LineSegments(geometry, material);
     this.scene.add(this.speedLines);
-    
-    this.speedLineBasePositions = positions.slice(); // Save for animation
   }
 
   /**
-   * Procedurally spawn a wave of obstacles at given Z position
+   * Spawn wave with performance limits
    */
   spawnWave(z) {
+    // Skip if too many entities
+    if (this.entities.length >= this.maxActiveEntities) return;
+    
+    // Skip if in light speed sequence
+    if (this.isInLightSpeedSequence) return;
+    
     const difficulty = this.difficultyMultiplier;
     
-    // Spawn meteors (more with difficulty)
-    const meteorCount = Math.floor(2 + Math.random() * 3 * difficulty);
-    for (let i = 0; i < meteorCount; i++) {
+    // Meteors - fewer, within narrow bounds
+    const meteorCount = Math.floor(1 + Math.random() * 2 * difficulty);
+    for (let i = 0; i < meteorCount && this.entities.length < this.maxActiveEntities; i++) {
       const pos = new THREE.Vector3(
-        (Math.random() - 0.5) * 40,       // X spread
-        (Math.random() - 0.5) * 8,        // Y spread (smaller)
-        z + (Math.random() - 0.5) * 10    // Z variance
+        (Math.random() - 0.5) * this.mapWidth * 2,
+        (Math.random() - 0.5) * this.mapHeight,
+        z + (Math.random() - 0.5) * 8
       );
       
-      const size = 0.8 + Math.random() * 1.5;
+      const size = 0.6 + Math.random() * 1.2;
       const meteor = new Meteor(this.scene, this.engine.physicsSystem, pos, size);
       this.entities.push(meteor);
     }
     
-    // Spawn photons (collectibles) - always some available
-    const photonCount = Math.floor(3 + Math.random() * 4);
-    for (let i = 0; i < photonCount; i++) {
+    // Photons - guide player path
+    const photonCount = Math.floor(2 + Math.random() * 3);
+    for (let i = 0; i < photonCount && this.entities.length < this.maxActiveEntities; i++) {
       const pos = new THREE.Vector3(
-        (Math.random() - 0.5) * 35,
-        (Math.random() - 0.5) * 6,
-        z + (Math.random() - 0.5) * 10
+        (Math.random() - 0.5) * this.mapWidth * 1.8,
+        (Math.random() - 0.5) * this.mapHeight * 0.8,
+        z + (Math.random() - 0.5) * 8
       );
       
       const photon = new Photon(this.scene, this.engine.physicsSystem, pos);
       this.entities.push(photon);
     }
     
-    // Spawn black hole (rare, increases with difficulty)
-    if (Math.random() < 0.15 * difficulty && difficulty > 1.2) {
+    // Black hole - VERY RARE, with spacing check
+    const distanceSinceLastBlackHole = this.lastBlackHoleZ - z;
+    if (Math.random() < this.blackHoleSpawnChance && 
+        difficulty > this.blackHoleMinDifficulty &&
+        distanceSinceLastBlackHole > this.blackHoleMinSpacing &&
+        this.entities.length < this.maxActiveEntities - 5) {
+      
       const pos = new THREE.Vector3(
-        (Math.random() - 0.5) * 25,
+        (Math.random() - 0.5) * this.mapWidth,
         0,
         z
       );
       
-      const size = 4 + Math.random() * 3;
+      const size = 3 + Math.random() * 2; // Smaller black holes
       const blackHole = new BlackHole(this.scene, this.engine.physicsSystem, pos, size);
       this.entities.push(blackHole);
+      this.lastBlackHoleZ = z;
     }
   }
 
   update(deltaTime) {
     this.gameTime += deltaTime;
     
-    // Update player (custom for Level 1 - auto-forward movement)
+    // === LIGHT SPEED SEQUENCE MODE ===
+    if (this.isInLightSpeedSequence) {
+      this.updateLightSpeedSequence(deltaTime);
+      return;
+    }
+    
+    // Normal gameplay
     this.updatePlayer(deltaTime);
     
-    // Update all entities
-    this.entities.forEach(entity => {
-      if (entity.update) {
-        entity.update(deltaTime, this.player ? this.player.mesh.position : null);
+    // Update entities (batch for performance)
+    for (let i = 0; i < this.entities.length; i++) {
+      const entity = this.entities[i];
+      if (entity.update && !entity.destroyed) {
+        entity.update(deltaTime, this.player?.mesh.position);
       }
-    });
+    }
     
-    // Procedural spawning
     this.updateProceduralSpawning();
-    
-    // Cleanup passed objects
     this.cleanupPassedObjects();
-    
-    // Update speed lines effect
     this.updateSpeedLines(deltaTime);
-    
-    // Update starfield (parallax)
     this.updateStarfield(deltaTime);
-    
-    // Handle collisions
     this.handleCollisions();
-    
-    // Handle black hole gravity
     this.handleBlackHoleGravity();
-    
-    // Shadow comet spawning
     this.updateShadowComets(deltaTime);
     
-    // Invulnerability timer
+    // Invulnerability flash
     if (this.invulnerableTime > 0) {
       this.invulnerableTime -= deltaTime;
-      // Flash player
       this.player.mesh.visible = Math.sin(this.gameTime * 30) > 0;
     } else {
       this.player.mesh.visible = true;
     }
     
-    // Screen shake
+    // Screen shake decay
     if (this.screenShakeIntensity > 0) {
       const shakeX = (Math.random() - 0.5) * this.screenShakeIntensity;
       const shakeY = (Math.random() - 0.5) * this.screenShakeIntensity;
@@ -289,15 +283,15 @@ export class Level1_TheAscent extends BaseLevel {
       if (this.screenShakeIntensity < 0.01) this.screenShakeIntensity = 0;
     }
     
-    // Check win condition
+    // Win condition
     if (this.checkWinCondition() && !this.lightSpeedTriggered) {
-      this.complete();
+      this.triggerLightSpeedBreak();
     }
     
-    // Update difficulty based on progress
+    // Difficulty scaling
     this.difficultyMultiplier = Math.min(
       this.maxDifficulty,
-      1 + (this.currentSpeed / this.maxSpeed) * 2
+      1 + (this.currentSpeed / this.maxSpeed) * 1.5
     );
   }
 
@@ -305,8 +299,6 @@ export class Level1_TheAscent extends BaseLevel {
     if (!this.player) return;
     
     const inputManager = this.engine.inputManager;
-    
-    // Lateral movement (X and Y only)
     const moveVector = new THREE.Vector3();
     
     if (inputManager.isPressed('a')) moveVector.x -= 1;
@@ -319,63 +311,235 @@ export class Level1_TheAscent extends BaseLevel {
       this.engine.physicsSystem.applyForce(this.player, moveVector);
     }
     
-    // Auto-forward movement based on current speed
-    const forwardSpeed = 5 + (this.currentSpeed / this.maxSpeed) * 25; // 5-30 units/s
+    // Auto-forward
+    const forwardSpeed = 5 + (this.currentSpeed / this.maxSpeed) * 25;
     this.player.body.position.z -= forwardSpeed * deltaTime;
     
-    // Passive speed acceleration
+    // Passive acceleration
     this.currentSpeed += this.baseAcceleration * deltaTime;
     this.currentSpeed = Math.min(this.currentSpeed, this.maxSpeed);
     
-    // Clamp player position (lateral bounds)
-    const maxX = 25;
-    const maxY = 10;
-    this.player.body.position.x = Math.max(-maxX, Math.min(maxX, this.player.body.position.x));
-    this.player.body.position.y = Math.max(-maxY, Math.min(maxY, this.player.body.position.y));
+    // Clamp to narrower bounds
+    this.player.body.position.x = Math.max(-this.mapWidth, Math.min(this.mapWidth, this.player.body.position.x));
+    this.player.body.position.y = Math.max(-this.mapHeight, Math.min(this.mapHeight, this.player.body.position.y));
     
-    // Sync mesh
     this.player.mesh.position.copy(this.player.body.position);
     
-    // Update particle trail
     if (this.player.particleTrail) {
       this.player.particleTrail.update(deltaTime, this.player.mesh.position);
     }
     
-    // Update active pulses (can still pulse to reveal things)
+    // Pulse handling
     this.player.activePulses.forEach((pulse, index) => {
       if (!pulse.update(deltaTime)) {
         this.player.activePulses.splice(index, 1);
       }
     });
     
-    // Pulse cooldown
     if (this.player.pulseCooldown > 0) {
       this.player.pulseCooldown -= deltaTime;
     }
     
-    // Energy decay
     this.player.currentLumen -= (this.player.energyDecayRate || 0.1) * deltaTime;
     this.player.currentLumen = Math.max(0, this.player.currentLumen);
     
-    // Update player visual intensity based on speed
+    // Visual speed effects
     const speedRatio = this.currentSpeed / this.maxSpeed;
     this.player.mesh.material.emissiveIntensity = 1 + speedRatio * 2;
     this.player.light.intensity = 1 + speedRatio * 3;
     
-    // Color shift toward blue at high speed (blue shift effect)
+    // Blue shift
     const r = 1 - speedRatio * 0.3;
     const g = 0.67 + speedRatio * 0.2;
-    const b = 0 + speedRatio * 1;
+    const b = speedRatio;
     this.player.mesh.material.color.setRGB(r, g, b);
     this.player.mesh.material.emissive.setRGB(r, g, b);
     this.player.light.color.setRGB(r, g, b);
   }
 
+  /**
+   * Light Speed Break sequence - player flies freely to portal
+   */
+  updateLightSpeedSequence(deltaTime) {
+    this.lightSpeedSequenceTime += deltaTime;
+    
+    // Auto-fly player forward at max speed
+    const ultraSpeed = 50; // Very fast
+    this.player.body.position.z -= ultraSpeed * deltaTime;
+    this.player.mesh.position.copy(this.player.body.position);
+    
+    // Gentle centering
+    this.player.body.position.x *= 0.98;
+    this.player.body.position.y *= 0.98;
+    
+    // Update particle trail
+    if (this.player.particleTrail) {
+      this.player.particleTrail.update(deltaTime, this.player.mesh.position);
+    }
+    
+    // Update speed lines (max intensity)
+    this.updateSpeedLines(deltaTime);
+    this.updateStarfield(deltaTime);
+    
+    // Update portal
+    if (this.finalPortal) {
+      this.finalPortal.update(deltaTime, this.player.mesh.position);
+      
+      // Check portal collision
+      const distToPortal = this.player.mesh.position.distanceTo(this.finalPortal.mesh.position);
+      if (distToPortal < 15) {
+        this.onPortalEnter();
+      }
+    }
+    
+    // Maintain visual effects
+    this.player.mesh.material.emissiveIntensity = 3;
+    this.player.light.intensity = 5;
+    this.player.mesh.material.emissive.setHex(0xaaddff);
+    
+    // Bloom pulsing
+    if (this.engine.bloomPass) {
+      this.engine.bloomPass.strength = 2 + Math.sin(this.lightSpeedSequenceTime * 3) * 0.5;
+    }
+  }
+
+  triggerLightSpeedBreak() {
+    if (this.lightSpeedTriggered) return;
+    this.lightSpeedTriggered = true;
+    
+    console.log('🌟 LIGHT SPEED BREAK! Entering free flight...');
+    
+    // Clear all obstacles
+    this.entities.forEach(entity => {
+      if (!entity.destroyed) {
+        entity.destroy();
+      }
+    });
+    this.entities = [];
+    
+    // Spawn portal far ahead
+    this.spawnFinalPortal();
+    
+    // Flash effect
+    if (this.engine.bloomPass) {
+      this.engine.bloomPass.strength = 5;
+    }
+    
+    this.scene.background = new THREE.Color(0x111133);
+    
+    // Speed lines at max
+    if (this.speedLines) {
+      this.speedLines.material.opacity = 0.8;
+      this.speedLines.material.color.setHex(0xaaddff);
+    }
+    
+    // Enter light speed sequence
+    this.isInLightSpeedSequence = true;
+  }
+
+  spawnFinalPortal() {
+    const portalZ = this.player.mesh.position.z - this.portalDistance;
+    
+    // Create simple portal mesh (not using Portal entity to avoid circular import)
+    const portalGroup = new THREE.Group();
+    portalGroup.position.set(0, 0, portalZ);
+    
+    // Main ring
+    const ringGeo = new THREE.TorusGeometry(15, 0.8, 32, 64);
+    const ringMat = new THREE.MeshBasicMaterial({
+      color: 0x00ffff,
+      transparent: true,
+      opacity: 0.9
+    });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    portalGroup.add(ring);
+    
+    // Inner glow
+    const innerGeo = new THREE.CircleGeometry(14, 64);
+    const innerMat = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.3,
+      side: THREE.DoubleSide
+    });
+    const inner = new THREE.Mesh(innerGeo, innerMat);
+    portalGroup.add(inner);
+    
+    // Outer ring
+    const outerGeo = new THREE.TorusGeometry(18, 0.3, 16, 64);
+    const outerMat = new THREE.MeshBasicMaterial({
+      color: 0xffdd00,
+      transparent: true,
+      opacity: 0.6
+    });
+    const outer = new THREE.Mesh(outerGeo, outerMat);
+    portalGroup.add(outer);
+    
+    // Light
+    const light = new THREE.PointLight(0x00ffff, 20, 100);
+    portalGroup.add(light);
+    
+    this.scene.add(portalGroup);
+    
+    this.finalPortal = {
+      mesh: portalGroup,
+      ring: ring,
+      time: 0,
+      update: (dt, playerPos) => {
+        this.finalPortal.time += dt;
+        ring.rotation.z += dt * 0.5;
+        outer.rotation.z -= dt * 0.3;
+        light.intensity = 20 + Math.sin(this.finalPortal.time * 2) * 5;
+        inner.material.opacity = 0.3 + Math.sin(this.finalPortal.time * 1.5) * 0.1;
+      }
+    };
+  }
+
+  onPortalEnter() {
+    console.log('🌀 Entering portal! Level Complete!');
+    
+    // White flash
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: white;
+      opacity: 0;
+      z-index: 9999;
+      transition: opacity 0.5s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Courier New', monospace;
+    `;
+    document.body.appendChild(overlay);
+    
+    // Fade in
+    setTimeout(() => {
+      overlay.style.opacity = '1';
+    }, 50);
+    
+    // Show message
+    setTimeout(() => {
+      overlay.innerHTML = `
+        <div style="text-align: center; color: #000;">
+          <h1 style="font-size: 48px; margin-bottom: 20px;">✨ LEVEL COMPLETE ✨</h1>
+          <p style="font-size: 24px; color: #666;">The Ascent - Light Speed Achieved</p>
+          <p style="margin-top: 40px; font-size: 18px; color: #999;">Next level coming soon...</p>
+        </div>
+      `;
+    }, 800);
+    
+    this.isComplete = true;
+  }
+
   updateProceduralSpawning() {
+    if (this.isInLightSpeedSequence) return;
+    
     const playerZ = this.player.mesh.position.z;
     const targetSpawnZ = playerZ - this.spawnAheadDistance;
     
-    // Spawn new waves when needed
     while (this.lastSpawnZ > targetSpawnZ) {
       this.lastSpawnZ -= this.spawnInterval;
       this.spawnWave(this.lastSpawnZ);
@@ -386,7 +550,6 @@ export class Level1_TheAscent extends BaseLevel {
     const playerZ = this.player.mesh.position.z;
     const cleanupZ = playerZ + this.despawnBehindDistance;
     
-    // Remove entities that are behind the player
     this.entities = this.entities.filter(entity => {
       if (entity.mesh && entity.mesh.position.z > cleanupZ) {
         entity.destroy();
@@ -399,19 +562,15 @@ export class Level1_TheAscent extends BaseLevel {
   updateSpeedLines(deltaTime) {
     if (!this.speedLines) return;
     
-    const speedRatio = this.currentSpeed / this.maxSpeed;
-    
-    // Fade in speed lines with speed
+    const speedRatio = this.isInLightSpeedSequence ? 1 : this.currentSpeed / this.maxSpeed;
     this.speedLines.material.opacity = speedRatio * 0.6;
     
-    // Stretch lines with speed
     const positions = this.speedLines.geometry.attributes.position.array;
     const playerZ = this.player.mesh.position.z;
     
     for (let i = 0; i < positions.length / 6; i++) {
-      // Move lines forward relative to player
-      positions[i * 6 + 2] = playerZ - 20 - Math.random() * 80;
-      positions[i * 6 + 5] = positions[i * 6 + 2] + 3 + speedRatio * 10; // Longer with speed
+      positions[i * 6 + 2] = playerZ - 15 - Math.random() * 60;
+      positions[i * 6 + 5] = positions[i * 6 + 2] + 3 + speedRatio * 12;
     }
     
     this.speedLines.geometry.attributes.position.needsUpdate = true;
@@ -419,10 +578,8 @@ export class Level1_TheAscent extends BaseLevel {
 
   updateStarfield(deltaTime) {
     if (!this.starfield) return;
-    
-    // Move starfield with player (parallax - slower than player)
     const playerZ = this.player.mesh.position.z;
-    this.starfield.position.z = playerZ * 0.3; // 30% parallax
+    this.starfield.position.z = playerZ * 0.3;
   }
 
   handleCollisions() {
@@ -431,212 +588,122 @@ export class Level1_TheAscent extends BaseLevel {
     const playerPos = this.player.mesh.position;
     const playerRadius = 0.5;
     
-    this.entities.forEach(entity => {
-      if (entity.destroyed || entity.collected) return;
+    for (let i = 0; i < this.entities.length; i++) {
+      const entity = this.entities[i];
+      if (entity.destroyed || entity.collected) continue;
       
-      const entityPos = entity.mesh ? entity.mesh.position : null;
-      if (!entityPos) return;
+      const entityPos = entity.mesh?.position;
+      if (!entityPos) continue;
       
       const distance = playerPos.distanceTo(entityPos);
       
-      // Photon collection
       if (entity instanceof Photon && distance < 1.5) {
         const boost = entity.collect();
         this.currentSpeed = Math.min(this.currentSpeed + boost, this.maxSpeed);
-        
-        // Audio feedback
         this.engine.audioSystem.playNote('C5', 0.1, { type: 'sine' });
-        
-        // Heal player slightly
         this.player.currentLumen = Math.min(this.player.currentLumen + 5, this.player.maxLumen);
       }
       
-      // Meteor collision
       if (entity instanceof Meteor && distance < entity.size + playerRadius) {
         this.onMeteorHit(entity);
+        break; // One hit per frame
       }
       
-      // Shadow comet collision
       if (entity instanceof ShadowComet && entity.active && distance < 2) {
         this.onShadowCometHit(entity);
+        break;
       }
-    });
+    }
   }
 
   handleBlackHoleGravity() {
     if (!this.player) return;
     
     const playerPos = this.player.mesh.position;
-    let totalEffect = { force: new THREE.Vector3(), speedChange: 0, effect: 'none' };
     
-    this.entities.forEach(entity => {
-      if (!(entity instanceof BlackHole) || entity.destroyed) return;
+    for (let i = 0; i < this.entities.length; i++) {
+      const entity = this.entities[i];
+      if (!(entity instanceof BlackHole) || entity.destroyed) continue;
       
       const effect = entity.calculateGravityEffect(playerPos);
       
-      if (effect.effect !== 'none') {
-        totalEffect.force.add(effect.force);
-        totalEffect.speedChange += effect.speedChange;
-        totalEffect.effect = effect.effect;
-        
-        // Visual feedback
-        if (effect.effect === 'slingshot') {
-          // Green flash
-          this.player.mesh.material.emissive.setHex(0x00ff88);
-          setTimeout(() => {
-            this.player.mesh.material.emissive.setHex(0xffaa00);
-          }, 100);
-        } else if (effect.effect === 'trap') {
-          // Red warning
-          this.player.mesh.material.emissive.setHex(0xff0000);
-          this.screenShakeIntensity = 0.1;
-        } else if (effect.effect === 'death') {
-          // Major hit
-          this.currentSpeed = Math.max(0, this.currentSpeed - 50);
-          this.screenShakeIntensity = 0.5;
-          this.invulnerableTime = 2;
-        }
+      if (effect.effect === 'slingshot') {
+        this.player.mesh.material.emissive.setHex(0x00ff88);
+        setTimeout(() => this.player.mesh.material.emissive.setHex(0xffaa00), 100);
+      } else if (effect.effect === 'trap') {
+        this.player.mesh.material.emissive.setHex(0xff0000);
+        this.screenShakeIntensity = 0.1;
+      } else if (effect.effect === 'death') {
+        this.currentSpeed = Math.max(0, this.currentSpeed - 40);
+        this.screenShakeIntensity = 0.5;
+        this.invulnerableTime = 2;
       }
-    });
-    
-    // Apply accumulated effects
-    if (totalEffect.speedChange !== 0) {
-      this.currentSpeed = Math.max(0, Math.min(this.maxSpeed, 
-        this.currentSpeed + totalEffect.speedChange * 0.016)); // Scale by frame time
-    }
-    
-    // Apply gravitational pull
-    if (totalEffect.force.length() > 0) {
-      this.player.body.velocity.x += totalEffect.force.x * 0.016;
-      this.player.body.velocity.y += totalEffect.force.y * 0.016;
+      
+      if (effect.speedChange !== 0) {
+        this.currentSpeed = Math.max(0, Math.min(this.maxSpeed, 
+          this.currentSpeed + effect.speedChange * 0.016));
+      }
+      
+      if (effect.force.length() > 0) {
+        this.player.body.velocity.x += effect.force.x * 0.016;
+        this.player.body.velocity.y += effect.force.y * 0.016;
+      }
     }
   }
 
   updateShadowComets(deltaTime) {
-    if (this.gameTime >= this.nextCometTime) {
-      // Spawn shadow comet
+    if (this.isInLightSpeedSequence) return;
+    
+    if (this.gameTime >= this.nextCometTime && this.entities.length < this.maxActiveEntities) {
       const direction = Math.random() > 0.5 ? 'left' : 'right';
-      const targetZ = this.player.mesh.position.z - 30 - Math.random() * 20;
+      const targetZ = this.player.mesh.position.z - 25 - Math.random() * 15;
       
       const comet = new ShadowComet(this.scene, this.engine.physicsSystem, targetZ, direction);
       this.entities.push(comet);
       
-      // Schedule next comet (faster as difficulty increases)
       this.nextCometTime = this.gameTime + this.cometInterval / this.difficultyMultiplier;
     }
   }
 
   onMeteorHit(meteor) {
-    // Speed penalty
     this.currentSpeed = Math.max(0, this.currentSpeed - this.meteorSpeedPenalty);
-    
-    // Screen shake
-    this.screenShakeIntensity = 0.3;
-    
-    // Invulnerability
+    this.screenShakeIntensity = 0.25;
     this.invulnerableTime = 0.5;
-    
-    // Audio
-    this.engine.audioSystem.playNote('C2', 0.3, { type: 'sawtooth' });
-    
-    // Damage feedback
-    this.player.currentLumen = Math.max(0, this.player.currentLumen - 10);
+    this.engine.audioSystem.playNote('C2', 0.2, { type: 'sawtooth' });
+    this.player.currentLumen = Math.max(0, this.player.currentLumen - 8);
   }
 
   onShadowCometHit(comet) {
-    // Major speed penalty
     this.currentSpeed = Math.max(0, this.currentSpeed - comet.speedPenalty);
-    
-    // Big screen shake
-    this.screenShakeIntensity = 0.5;
-    
-    // Longer invulnerability
+    this.screenShakeIntensity = 0.4;
     this.invulnerableTime = 1.0;
-    
-    // Audio
-    this.engine.audioSystem.playNote('C1', 0.5, { type: 'sawtooth' });
-    
-    // Damage
-    this.player.currentLumen = Math.max(0, this.player.currentLumen - 20);
+    this.engine.audioSystem.playNote('C1', 0.4, { type: 'sawtooth' });
+    this.player.currentLumen = Math.max(0, this.player.currentLumen - 15);
   }
 
   checkWinCondition() {
     return this.currentSpeed >= this.maxSpeed;
   }
 
-  complete() {
-    if (this.lightSpeedTriggered) return;
-    this.lightSpeedTriggered = true;
-    
-    console.log('🌟 LIGHT SPEED BREAK! Level Complete!');
-    
-    // Trigger light speed visual effect
-    this.triggerLightSpeedBreak();
-    
-    super.complete();
-  }
-
-  triggerLightSpeedBreak() {
-    // Massive bloom flash
-    if (this.engine.bloomPass) {
-      const originalStrength = this.engine.bloomPass.strength;
-      this.engine.bloomPass.strength = 8;
-      
-      // White screen
-      this.scene.background = new THREE.Color(0xffffff);
-      
-      // Player becomes pure light
-      this.player.mesh.material.emissive.setHex(0xffffff);
-      this.player.mesh.material.emissiveIntensity = 10;
-      this.player.light.intensity = 50;
-      
-      // Speed lines go crazy
-      if (this.speedLines) {
-        this.speedLines.material.opacity = 1;
-        this.speedLines.material.color.setHex(0xffffff);
-      }
-      
-      // Fade back over 2 seconds
-      const startTime = Date.now();
-      const duration = 2000;
-      
-      const fadeInterval = setInterval(() => {
-        const elapsed = Date.now() - startTime;
-        const progress = elapsed / duration;
-        
-        if (progress >= 1) {
-          clearInterval(fadeInterval);
-          // TODO: Transition to Level 2 or victory screen
-          console.log('Ready for next level transition...');
-        } else {
-          // Hold the white for dramatic effect
-          const easeIn = Math.pow(progress, 2);
-          this.engine.bloomPass.strength = 8 - (8 - originalStrength) * easeIn;
-        }
-      }, 16);
-    }
-  }
-
-  /**
-   * Get current speed percentage for HUD
-   */
   getSpeedPercentage() {
     return (this.currentSpeed / this.maxSpeed) * 100;
   }
 
   unload() {
-    // Cleanup starfield
     if (this.starfield) {
       this.scene.remove(this.starfield);
       this.starfield.geometry.dispose();
       this.starfield.material.dispose();
     }
     
-    // Cleanup speed lines
     if (this.speedLines) {
       this.scene.remove(this.speedLines);
       this.speedLines.geometry.dispose();
       this.speedLines.material.dispose();
+    }
+    
+    if (this.finalPortal) {
+      this.scene.remove(this.finalPortal.mesh);
     }
     
     super.unload();
