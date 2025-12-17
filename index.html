@@ -119,6 +119,86 @@
       box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
     }
 
+    /* === LEVEL 1 HUD (Speed Progress Bar) === */
+    #hud-level1 {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      pointer-events: none;
+      text-align: center;
+      opacity: 1;
+      transition: opacity 0.5s ease;
+    }
+
+    #hud-level1.hidden {
+      opacity: 0;
+    }
+
+    #speed-bar-container {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    #speed-bar-label {
+      font-size: 12px;
+      color: #00ffff;
+      text-shadow: 0 0 10px #00ffff;
+      letter-spacing: 3px;
+      white-space: nowrap;
+    }
+
+    #speed-bar-track {
+      width: 300px;
+      height: 12px;
+      background: rgba(0, 0, 0, 0.6);
+      border: 2px solid #00ffff;
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #speed-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #00aaff, #00ffff, #88ffff);
+      transition: width 0.2s ease;
+      position: relative;
+      z-index: 1;
+    }
+
+    #speed-bar-glow {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5));
+      animation: speed-glow 1s ease-in-out infinite;
+    }
+
+    @keyframes speed-glow {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 0.8; }
+    }
+
+    #speed-bar-percent {
+      font-size: 18px;
+      font-weight: bold;
+      color: #fff;
+      text-shadow: 0 0 10px #00ffff;
+      min-width: 50px;
+    }
+
+    #level1-hint {
+      margin-top: 10px;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.6);
+      animation: pulse-hint 3s ease-in-out infinite;
+    }
+
     #tutorial-hint {
       position: fixed;
       bottom: 20%;
@@ -245,6 +325,19 @@
       <div class="orb-icon" data-orb="4"></div>
       <div class="orb-icon" data-orb="5"></div>
     </div>
+  </div>
+
+  <!-- LEVEL 1 HUD: Speed Progress Bar -->
+  <div id="hud-level1" class="hidden">
+    <div id="speed-bar-container">
+      <div id="speed-bar-label">LIGHT SPEED</div>
+      <div id="speed-bar-track">
+        <div id="speed-bar-fill"></div>
+        <div id="speed-bar-glow"></div>
+      </div>
+      <div id="speed-bar-percent">0%</div>
+    </div>
+    <div id="level1-hint">Collect <span style="color: #00ffff;">PHOTONS</span> to accelerate!</div>
   </div>
 
   <script type="module" src="/src/main.js"></script>
