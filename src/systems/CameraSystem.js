@@ -17,6 +17,7 @@ export class CameraSystem {
     
     this.target = null;
     this.offset = new THREE.Vector3(0, 3, 8);
+    this.lookAheadOffset = new THREE.Vector3(0, 0, 0); // Look ahead for Level 1
     this.smoothFactor = 0.1;
     this.bankAngle = 0;
     this.maxBankAngle = 0.2;
@@ -76,8 +77,9 @@ export class CameraSystem {
     // Smooth lerp
     this.camera.position.lerp(targetPosition, this.smoothFactor);
     
-    // Look at player
-    this.camera.lookAt(this.target.mesh.position);
+    // Look at player (or ahead if lookAheadOffset is set)
+    const lookAtTarget = this.target.mesh.position.clone().add(this.lookAheadOffset);
+    this.camera.lookAt(lookAtTarget);
     
     // Banking effect (camera tilt when turning)
     if (Math.abs(mouseVelocityX) > 2) {

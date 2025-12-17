@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
+import { Level1_TheAscent } from '../levels/Level1_TheAscent.js';
 
 /**
  * Portal - Gateway to next level
@@ -204,7 +205,7 @@ export class Portal {
       overlay.style.opacity = '1';
     }, 50);
     
-    // Show completion message after flash
+    // Show "Level Complete" message briefly
     setTimeout(() => {
       overlay.innerHTML = `
         <div style="
@@ -219,10 +220,20 @@ export class Portal {
         ">
           <h1 style="font-size: 48px; margin-bottom: 20px;">✨ LEVEL COMPLETE ✨</h1>
           <p style="font-size: 24px; color: #666;">The Void has been illuminated.</p>
-          <p style="margin-top: 40px; font-size: 18px; color: #999;">Next level coming soon...</p>
         </div>
       `;
-    }, 1000);
+    }, 500);
+    
+    // Transition to Level 1 after showing message
+    setTimeout(() => {
+      if (this.engine) {
+        this.engine.transitionToLevel(Level1_TheAscent);
+      }
+      // Remove overlay
+      setTimeout(() => {
+        overlay.remove();
+      }, 1500);
+    }, 2000);
   }
 
   destroy() {
