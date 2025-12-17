@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lumina Voyage - An Atmospheric Journey</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Courier New', monospace;
+      background: #000;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    #canvas-container {
+      width: 100vw;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+    }
+
+    /* === LEFT HUD (Energy + Pulse) === */
+    #hud {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 100;
+      pointer-events: none;
+      opacity: 1;
+      transition: opacity 0.5s ease;
+    }
+    
+    #hud.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #lumen-bar-container {
+      width: 200px;
+      height: 10px;
+      border: 2px solid #00D9FF;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    #lumen-bar {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #00D9FF, #FFA41B);
+      transition: width 0.3s ease;
+    }
+
+    #pulse-indicator {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #00D9FF;
+      text-shadow: 0 0 10px #00D9FF;
+    }
+
+    /* === RIGHT HUD (Speed + Orbs) === */
+    #hud-right {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 100;
+      pointer-events: none;
+      text-align: right;
+      opacity: 1;
+      transition: opacity 0.5s ease;
+    }
+    
+    #hud-right.hidden {
+      opacity: 0;
+    }
+
+    #speed-display {
+      font-size: 42px;
+      font-weight: bold;
+      color: #fff;
+      text-shadow: 0 0 20px rgba(0, 217, 255, 0.8);
+      line-height: 1;
+    }
+
+    #speed-unit {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.6);
+      letter-spacing: 2px;
+      margin-top: 2px;
+    }
+
+    #orb-display {
+      margin-top: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .orb-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(255, 215, 0, 0.2);
+      border: 2px solid rgba(255, 215, 0, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    .orb-icon.collected {
+      background: #FFD700;
+      border-color: #FFD700;
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+    }
+
+    #tutorial-hint {
+      position: fixed;
+      bottom: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 24px;
+      color: rgba(255, 255, 255, 0.8);
+      text-shadow: 0 0 20px rgba(0, 217, 255, 0.8);
+      pointer-events: none;
+      z-index: 90;
+      opacity: 1;
+      transition: opacity 1s ease;
+      animation: pulse-hint 2s ease-in-out infinite;
+    }
+
+    #tutorial-hint.hidden {
+      opacity: 0;
+    }
+
+    @keyframes pulse-hint {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    #menu {
+      transition: opacity 1s ease;
+      animation: pulse-hint 2s ease-in-out infinite;
+    }
+
+    #tutorial-hint.hidden {
+      opacity: 0;
+    }
+
+    @keyframes pulse-hint {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    #menu {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.9);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    #menu.hidden {
+      display: none;
+    }
+
+    #menu h1 {
+      font-size: 48px;
+      margin-bottom: 20px;
+      text-shadow: 0 0 20px #FFA41B;
+      color: #FFA41B;
+    }
+
+    #menu button {
+      padding: 15px 40px;
+      font-size: 18px;
+      font-family: 'Courier New', monospace;
+      background: transparent;
+      border: 2px solid #00D9FF;
+      color: #00D9FF;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-shadow: 0 0 10px #00D9FF;
+    }
+
+    #menu button:hover {
+      background: #00D9FF;
+      color: #000;
+      transform: scale(1.1);
+    }
+
+    #loading {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #00D9FF;
+      font-size: 20px;
+      z-index: 999;
+    }
+
+    #loading.hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="loading">Loading...</div>
+  
+  <div id="menu">
+    <h1>LUMINA VOYAGE</h1>
+    <p style="margin-bottom: 30px; color: #888;">An Atmospheric Journey Through Light</p>
+    <button id="start-button">START JOURNEY</button>
+  </div>
+
+  <div id="canvas-container"></div>
+
+  <!-- LEFT HUD: Energy + Pulse -->
+  <div id="hud" class="hidden">
+    <div id="lumen-bar-container">
+      <div id="lumen-bar"></div>
+    </div>
+    <div id="pulse-indicator">Press F to Pulse</div>
+  </div>
+
+  <!-- RIGHT HUD: Speed + Orbs -->
+  <div id="hud-right" class="hidden">
+    <div id="speed-display">0</div>
+    <div id="speed-unit">KM/H</div>
+    <div id="orb-display">
+      <div class="orb-icon" data-orb="1"></div>
+      <div class="orb-icon" data-orb="2"></div>
+      <div class="orb-icon" data-orb="3"></div>
+      <div class="orb-icon" data-orb="4"></div>
+      <div class="orb-icon" data-orb="5"></div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

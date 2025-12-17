@@ -1,0 +1,21 @@
+{
+  "name": "lumina-voyage",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Atmospheric Adventure Puzzle Game with Light Physics",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "cannon-es": "^0.20.0",
+    "gsap": "^3.12.5",
+    "three": "^0.160.0",
+    "tone": "^14.7.77"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "vite": "^5.0.11"
+  }
+}
