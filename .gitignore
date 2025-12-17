@@ -20,6 +20,7 @@ Thumbs.db
 # Exclude documentation and reference folders
 doc/
 lumina voyage/
+DOC_GUIDE.md
 
 # Logs
 *.log
