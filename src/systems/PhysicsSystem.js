@@ -37,7 +37,8 @@ export class PhysicsSystem {
       position: options.position || new CANNON.Vec3(0, 0, 0),
       material: this.defaultMaterial,
       linearDamping: options.linearDamping || 0.1,
-      angularDamping: options.angularDamping || 0.5
+      angularDamping: options.angularDamping || 0.5,
+      collisionResponse: options.isTrigger ? false : true // Triggers don't create physical collision
     });
 
     this.world.addBody(body);
