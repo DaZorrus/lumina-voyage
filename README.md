@@ -1,395 +1,183 @@
-# 🎮 Lumina Voyage - Tổng hợp Tài liệu Dự án
+# 🌟 Lumina Voyage
 
----
+**An atmospheric 3D space exploration game built with Vanilla Three.js**
 
-## 📚 CÁC TÀI LIỆU ĐÃ TẠO
+Experience a meditative journey through the cosmos as a luminous orb, collecting energy and uncovering the mysteries of The Void.
 
-### 1. [GameDesignDocument.md](GameDesignDocument.md) ✅
-**Đã có sẵn** - Document thiết kế game gốc với đầy đủ:
-- Concept & Vision
-- Gameplay mechanics chi tiết
-- Level design (4 levels)
-- Art direction
-- Technical specs
+![Game Preview](https://img.shields.io/badge/Status-In%20Development-yellow)
+![Three.js](https://img.shields.io/badge/Three.js-r170-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
 
-**Người dùng:** Game Designer, toàn team
+## ✨ Features
 
----
+### Core Gameplay
+- **Echolocation Pulse Mechanic** - Press `F` to send out a pulse wave that reveals hidden energy orbs
+- **Real-time Guide Beam** - Dynamic beam that tracks and points to the nearest uncollected orb
+- **Magnetic Collection** - Orbs are drawn to you with beautiful comet trail effects
+- **Progressive Difficulty** - Each orb collected increases your speed and unlocks new music layers
 
-### 2. [TechnicalDesignDocument.md](TechnicalDesignDocument.md) ✅ MỚI
-**Dành cho:** AI Developer (Claude Sonnet) - người sẽ code game
+### Visual Effects
+- **Low-poly Aesthetic** - Clean, geometric art style with flat shading
+- **Comet Trail** - Beautiful particle system with orange-to-gold color gradients
+- **Bloom Post-processing** - Ethereal glow effects using UnrealBloomPass
+- **Dynamic Camera** - FOV shifts based on speed for enhanced sense of velocity
+- **Screen Shake** - Satisfying feedback when reaching max speed
+- **Portal VFX** - Massive glowing portal with spiral particles and white flash transition
 
-**Nội dung:**
-- Kiến trúc hệ thống (Engine, Physics, Audio, Camera)
-- Cấu trúc code chi tiết (class structure, methods)
-- Folder organization
-- Performance optimization patterns
-- Debugging tools
-- Naming conventions
-- Testing strategies
+### Audio Experience
+- **Ambient Soundscape** - Deep ethereal pads create space atmosphere from game start
+- **Procedural Music Layers** - Each orb unlocks a new music layer (bass, harmony, melody, rhythm)
+- **Tone.js Integration** - Dynamic audio that responds to gameplay
+- **Smooth Bass** - Warm, filtered low-end instead of harsh metallic sounds
 
-**Khi nào dùng:**
-- Claude bắt đầu code module mới
-- Cần reference implementation patterns
-- Debug lỗi kỹ thuật
-- Optimize performance
+## 🎮 Controls
 
----
+| Key | Action |
+|-----|--------|
+| **W/A/S/D** | Move (forward/left/backward/right) |
+| **E/Q** | Vertical movement (up/down) |
+| **F** | Pulse (echolocation) |
+| **Mouse** | Look around |
+| **ESC** | Pause/Resume |
 
-### 3. [ImplementationRoadmap.md](ImplementationRoadmap.md) ✅ MỚI
-**Dành cho:** AI Developer + Project Manager
+## 🚀 Getting Started
 
-**Nội dung:**
-- 18 Phases chi tiết từ setup → deploy
-- Mỗi phase có:
-  - Timeline estimate
-  - Dependencies cần cài
-  - Tasks cụ thể
-  - Test scenarios
-  - Acceptance criteria
-- Critical path (MVP minimum)
-- Testing matrix
-- Performance targets
+### Prerequisites
+- Node.js (v16 or higher)
+- npm or yarn
 
-**Khi nào dùng:**
-- Lập kế hoạch sprint
-- Track progress (đã làm đến đâu)
-- Estimate thời gian còn lại
-- Prioritize features (nếu deadline gấp)
+### Installation
 
----
+```bash
+# Clone the repository
+git clone https://github.com/DaZorrus/lumina-voyage.git
 
-### 4. [AssetProductionGuide.md](AssetProductionGuide.md) ✅ MỚI
-**Dành cho:** 3D Artists, Sound Designers, VFX Artists
+# Navigate to project directory
+cd lumina-voyage
 
-**Nội dung:**
-- Art direction & style guide (colors, keywords)
-- Asset list chi tiết (9 loại models cần làm)
-- Specifications kỹ thuật (polycount, formats, naming)
-- Audio requirements (SFX list, music scales)
-- Shader & VFX references
-- Tools recommendations
-- Optimization guidelines
-- Delivery checklist
+# Install dependencies
+npm install
 
-**Khi nào dùng:**
-- Outsource assets cho freelancer
-- Tạo concept art với AI (Midjourney prompts included)
-- Export assets từ Blender/Maya
-- Quality control trước khi handoff
-
----
-
-### 5. [AI_Developer_Prompts.md](AI_Developer_Prompts.md) ✅ MỚI
-**Dành cho:** Project Manager (bạn) - khi giao tiếp với Claude
-
-**Nội dung:**
-- Template prompts cho từng Phase (1-10)
-- Cách structure prompt hiệu quả
-- Debugging prompts
-- Optimization requests
-- Refactoring templates
-- Progress tracking prompts
-- Best practices khi dùng AI dev
-
-**Khi nào dùng:**
-- Mỗi khi bắt đầu Phase mới
-- Gặp bug cần debug
-- Muốn customize feature
-- Code review & refactor
-- Giải thích technical concepts
-
----
-
-## 🔄 QUY TRÌNH LÀM VIỆC ĐỀ XUẤT
-
-### Giai đoạn 1: PRE-PRODUCTION (Đã xong ✅)
-1. ✅ Viết GDD (Game Design Document)
-2. ✅ Tạo TDD (Technical Design Document)
-3. ✅ Lập Roadmap chi tiết
-4. ✅ Tạo Asset Production Guide
-5. ✅ Chuẩn bị AI Prompts
-
-### Giai đoạn 2: ASSET PRODUCTION (Song song)
-
-#### Track A: Code (AI Developer)
-```
-Week 1-2: Core Systems
-- Phase 1-4: Engine, Player, Physics, Camera
-- MVP cơ bản chạy được
-
-Week 3: Mechanics
-- Phase 5-8: VFX, Particles, Energy, Pulse
-
-Week 4: Content
-- Phase 9-11: Audio, Levels, UI
+# Start development server
+npm run dev
 ```
 
-#### Track B: Assets (3D Artists / Sound Designers)
-```
-Week 1-2: Core Assets
-- Player model concept
-- Meteor variations (5 models)
-- Energy Orb
-- Basic SFX
+The game will be available at `http://localhost:3000`
 
-Week 3-4: Advanced Assets
-- Portal, Prism, Planets
-- Shaders (Pulse, Black Hole)
-- Music samples (optional)
+### Build for Production
+
+```bash
+npm run build
 ```
 
-### Giai đoạn 3: INTEGRATION & POLISH
+Built files will be in the `dist/` directory.
+
+## 🏗️ Architecture
+
+### Project Structure
 ```
-Week 5:
-- Integrate assets vào game
-- Test end-to-end
-- Bug fixing
-
-Week 6:
-- Polish (juice, feel)
-- Performance optimization
-- Playtesting
-
-Week 7:
-- Build & Deploy
-- Marketing materials
-```
-
----
-
-## 💼 WORKFLOW CHO TỪNG VAI TRÒ
-
-### 🎮 Game Designer (Bạn - Leader)
-**Nhiệm vụ:**
-1. Maintain GDD (update khi có thay đổi design)
-2. Giao việc cho Dev (dùng Prompts Template)
-3. Review code & gameplay feel
-4. Approve assets
-5. Playtesting & balance
-
-**Documents cần:**
-- GameDesignDocument.md (primary)
-- ImplementationRoadmap.md (tracking)
-- AI_Developer_Prompts.md (communication)
-
----
-
-### 💻 Developer AI (Claude Sonnet)
-**Nhiệm vụ:**
-1. Đọc TDD & Roadmap
-2. Code từng Phase theo thứ tự
-3. Self-test acceptance criteria
-4. Report bugs & blockers
-
-**Documents cần:**
-- TechnicalDesignDocument.md (bible)
-- ImplementationRoadmap.md (task list)
-- GameDesignDocument.md (context)
-
-**Input từ Designer:**
-- Prompts từ AI_Developer_Prompts.md
-- Clarifications khi cần
-
----
-
-### 🎨 Asset Creator (3D Artist / Sound Designer)
-**Nhiệm vụ:**
-1. Đọc Asset Production Guide
-2. Tạo models/textures/audio theo specs
-3. Export đúng format
-4. Handoff theo checklist
-
-**Documents cần:**
-- AssetProductionGuide.md (primary)
-- GameDesignDocument.md (Art Direction section)
-
-**Output:**
-- Files trong folder `public/assets/`
-- MANIFEST.json metadata
-
----
-
-## 📞 COMMUNICATION FLOWS
-
-### Khi cần code feature mới:
-```
-Designer → AI_Developer_Prompts.md → Copy prompt → Chat với Claude
-Claude → Code + Explanation → Designer
-Designer → Test → Feedback (nếu cần adjust)
+lumina-voyage/
+├── src/
+│   ├── core/           # Core engine systems
+│   │   ├── Engine.js
+│   │   └── InputManager.js
+│   ├── systems/        # Game systems
+│   │   ├── PhysicsSystem.js
+│   │   ├── CameraSystem.js
+│   │   ├── AudioSystem.js
+│   │   └── ParticleSystem.js
+│   ├── entities/       # Game entities
+│   │   ├── Player.js
+│   │   ├── EnergyOrb.js
+│   │   ├── Portal.js
+│   │   ├── PortalBeam.js
+│   │   └── PulseWave.js
+│   ├── levels/         # Level definitions
+│   │   ├── BaseLevel.js
+│   │   └── Level0_TheVoid.js
+│   └── main.js         # Entry point
+├── public/             # Static assets
+├── index.html
+└── package.json
 ```
 
-### Khi cần asset mới:
-```
-Designer → AssetProductionGuide.md → Specs → Artist
-Artist → Create → Export → Handoff (với checklist)
-Designer → Review → Approve/Request changes
-```
+### Tech Stack
+- **Three.js** - 3D rendering engine
+- **Cannon-es** - Physics simulation (zero-gravity mechanics)
+- **Tone.js** - Web Audio API wrapper for procedural music
+- **Vite** - Fast build tool and dev server
 
-### Khi gặp bug:
-```
-Anyone → Note bug details → AI_Developer_Prompts.md (Debug section)
-Designer → Send debug prompt to Claude
-Claude → Root cause + Fix → Designer
-Designer → Verify fix → Close ticket
-```
+## 🎯 Level 0: The Void
 
----
+The tutorial level where you learn the core mechanics:
 
-## 🎯 KHI NÀO DÙNG TÀI LIỆU NÀO?
+1. **Spawn** as a dim light in darkness
+2. **Press F** to pulse and reveal 5 hidden energy orbs
+3. **Collect all orbs** - each one makes you faster and brighter
+4. **Watch the portal spawn** - 5 light beams fly from you to create the gateway
+5. **Enter the portal** - white flash transition to complete the level
 
-| Tình huống | Document | Section |
-|-----------|----------|---------|
-| Bắt đầu code phase mới | AI_Developer_Prompts.md | Phase X prompt |
-| Claude hỏi "làm thế nào?" | TechnicalDesignDocument.md | Relevant class/system |
-| Cần biết timeline | ImplementationRoadmap.md | Phase timeline |
-| Quyết định gameplay | GameDesignDocument.md | Mechanics section |
-| Order asset | AssetProductionGuide.md | Asset List |
-| Stuck không biết làm gì | ImplementationRoadmap.md | Current phase checklist |
-| Optimize performance | TechnicalDesignDocument.md | Section 5 |
-| Art style question | AssetProductionGuide.md | Art Direction |
+### Design Philosophy
+- **Wave-based Detection** - Pulse expands outward, revealing orbs when the wave reaches them
+- **Multi-sensory Feedback** - Visual (brightness), Audio (music layers), Kinetic (speed increase)
+- **Breadcrumb Trail** - Orbs guide you naturally through the space
+- **No Fail State** - Chill, exploration-focused experience
 
----
+## 🛠️ Development
 
-## 🚦 NEXT STEPS (Hành động tiếp theo)
+### Key Systems
 
-### Nếu bạn sẵn sàng bắt đầu code ngay:
+#### Physics System
+- Uses Cannon-es for realistic zero-gravity movement
+- High damping for arcade-style controls
+- Trigger bodies for orb collection
 
-1. **Setup environment:**
-   ```bash
-   # Mở terminal
-   npm create vite@latest lumina-voyage -- --template vanilla
-   cd lumina-voyage
-   npm install three cannon-es tone gsap
-   ```
+#### Camera System
+- Smooth follow with lerp
+- Dynamic FOV based on collected orbs (50° → 75°)
+- Subtle screen shake effects
 
-2. **Start Phase 1:**
-   - Mở [AI_Developer_Prompts.md](AI_Developer_Prompts.md)
-   - Copy prompt "PHASE 1: PROJECT SETUP"
-   - Paste vào chat này
-   - Tôi (Claude) sẽ tạo code cho bạn
+#### Audio System
+- 5 progressive music layers activated by orb collection
+- Ambient pad starts immediately on game init
+- Warm, filtered bass for pleasant low-end
 
-3. **Test:**
-   - Chạy `npm run dev`
-   - Mở browser `localhost:5173`
-   - Xem cube xoay
+#### Particle System
+- 150 particles with varied lifetimes
+- Color gradient from orange to white
+- Smooth fade-out with size variation
 
-4. **Continue:**
-   - Sau Phase 1 done → Phase 2
-   - Iterate cho đến hết
+## 🎨 Visual Style
 
----
+- **Color Palette**: Deep blacks (#0a0e27), cyan highlights (#00D9FF), warm golds (#FFD700)
+- **Geometry**: Low-poly meshes with flat shading
+- **Lighting**: Point lights with bloom for ethereal glow
+- **Post-processing**: Unreal Bloom Pass for soft luminosity
 
-### Nếu bạn muốn asset trước (để có visuals đẹp):
+## 🔮 Upcoming Features
 
-1. **Mở Blender/Maya**
-2. **Follow AssetProductionGuide.md:**
-   - Section "Meteor" → Tạo 3-5 variants
-   - Export as `.glb`
-3. **Save vào folder `public/assets/models/`**
-4. **Note: Code có thể dùng placeholder geometry trước**
+- Level 1: The Ascent (high-speed obstacle course)
+- Level 2: Refraction Valley (light puzzle mechanics)
+- Level 3: Symphony Orbit (rhythm-based gameplay)
+- Save system for progress tracking
+- Additional visual effects and polish
 
----
+## 🤝 Contributing
 
-### Nếu bạn muốn refine design trước:
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-1. **Review GDD lại lần nữa**
-2. **Note thay đổi (nếu có)**
-3. **Update GDD**
-4. **Sau đó mới bắt đầu code**
+## 📝 License
+
+This project is licensed under the MIT License.
+
+## 🙏 Acknowledgments
+
+- Inspired by atmospheric games like Journey and GRIS
+- Built with love using Vanilla Three.js (no frameworks!)
+- Special thanks to the Three.js and Tone.js communities
 
 ---
 
-## ⚠️ LƯU Ý QUAN TRỌNG
+**Made with ✨ by DaZorrus**
 
-### Về Code AI:
-- ✅ Claude code tốt cho: Structure, boilerplate, common patterns
-- ⚠️ Cần review: Gameplay feel, performance, edge cases
-- ❌ Không nên: Để AI tự decide gameplay design
-
-### Về Timeline:
-- Estimate trong Roadmap là **lý tưởng**
-- Thực tế thường x1.5 đến x2 thời gian
-- MVP (Phase 1-8) có thể xong trong 2-3 tuần nếu focus
-
-### Về Assets:
-- Có thể dùng **placeholder** (basic shapes) để code trước
-- Assets đẹp thêm về sau không ảnh hưởng logic
-- Sound có thể skip tạm (Tone.js đã gen âm thanh)
-
----
-
-## 📊 TRACKING PROGRESS
-
-Tạo file `PROGRESS.md` để track:
-
-```markdown
-# Lumina Voyage Progress
-
-## Week 1 (2025-01-16 → 2025-01-22)
-- [x] Phase 1: Project Setup
-- [x] Phase 2: Player Controller  
-- [ ] Phase 3: Physics (in progress)
-- [ ] Phase 4: Camera
-
-## Issues
-- Bug #1: Player đi xuyên tường → Fix: Add collision detection
-- Blocker #1: Chưa có Meteor model → Workaround: Dùng cube
-
-## Next Week Goals
-- Finish Phase 4-6
-- Test Level 0 prototype
-```
-
----
-
-## 🎓 TÀI LIỆU THAM KHẢO THÊM
-
-Nếu Claude hoặc bạn cần học thêm:
-
-- **Three.js:** https://threejs.org/manual/
-- **Cannon.js:** https://schteppe.github.io/cannon.js/
-- **Tone.js:** https://tonejs.github.io/
-- **Game Feel:** "The Art of Screenshake" by Jan Willem Nijman
-- **Low-poly Art:** Quaternius (free assets for reference)
-
----
-
-## 💬 FAQ
-
-**Q: Tôi không biết code, dùng tài liệu này thế nào?**  
-A: Bạn chỉ cần:
-1. Copy prompt từ AI_Developer_Prompts.md
-2. Paste vào chat với Claude
-3. Claude sẽ code, bạn test
-4. Feedback nếu cần sửa
-
-**Q: Assets bắt buộc phải có không?**  
-A: Không! Code có thể dùng basic shapes (sphere, cube) trước. Assets chỉ làm game đẹp hơn.
-
-**Q: Timeline 7 tuần có realistic không?**  
-A: Với AI dev + focus fulltime: Yes. Part-time: x2 = 14 tuần.
-
-**Q: Tôi có thể skip Level 2-3 không?**  
-A: Được! MVP = Level 0 + Level 1. Level 2-3 là bonus content.
-
-**Q: Làm sao biết Phase nào done?**  
-A: Check Acceptance Criteria trong Roadmap. Nếu pass tất cả → Done.
-
----
-
-## 🎉 KẾT LUẬN
-
-Bạn hiện có **BỘ TÀI LIỆU ĐẦY ĐỦ** để:
-- ✅ Code game với AI (TDD + Roadmap + Prompts)
-- ✅ Outsource assets (Asset Guide)
-- ✅ Track progress (Roadmap checklists)
-- ✅ Maintain quality (Testing matrices)
-
-**Bước tiếp theo:** Chọn 1 trong 3 hành động ở "NEXT STEPS" phía trên và bắt đầu!
-
----
-
-**Good luck with Lumina Voyage! 🌟**
-
-*Nếu cần help bất cứ lúc nào, quay lại dùng AI_Developer_Prompts.md để hỏi tôi (Claude).*
+*Experience the void. Become the light.*
