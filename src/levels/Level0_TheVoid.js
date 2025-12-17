@@ -219,7 +219,8 @@ export class Level0_TheVoid extends BaseLevel {
       () => {
         // Callback when beams arrive - spawn portal
         this.spawnPortalAt(portalPosition);
-      }
+      },
+      this.player // Pass player reference for position updates
     );
   }
 

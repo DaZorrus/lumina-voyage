@@ -43,14 +43,6 @@ function setupMenu() {
     if (hud) hud.classList.remove('hidden');
     if (hudRight) hudRight.classList.remove('hidden');
     
-    // Show tutorial hint after 1 second
-    const tutorialHint = document.getElementById('tutorial-hint');
-    if (tutorialHint) {
-      setTimeout(() => {
-        tutorialHint.classList.remove('hidden');
-      }, 1000);
-    }
-    
     // Load Level 0
     engine.loadLevel(Level0_TheVoid);
     

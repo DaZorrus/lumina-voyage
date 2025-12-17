@@ -18,7 +18,7 @@ export class AudioSystem {
       }
     }).toDestination();
     
-    this.synth.volume.value = -10; // dB
+    this.synth.volume.value = -8; // dB
     
     // Progressive audio layers
     this.layers = {
@@ -40,9 +40,12 @@ export class AudioSystem {
         sustain: 0.9,
         release: 5
       }
-    }).toDestination();
-    
-    this.ambientPad.volume.value = -25;
+    });
+
+    this.ambientPad.volume.value = -18;
+
+    this.ambientHPF = new Tone.Filter(80, 'highpass');
+    this.ambientPad.chain(this.ambientHPF, Tone.Destination);
     
     // Pad for ambient atmosphere
     this.pad = new Tone.Synth({
@@ -55,7 +58,7 @@ export class AudioSystem {
       }
     }).toDestination();
     
-    this.pad.volume.value = -20;
+    this.pad.volume.value = -18;
     
     // Current musical scale
     this.currentScale = ['C4', 'D4', 'E4', 'G4', 'A4']; // Pentatonic - Level 0
@@ -102,7 +105,7 @@ export class AudioSystem {
       envelope: { attack: 0.01, decay: 0.2, sustain: 0.1, release: 0.3 }
     }).toDestination();
     
-    pingSynth.volume.value = -8; // Reduce volume
+    pingSynth.volume.value = -8; 
     pingSynth.triggerAttackRelease('G4', '8n', Tone.now(), 0.4); // Lower pitch G4 instead of C6
     
     // Cleanup after playing
@@ -134,7 +137,11 @@ export class AudioSystem {
     this.ambientPlaying = true;
     
     // Play deep ambient chord - ethereal space atmosphere
-    this.ambientPad.triggerAttack(['C2', 'G2', 'C3', 'E3'], Tone.now(), 0.3);
+    this.ambientPad.triggerAttack(
+        ['C2', 'G2', 'C3', 'E3'],
+        Tone.now() + 0.15,
+        0.3
+    );
     
     console.log('🎵 Ambient audio started');
   }
@@ -150,17 +157,17 @@ export class AudioSystem {
         this.layers.bass = new Tone.Synth({
           oscillator: { type: 'sine' },
           envelope: { attack: 0.3, decay: 0.5, sustain: 0.6, release: 1.5 }
-        }).toDestination();
-        this.layers.bass.volume.value = -18;
+        });
+        this.layers.bass.volume.value = -14;
         
         // Create filter for warmth
         const bassFilter = new Tone.Filter(200, 'lowpass');
-        this.layers.bass.connect(bassFilter);
+        this.layers.bass.chain(bassFilter, Tone.Destination);
         
         // Slow, gentle bass pattern
         const bassPattern = new Tone.Pattern((time, note) => {
           this.layers.bass.triggerAttackRelease(note, '2n', time, 0.4);
-        }, ['C2', 'G1', 'C2', 'E2'], 'up');
+        }, ['C2', 'G2', 'C2', 'E2'], 'up');
         bassPattern.interval = '2n'; // Slower
         bassPattern.start(0);
         Tone.Transport.start();
@@ -172,7 +179,7 @@ export class AudioSystem {
           oscillator: { type: 'sine' },
           envelope: { attack: 1.5, decay: 0.5, sustain: 0.8, release: 2.5 }
         }).toDestination();
-        this.layers.pad.volume.value = -20;
+        this.layers.pad.volume.value = -16;
         this.layers.pad.triggerAttack(['C3', 'E3', 'G3', 'B3'], Tone.now(), 0.3);
         break;
         
@@ -182,7 +189,7 @@ export class AudioSystem {
           oscillator: { type: 'sine' },
           envelope: { attack: 0.1, decay: 0.3, sustain: 0.4, release: 0.8 }
         }).toDestination();
-        this.layers.melody.volume.value = -14;
+        this.layers.melody.volume.value = -10;
         
         const melodyPattern = new Tone.Pattern((time, note) => {
           this.layers.melody.triggerAttackRelease(note, '4n', time, 0.5);
@@ -197,7 +204,7 @@ export class AudioSystem {
           oscillator: { type: 'triangle' },
           envelope: { attack: 0.2, decay: 0.4, sustain: 0.5, release: 1 }
         }).toDestination();
-        this.layers.harmony.volume.value = -16;
+        this.layers.harmony.volume.value = -12;
         
         const harmonyPattern = new Tone.Pattern((time, note) => {
           this.layers.harmony.triggerAttackRelease(note, '2n', time, 0.4);
@@ -212,7 +219,7 @@ export class AudioSystem {
           oscillator: { type: 'sine' },
           envelope: { attack: 0.01, decay: 0.3, sustain: 0.1, release: 0.5 }
         }).toDestination();
-        this.layers.rhythm.volume.value = -20;
+        this.layers.rhythm.volume.value = -18;
         
         const chimePattern = new Tone.Pattern((time, note) => {
           this.layers.rhythm.triggerAttackRelease(note, '8n', time, 0.3);

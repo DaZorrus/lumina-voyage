@@ -4,11 +4,12 @@ import * as THREE from 'three';
  * PortalBeam - Light particles that fly from player to create portal
  */
 export class PortalBeam {
-  constructor(scene, startPosition, endPosition, onComplete) {
+  constructor(scene, startPosition, endPosition, onComplete, playerRef = null) {
     this.scene = scene;
     this.particles = [];
     this.completed = 0;
     this.onComplete = onComplete;
+    this.playerRef = playerRef; // Reference to player for position updates
     
     // Create 5 light particles
     for (let i = 0; i < 5; i++) {
@@ -46,6 +47,15 @@ export class PortalBeam {
   
   update(deltaTime) {
     this.time += deltaTime;
+    
+    // Update start position from player if still early in flight
+    if (this.playerRef && this.time < 0.5) {
+      this.particles.forEach(p => {
+        if (p.progress < 0.3) {
+          p.startPos.copy(this.playerRef.mesh.position);
+        }
+      });
+    }
     
     let allComplete = true;
     
