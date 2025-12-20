@@ -2,8 +2,9 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 
 /**
- * Meteor - Static/slow moving obstacle in Level 1
+ * Meteor - Visible obstacle in Level 1
  * Collision reduces player speed (momentum loss)
+ * Enhanced visibility with glow effects
  */
 export class Meteor {
   constructor(scene, physicsSystem, position, size = 1, velocity = null) {
@@ -13,66 +14,107 @@ export class Meteor {
     this.size = size;
     this.destroyed = false;
     
-    // Create low-poly meteor mesh
-    const geometry = new THREE.IcosahedronGeometry(size, 0); // Low poly
-    const material = new THREE.MeshStandardMaterial({
-      color: 0x4a4a5a,
-      emissive: 0x1a1a2a,
-      emissiveIntensity: 0.2,
-      roughness: 0.8,
-      metalness: 0.3,
+    // Container group for meteor and effects
+    this.mesh = new THREE.Group();
+    this.mesh.position.copy(position);
+    
+    // Create low-poly meteor core with brighter colors
+    const coreGeometry = new THREE.IcosahedronGeometry(size, 1);
+    const coreMaterial = new THREE.MeshStandardMaterial({
+      color: 0x8888aa,
+      emissive: 0x443355,
+      emissiveIntensity: 0.4,
+      roughness: 0.6,
+      metalness: 0.4,
       flatShading: true
     });
     
-    this.mesh = new THREE.Mesh(geometry, material);
-    this.mesh.position.copy(position);
+    this.core = new THREE.Mesh(coreGeometry, coreMaterial);
+    this.mesh.add(this.core);
     
-    // Random rotation
-    this.mesh.rotation.set(
-      Math.random() * Math.PI * 2,
-      Math.random() * Math.PI * 2,
-      Math.random() * Math.PI * 2
-    );
+    // Add glowing outline/rim
+    const glowGeometry = new THREE.IcosahedronGeometry(size * 1.15, 1);
+    const glowMaterial = new THREE.MeshBasicMaterial({
+      color: 0x6666aa,
+      transparent: true,
+      opacity: 0.3,
+      side: THREE.BackSide
+    });
+    
+    this.glow = new THREE.Mesh(glowGeometry, glowMaterial);
+    this.mesh.add(this.glow);
+    
+    // Add point light for visibility
+    this.light = new THREE.PointLight(0x8888cc, 0.5, size * 6);
+    this.mesh.add(this.light);
+    
+    // Add warning indicator ring
+    const ringGeometry = new THREE.RingGeometry(size * 1.5, size * 1.7, 16);
+    const ringMaterial = new THREE.MeshBasicMaterial({
+      color: 0xff6644,
+      transparent: true,
+      opacity: 0.4,
+      side: THREE.DoubleSide
+    });
+    
+    this.warningRing = new THREE.Mesh(ringGeometry, ringMaterial);
+    this.warningRing.rotation.x = Math.PI * 0.5;
+    this.mesh.add(this.warningRing);
     
     scene.add(this.mesh);
     
     // Physics body
     this.body = physicsSystem.addBody(this, {
-      mass: 0, // Static
+      mass: 0,
       shape: new CANNON.Sphere(size * 0.9),
       position: new CANNON.Vec3(position.x, position.y, position.z),
-      isTrigger: false // Physical collision
+      isTrigger: false
     });
     
-    // Drift velocity (slow movement)
+    // Drift velocity
     this.driftVelocity = velocity || new THREE.Vector3(
-      (Math.random() - 0.5) * 2,
-      (Math.random() - 0.5) * 1,
-      0 // No Z drift, player moves forward
+      (Math.random() - 0.5) * 1.5,
+      (Math.random() - 0.5) * 0.8,
+      0
     );
     
     // Rotation speed
     this.rotationSpeed = new THREE.Vector3(
-      (Math.random() - 0.5) * 0.5,
-      (Math.random() - 0.5) * 0.5,
-      (Math.random() - 0.5) * 0.5
+      (Math.random() - 0.5) * 0.4,
+      (Math.random() - 0.5) * 0.4,
+      (Math.random() - 0.5) * 0.4
     );
     
-    // Damage amount (speed reduction)
+    // Animation time
+    this.time = 0;
+    
+    // Damage amount
     this.speedPenalty = 10 + size * 5;
   }
 
   update(deltaTime) {
     if (this.destroyed) return;
     
+    this.time += deltaTime;
+    
     // Slow drift
     this.mesh.position.x += this.driftVelocity.x * deltaTime;
     this.mesh.position.y += this.driftVelocity.y * deltaTime;
     
-    // Rotation
-    this.mesh.rotation.x += this.rotationSpeed.x * deltaTime;
-    this.mesh.rotation.y += this.rotationSpeed.y * deltaTime;
-    this.mesh.rotation.z += this.rotationSpeed.z * deltaTime;
+    // Core rotation
+    this.core.rotation.x += this.rotationSpeed.x * deltaTime;
+    this.core.rotation.y += this.rotationSpeed.y * deltaTime;
+    this.core.rotation.z += this.rotationSpeed.z * deltaTime;
+    
+    // Pulse glow
+    const pulse = 1 + Math.sin(this.time * 2) * 0.1;
+    this.glow.scale.setScalar(pulse);
+    this.glow.material.opacity = 0.25 + Math.sin(this.time * 3) * 0.1;
+    
+    // Pulse warning ring
+    const ringPulse = 1 + Math.sin(this.time * 4) * 0.15;
+    this.warningRing.scale.setScalar(ringPulse);
+    this.warningRing.material.opacity = 0.3 + Math.sin(this.time * 4) * 0.15;
     
     // Update physics body position
     this.body.position.set(
@@ -83,7 +125,7 @@ export class Meteor {
   }
 
   onCollide(otherBody) {
-    // Will be handled by Level1 collision system
+    // Handled by Level1 collision system
   }
 
   destroy() {
@@ -92,7 +134,13 @@ export class Meteor {
     
     this.scene.remove(this.mesh);
     this.physicsSystem.removeBody(this.id);
-    this.mesh.geometry.dispose();
-    this.mesh.material.dispose();
+    
+    // Dispose all geometries and materials
+    this.core.geometry.dispose();
+    this.core.material.dispose();
+    this.glow.geometry.dispose();
+    this.glow.material.dispose();
+    this.warningRing.geometry.dispose();
+    this.warningRing.material.dispose();
   }
 }

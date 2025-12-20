@@ -4,6 +4,7 @@ import * as CANNON from 'cannon-es';
 /**
  * Photon - Collectible speed boost particles in Level 1
  * Collection increases player speed/fills speed bar
+ * Enhanced visibility with brighter effects
  */
 export class Photon {
   constructor(scene, physicsSystem, position) {
@@ -13,48 +14,75 @@ export class Photon {
     this.collected = false;
     this.destroyed = false;
     
-    // Core glow mesh
-    const coreGeometry = new THREE.SphereGeometry(0.3, 16, 16);
+    // Container group
+    this.mesh = new THREE.Group();
+    this.mesh.position.copy(position);
+    scene.add(this.mesh);
+    
+    // Core glow mesh - brighter
+    const coreGeometry = new THREE.SphereGeometry(0.4, 16, 16);
     const coreMaterial = new THREE.MeshBasicMaterial({
-      color: 0x00ffff,
+      color: 0x44ffff,
       transparent: true,
       opacity: 1.0
     });
     
-    this.mesh = new THREE.Mesh(coreGeometry, coreMaterial);
-    this.mesh.position.copy(position);
-    scene.add(this.mesh);
+    this.core = new THREE.Mesh(coreGeometry, coreMaterial);
+    this.mesh.add(this.core);
     
-    // Outer glow
-    const glowGeometry = new THREE.SphereGeometry(0.6, 16, 16);
-    const glowMaterial = new THREE.MeshBasicMaterial({
+    // Inner glow
+    const innerGlowGeometry = new THREE.SphereGeometry(0.6, 16, 16);
+    const innerGlowMaterial = new THREE.MeshBasicMaterial({
       color: 0x00ffff,
       transparent: true,
-      opacity: 0.3
+      opacity: 0.5
     });
     
-    this.glowMesh = new THREE.Mesh(glowGeometry, glowMaterial);
-    this.mesh.add(this.glowMesh);
+    this.innerGlow = new THREE.Mesh(innerGlowGeometry, innerGlowMaterial);
+    this.mesh.add(this.innerGlow);
     
-    // Light
-    this.light = new THREE.PointLight(0x00ffff, 0.5, 10);
+    // Outer glow
+    const outerGlowGeometry = new THREE.SphereGeometry(0.9, 16, 16);
+    const outerGlowMaterial = new THREE.MeshBasicMaterial({
+      color: 0x00ffff,
+      transparent: true,
+      opacity: 0.25
+    });
+    
+    this.outerGlow = new THREE.Mesh(outerGlowGeometry, outerGlowMaterial);
+    this.mesh.add(this.outerGlow);
+    
+    // Spinning ring indicator
+    const ringGeometry = new THREE.RingGeometry(0.8, 1.0, 16);
+    const ringMaterial = new THREE.MeshBasicMaterial({
+      color: 0x88ffff,
+      transparent: true,
+      opacity: 0.6,
+      side: THREE.DoubleSide
+    });
+    
+    this.ring = new THREE.Mesh(ringGeometry, ringMaterial);
+    this.mesh.add(this.ring);
+    
+    // Light - brighter
+    this.light = new THREE.PointLight(0x00ffff, 1.5, 15);
     this.mesh.add(this.light);
     
     // Physics trigger
     this.body = physicsSystem.addBody(this, {
       mass: 0,
-      shape: new CANNON.Sphere(0.8),
+      shape: new CANNON.Sphere(1.2),
       position: new CANNON.Vec3(position.x, position.y, position.z),
-      isTrigger: true // No physics collision, just detection
+      isTrigger: true
     });
     
     // Animation
-    this.time = 0;
+    this.time = Math.random() * Math.PI * 2; // Random start phase
     this.baseY = position.y;
-    this.pulseSpeed = 3 + Math.random() * 2;
+    this.pulseSpeed = 4 + Math.random() * 2;
     
     // Speed boost value
-    this.speedBoost = 5;
+    this.speedBoost = 8;
   }
 
   update(deltaTime) {
@@ -63,15 +91,22 @@ export class Photon {
     this.time += deltaTime;
     
     // Floating animation
-    this.mesh.position.y = this.baseY + Math.sin(this.time * 2) * 0.2;
+    this.mesh.position.y = this.baseY + Math.sin(this.time * 2.5) * 0.3;
     
     // Pulse animation
-    const pulse = 1 + Math.sin(this.time * this.pulseSpeed) * 0.2;
-    this.glowMesh.scale.setScalar(pulse);
-    this.mesh.material.opacity = 0.8 + Math.sin(this.time * this.pulseSpeed) * 0.2;
+    const pulse = 1 + Math.sin(this.time * this.pulseSpeed) * 0.25;
+    this.innerGlow.scale.setScalar(pulse);
+    this.outerGlow.scale.setScalar(pulse * 1.1);
     
-    // Rotation
-    this.mesh.rotation.y += deltaTime * 2;
+    // Core brightness pulse
+    this.core.material.opacity = 0.9 + Math.sin(this.time * this.pulseSpeed) * 0.1;
+    
+    // Ring rotation
+    this.ring.rotation.x += deltaTime * 2;
+    this.ring.rotation.y += deltaTime * 1.5;
+    
+    // Light pulse
+    this.light.intensity = 1.5 + Math.sin(this.time * this.pulseSpeed) * 0.5;
     
     // Update physics position
     this.body.position.set(
@@ -92,8 +127,7 @@ export class Photon {
   }
 
   collectAnimation() {
-    const duration = 200;
-    const startScale = 1;
+    const duration = 250;
     const startTime = performance.now();
     
     const animate = () => {
@@ -101,9 +135,14 @@ export class Photon {
       const progress = Math.min(elapsed / duration, 1);
       
       // Scale up then disappear
-      const scale = startScale * (1 + progress * 0.5) * (1 - progress);
+      const scale = (1 + progress * 0.8) * (1 - progress);
       this.mesh.scale.setScalar(scale);
-      this.mesh.material.opacity = 1 - progress;
+      
+      // Fade out
+      this.core.material.opacity = 1 - progress;
+      this.innerGlow.material.opacity = 0.5 * (1 - progress);
+      this.outerGlow.material.opacity = 0.25 * (1 - progress);
+      this.ring.material.opacity = 0.6 * (1 - progress);
       
       if (progress < 1) {
         requestAnimationFrame(animate);
@@ -121,9 +160,15 @@ export class Photon {
     
     this.scene.remove(this.mesh);
     this.physicsSystem.removeBody(this.id);
-    this.mesh.geometry.dispose();
-    this.mesh.material.dispose();
-    this.glowMesh.geometry.dispose();
-    this.glowMesh.material.dispose();
+    
+    // Dispose all geometries and materials
+    this.core.geometry.dispose();
+    this.core.material.dispose();
+    this.innerGlow.geometry.dispose();
+    this.innerGlow.material.dispose();
+    this.outerGlow.geometry.dispose();
+    this.outerGlow.material.dispose();
+    this.ring.geometry.dispose();
+    this.ring.material.dispose();
   }
 }
