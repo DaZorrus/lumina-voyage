@@ -22,10 +22,10 @@ export class ParticleTrail {
     
     // Material - larger, smoother particles
     const material = new THREE.PointsMaterial({
-      size: 0.15,
+      size: 0.25,
       vertexColors: true,
       transparent: true,
-      opacity: 0.9,
+      opacity: 1,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
       sizeAttenuation: true

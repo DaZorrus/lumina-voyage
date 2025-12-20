@@ -23,7 +23,7 @@ export class Level0_TheVoid extends BaseLevel {
     this.lastPulseOrigin = null;
     this.lastPulseTime = 0;
     this.pulseRadius = 10;
-    this.pulseDuration = 3.0; // How long pulse wave expands
+    this.pulseDuration = 3.0; // How long pulse wave expands // 
     this.gameTime = 0; // Track overall game time
   }
 
@@ -57,20 +57,20 @@ export class Level0_TheVoid extends BaseLevel {
     
     // Tutorial: slower energy decay for chill exploration
     this.player.currentLumen = 100;
-    this.player.energyDecayRate = 0.2; // Slower than normal
+    this.player.energyDecayRate = 0.5; // Slower than normal
     
     // Set camera to follow player
     this.engine.cameraSystem.follow(this.player);
   }
 
   spawnObjects() {
-    // Breadcrumb trail of 5 energy orbs (increased spacing)
+    // Breadcrumb trail of 5 energy orbs 
     const orbPositions = [
-      new THREE.Vector3(0, 0, -12),    // First orb farther
-      new THREE.Vector3(4, 2, -24),    // Increased spacing
-      new THREE.Vector3(8, -1, -36),   
-      new THREE.Vector3(12, 1, -48),   
-      new THREE.Vector3(16, 0, -60)    // Final orb much farther
+      new THREE.Vector3(0, 0, -15),   
+      new THREE.Vector3(6, 2, -35),   
+      new THREE.Vector3(12, -2, -60),   
+      new THREE.Vector3(20, 1, -85),   
+      new THREE.Vector3(30, 0, -115)   
     ];
 
     orbPositions.forEach(pos => {
@@ -87,13 +87,13 @@ export class Level0_TheVoid extends BaseLevel {
   }
 
   createStarfield() {
-    const starCount = 500;
+    const starCount = 600;
     const positions = new Float32Array(starCount * 3);
     const colors = new Float32Array(starCount * 3);
     
     for (let i = 0; i < starCount; i++) {
       // Random position in MUCH LARGER sphere (far background)
-      const radius = 100 + Math.random() * 100; // 100-200 units away (was 30-50)
+      const radius = 150 + Math.random() * 150; // 100-200 units away (was 30-50)
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.random() * Math.PI;
       
@@ -156,7 +156,7 @@ export class Level0_TheVoid extends BaseLevel {
         
         // Screen shake when at max speed (all 5 orbs collected)
         if (this.player.orbsCollected >= 5) {
-          this.screenShakeIntensity = 0.3;
+          this.screenShakeIntensity = 0.5;
         }
       }
     });
@@ -208,7 +208,7 @@ export class Level0_TheVoid extends BaseLevel {
     const portalPosition = new THREE.Vector3(
       this.player.mesh.position.x,
       this.player.mesh.position.y,
-      this.player.mesh.position.z - 100 // Far away
+      this.player.mesh.position.z - 130 // Far away
     );
     
     // Create portal beam particles that fly from player to portal location

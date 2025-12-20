@@ -24,7 +24,6 @@ export class InputManager {
       if (!this.keys[key]) {
         // First frame of press
         this.justPressedKeys.add(key);
-        console.log('🎹 Key pressed:', key);
       }
       this.keys[key] = true;
     });

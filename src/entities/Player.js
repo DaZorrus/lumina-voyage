@@ -18,10 +18,10 @@ export class Player {
     this.maxLumen = 100;
     this.baseSpeed = 8; // Base speed for chill tutorial
     this.speed = this.baseSpeed;
-    this.basePulseRadius = 20; // Large coverage radius for better visibility
+    this.basePulseRadius = 17; // Large coverage radius for better visibility
     this.pulseRadius = this.basePulseRadius;
     this.pulseCooldown = 0;
-    this.pulseCooldownMax = 1.0; // 1 second
+    this.pulseCooldownMax = 2.0; // 2 seconds
     
     // Progression tracking
     this.orbsCollected = 0;
@@ -113,13 +113,7 @@ export class Player {
       this.pulseCooldown -= deltaTime;
     }
     
-    // Debug: Check if F is pressed
-    if (inputManager.isPressed('f')) {
-      console.log('🔑 F key is pressed! Cooldown:', this.pulseCooldown);
-    }
-    
     if (inputManager.justPressed('f') && this.pulseCooldown <= 0) {
-      console.log('✨ PULSE TRIGGERED!');
       this.pulse(entities, levelInstance); // Pass levelInstance for wave tracking
       this.pulseCooldown = this.pulseCooldownMax;
     }
@@ -169,7 +163,6 @@ export class Player {
   }
 
   pulse(entities, levelInstance = null) {
-    console.log('🌟🌟🌟 PULSE ACTIVATED! 🌟🌟🌟');
     console.log('   Position:', this.mesh.position);
     console.log('   Pulse Radius:', this.pulseRadius);
     console.log('   Entities count:', entities.length);
