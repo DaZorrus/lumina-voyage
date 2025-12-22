@@ -14,10 +14,10 @@ export class BlackHole {
     this.size = size;
     this.destroyed = false;
     
-    // Gravity ranges - clearer zones
-    this.slingshotRadius = size * 2.5;   // Outer ring - slingshot zone
-    this.trapRadius = size * 1.2;        // Inner - danger zone
-    this.eventHorizon = size * 0.4;      // Core - extreme danger
+    // Gravity ranges - BIGGER and more dangerous
+    this.slingshotRadius = size * 4.0;   // Outer ring - slingshot zone (was 2.5)
+    this.trapRadius = size * 2.0;        // Inner - danger zone (was 1.2)
+    this.eventHorizon = size * 0.6;      // Core - extreme danger (was 0.4)
     
     // Container
     this.mesh = new THREE.Group();
@@ -124,10 +124,10 @@ export class BlackHole {
     // Animation
     this.time = 0;
     
-    // Gravity strength
-    this.gravityStrength = 50;
-    this.slingshotBoost = 30;
-    this.trapPenalty = 25;
+    // Gravity strength - STRONGER pull
+    this.gravityStrength = 80;    // Was 50
+    this.slingshotBoost = 35;     // Was 30
+    this.trapPenalty = 40;        // Was 25 - more punishing
   }
 
   createParticles() {

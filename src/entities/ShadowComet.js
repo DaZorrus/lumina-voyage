@@ -1,27 +1,63 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
+import { ModelManager } from '../utils/ModelManager.js';
 
 /**
  * ShadowComet - Fast-moving obstacle that cuts across player path
  * Shows warning indicator before appearing
+ * Uses 3D model when available
  */
 export class ShadowComet {
-  constructor(scene, physicsSystem, targetZ, direction = 'left') {
+  constructor(scene, physicsSystem, targetZ, direction = 'left', startY = 0) {
     this.id = `shadowcomet-${Math.random().toString(36).substr(2, 9)}`;
     this.scene = scene;
     this.physicsSystem = physicsSystem;
     this.destroyed = false;
     this.active = false;
+    this.modelLoaded = false;
     
     this.targetZ = targetZ;
     this.direction = direction; // 'left' or 'right'
     this.speed = 80; // Very fast
+    this.startY = startY;  // Y position for both comet AND warning
     
-    // Starting position off-screen
+    // Starting position off-screen - USE startY so warning matches comet
     const startX = direction === 'left' ? 50 : -50;
-    const startPos = new THREE.Vector3(startX, 0, targetZ);
+    const startPos = new THREE.Vector3(startX, startY, targetZ);
     
-    // Create comet mesh
+    // Container group
+    this.mesh = new THREE.Group();
+    this.mesh.position.copy(startPos);
+    scene.add(this.mesh);
+    
+    // Create procedural comet (don't load 3D model for performance)
+    this.createProceduralComet(direction);
+    
+    // Trail effect (simplified)
+    this.createTrail();
+    
+    // Warning indicator (will appear before comet)
+    this.createWarning(targetZ);
+    
+    // Physics body - medium hitbox
+    this.body = physicsSystem.addBody(this, {
+      mass: 0,
+      shape: new CANNON.Sphere(2.0),  // Medium hitbox
+      position: new CANNON.Vec3(startPos.x, startPos.y, startPos.z),
+      isTrigger: false
+    });
+    
+    // Warning phase
+    this.warningTime = 1.5;
+    this.warningElapsed = 0;
+    this.hasPassedPlayer = false;
+    
+    // Damage - reduces player speed on collision
+    this.speedPenalty = 25;  // Reduced from 30, since it now slows player
+    this.slowDuration = 1.5;  // How long player is slowed
+  }
+
+  createProceduralComet(direction) {
     const coreGeometry = new THREE.ConeGeometry(0.8, 3, 8);
     const coreMaterial = new THREE.MeshBasicMaterial({
       color: 0x2a0a4a,
@@ -29,32 +65,34 @@ export class ShadowComet {
       opacity: 0.9
     });
     
-    this.mesh = new THREE.Mesh(coreGeometry, coreMaterial);
-    this.mesh.position.copy(startPos);
-    this.mesh.rotation.z = direction === 'left' ? Math.PI / 2 : -Math.PI / 2;
-    scene.add(this.mesh);
-    
-    // Trail effect
-    this.createTrail();
-    
-    // Warning indicator (will appear before comet)
-    this.createWarning(targetZ);
-    
-    // Physics body
-    this.body = physicsSystem.addBody(this, {
-      mass: 0,
-      shape: new CANNON.Sphere(1.5),
-      position: new CANNON.Vec3(startPos.x, startPos.y, startPos.z),
-      isTrigger: false // Physical collision
-    });
-    
-    // Warning phase
-    this.warningTime = 1.5; // seconds to show warning
-    this.warningElapsed = 0;
-    this.hasPassedPlayer = false;
-    
-    // Damage
-    this.speedPenalty = 30;
+    this.cometCore = new THREE.Mesh(coreGeometry, coreMaterial);
+    this.cometCore.rotation.z = direction === 'left' ? Math.PI / 2 : -Math.PI / 2;
+    this.mesh.add(this.cometCore);
+  }
+
+  async loadModel(direction) {
+    try {
+      const model = await ModelManager.load('comet');
+      if (model && !this.destroyed) {
+        // Remove procedural comet
+        if (this.cometCore) {
+          this.mesh.remove(this.cometCore);
+          this.cometCore.geometry.dispose();
+          this.cometCore.material.dispose();
+          this.cometCore = null;
+        }
+        
+        // Add 3D model
+        this.modelMesh = model;
+        this.modelMesh.scale.setScalar(1.5);
+        // Rotate to face direction of travel
+        this.modelMesh.rotation.z = direction === 'left' ? Math.PI / 2 : -Math.PI / 2;
+        this.mesh.add(this.modelMesh);
+        this.modelLoaded = true;
+      }
+    } catch (error) {
+      console.warn('ShadowComet: Failed to load model', error);
+    }
   }
 
   createTrail() {
@@ -94,11 +132,11 @@ export class ShadowComet {
   }
 
   createWarning(targetZ) {
-    // Warning line across screen
+    // Warning line across screen - USE startY so warning matches comet Y!
     const lineGeometry = new THREE.BufferGeometry();
     const positions = new Float32Array([
-      -30, 0, targetZ,
-      30, 0, targetZ
+      -30, this.startY, targetZ,
+      30, this.startY, targetZ
     ]);
     lineGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     
@@ -111,7 +149,7 @@ export class ShadowComet {
     this.warningLine = new THREE.Line(lineGeometry, lineMaterial);
     this.scene.add(this.warningLine);
     
-    // Warning arrow
+    // Warning arrow - also at correct Y
     const arrowGeometry = new THREE.ConeGeometry(0.5, 1.5, 4);
     const arrowMaterial = new THREE.MeshBasicMaterial({
       color: 0xff0000,
@@ -122,7 +160,7 @@ export class ShadowComet {
     this.warningArrow = new THREE.Mesh(arrowGeometry, arrowMaterial);
     this.warningArrow.position.set(
       this.direction === 'left' ? -25 : 25,
-      0,
+      this.startY,  // Match comet Y
       targetZ
     );
     this.warningArrow.rotation.z = this.direction === 'left' ? -Math.PI / 2 : Math.PI / 2;

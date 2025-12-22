@@ -104,9 +104,16 @@ export class Player {
     // === VISUAL FEEDBACK ===
     this.updateVisuals();
     
-    // === ROTATION (low poly spin) ===
-    this.mesh.rotation.x += deltaTime * 0.3;
-    this.mesh.rotation.y += deltaTime * 0.5;
+    // === PARTICLE TRAIL ===
+    const currentPos = this.mesh.position.clone();
+    const velocity = currentPos.clone().sub(this.lastPosition).divideScalar(deltaTime);
+    const speed = velocity.length();
+    
+    // === ROTATION (low poly spin) - Speed-based rotation ===
+    // Faster movement = faster spin for dynamic feedback
+    const speedMultiplier = 1 + Math.min(speed * 0.1, 2); // Cap at 3x to prevent shake
+    this.mesh.rotation.x += deltaTime * 1.2 * speedMultiplier;
+    this.mesh.rotation.y += deltaTime * 1.8 * speedMultiplier;
     
     // === PULSE MECHANIC ===
     if (this.pulseCooldown > 0) {
@@ -118,11 +125,8 @@ export class Player {
       this.pulseCooldown = this.pulseCooldownMax;
     }
     
-    // === PARTICLE TRAIL ===
-    const currentPos = this.mesh.position.clone();
-    const velocity = currentPos.clone().sub(this.lastPosition).divideScalar(deltaTime);
-    
-    if (velocity.length() > 0.5) {
+    // === EMIT TRAIL ===
+    if (speed > 0.1) {
       this.particleTrail.emit(currentPos, velocity);
     }
     
