@@ -217,18 +217,18 @@ export class Portal {
           color: #000;
           text-align: center;
         ">
-          <h1 style="font-size: 48px; margin-bottom: 20px;">✨ LEVEL COMPLETE ✨</h1>
+          <h1 style="font-size: 48px; margin-bottom: 20px;">✨ CHAPTER COMPLETE ✨</h1>
           <p style="font-size: 24px; color: #666;">The Void has been illuminated.</p>
         </div>
       `;
     }, 500);
     
-    // Transition to Level 1 after showing message
+    // Transition to Chapter 1 after showing message
     setTimeout(async () => {
       if (this.engine) {
         // Dynamic import to avoid circular dependency
-        const { Level1_TheAscent } = await import('../levels/Level1_TheAscent.js');
-        this.engine.transitionToLevel(Level1_TheAscent);
+        const { Chapter1_TheAscent } = await import('../chapters/Chapter1_TheAscent.js');
+        this.engine.transitionToLevel(Chapter1_TheAscent);
       }
       // Remove overlay
       setTimeout(() => {
