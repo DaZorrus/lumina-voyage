@@ -27,6 +27,12 @@ export class BaseChapter {
     
     this.spawnObjects();
     console.log('✅ Objects spawned');
+    
+    // Start ambient music if not already playing
+    if (this.engine.audioSystem && !this.engine.audioSystem.ambientPlaying) {
+      this.engine.audioSystem.startAmbient();
+      console.log('🎵 Chapter music started');
+    }
   }
 
   setupEnvironment() {

@@ -76,6 +76,9 @@ async function init() {
   // Create menu background
   createMenuBackground();
   
+  // Initialize menu music
+  await initMenuMusic();
+  
   // Wait a moment then show menu
   setTimeout(() => {
     showScreen('menu');
@@ -182,8 +185,10 @@ async function startChapter(chapterIndex) {
   console.log('🎮 Starting chapter', chapterIndex);
   console.log('Chapter class:', chapterClasses[chapterIndex]);
   
-  // Initialize audio (requires user interaction)
-  await engine.audioSystem.init();
+  // Ensure audio is initialized (in case menu music didn't start due to browser policy)
+  if (!engine.audioSystem.initialized) {
+    await engine.audioSystem.init();
+  }
   
   // Apply volume settings
   applyVolumeSettings();
@@ -465,6 +470,19 @@ function stopMenuAnimation() {
   if (menuAnimationId) {
     cancelAnimationFrame(menuAnimationId);
     menuAnimationId = null;
+  }
+}
+
+async function initMenuMusic() {
+  // Initialize audio system for menu music
+  // This requires no user interaction on first load
+  try {
+    await engine.audioSystem.init();
+    engine.audioSystem.startAmbient();
+    console.log('🎵 Menu music initialized');
+  } catch (error) {
+    console.warn('Could not auto-start menu music (browser policy):', error);
+    // Music will start when user clicks to start a chapter
   }
 }
 
