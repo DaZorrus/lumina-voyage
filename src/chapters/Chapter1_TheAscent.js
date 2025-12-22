@@ -1,20 +1,21 @@
 import * as THREE from 'three';
-import { BaseLevel } from './BaseLevel.js';
+import { BaseChapter } from './BaseChapter.js';
 import { Player } from '../entities/Player.js';
 import { Meteor } from '../entities/Meteor.js';
 import { Photon } from '../entities/Photon.js';
 import { BlackHole } from '../entities/BlackHole.js';
 import { ShadowComet } from '../entities/ShadowComet.js';
+import { Portal } from '../entities/Portal.js';
 
 /**
- * Level1_TheAscent - High-speed obstacle dodge with 3x3 grid movement
+ * Chapter1_TheAscent - High-speed obstacle dodge with 3x3 grid movement
  * Goal: Reach Light Speed by collecting photons and avoiding obstacles
  * 
  * Camera: Normal follow camera like Level 0
  * Core Loop: Move between grid lanes, collect photons, avoid meteors
  * Win Condition: Fill speed bar to 100% (Light Speed Break)
  */
-export class Level1_TheAscent extends BaseLevel {
+export class Chapter1_TheAscent extends BaseChapter {
   constructor(engine) {
     super(engine);
     this.name = 'The Ascent';
@@ -23,12 +24,12 @@ export class Level1_TheAscent extends BaseLevel {
     this.currentSpeed = 0;
     this.maxSpeed = 100;           // Light speed threshold
     this.baseAcceleration = 2.0;   // Passive acceleration
-    this.photonSpeedBoost = 8;     // Speed gained per photon
+    this.photonSpeedBoost = 5;     // Speed gained per photon (reduced for difficulty)
     this.meteorSpeedPenalty = 15;  // Speed lost per meteor hit
     
     // === 3x3 GRID SYSTEM ===
-    this.gridLaneWidth = 6;        // Width of each lane
-    this.gridLaneHeight = 4;       // Height of each lane
+    this.gridLaneWidth = 6;        // Width of each lane (narrower map)
+    this.gridLaneHeight = 4;       // Height of each lane (narrower map)
     this.currentLaneX = 1;         // 0=left, 1=center, 2=right
     this.currentLaneY = 1;         // 0=bottom, 1=center, 2=top
     this.laneTransitionSpeed = 15; // How fast to move between lanes
@@ -38,33 +39,34 @@ export class Level1_TheAscent extends BaseLevel {
     this.mapWidth = this.gridLaneWidth * 1.5;  // Total playable width
     this.mapHeight = this.gridLaneHeight * 1.5; // Total playable height
     
-    // === PROCEDURAL GENERATION ===
-    this.spawnAheadDistance = 80;
-    this.despawnBehindDistance = 25;
+    // === PROCEDURAL GENERATION (OPTIMIZED) ===
+    this.spawnAheadDistance = 80;   // Spawn further ahead
+    this.despawnBehindDistance = 15;  // Cleanup faster
     this.lastSpawnZ = 0;
-    this.spawnInterval = 25;       // Spacing between waves
-    this.maxActiveEntities = 60;
+    this.spawnInterval = 20;       // Spawn more frequently to avoid gaps
+    this.maxActiveEntities = 35;   // Slightly more entities allowed
     
     // === DIFFICULTY SCALING ===
     this.difficultyMultiplier = 1;
     this.maxDifficulty = 2.5;
-    this.blackHoleSpawnChance = 0.08;
-    this.blackHoleMinDifficulty = 1.3;
+    this.blackHoleSpawnChance = 0.18;   // More black holes (was 0.08)
+    this.blackHoleMinDifficulty = 1.1;  // Black holes appear earlier (was 1.3)
     this.lastBlackHoleZ = 0;
-    this.blackHoleMinSpacing = 80;
+    this.blackHoleMinSpacing = 50;      // Closer together (was 80)
     
     // Gameplay state
     this.gameTime = 0;
     this.invulnerableTime = 0;
     this.screenShakeIntensity = 0;
     this.lightSpeedTriggered = false;
+    this.gamePaused = false;  // Set to true when level is complete
     
     // === LIGHT SPEED BREAK STATE ===
     this.isInLightSpeedSequence = false;
     this.lightSpeedSequenceTime = 0;
     this.lightSpeedDuration = 4;   // 4 seconds of epic flight
     this.finalPortal = null;
-    this.portalDistance = 400;
+    this.portalDistance = 200;  // Closer portal for reachable end sequence
     
     // === SLINGSHOT MECHANIC ===
     this.slingshotActive = false;
@@ -76,25 +78,37 @@ export class Level1_TheAscent extends BaseLevel {
     this.isBeingPulled = false;
     this.pullIntensity = 0;
     this.nearestBlackHole = null;
+    this.canSlingshot = false;  // Only true in the narrow slingshot zone
     
     // Shadow comet tracking
     this.nextCometTime = 20;
     this.cometInterval = 15;
     
+    // Slow debuff from comet hits
+    this.slowDebuffTime = 0;
+    
     // Input cooldowns for grid movement
     this.inputCooldown = 0;
     this.inputCooldownMax = 0.15;
+    
+    // Win condition - sustained max speed
+    this.maxSpeedSustainedTime = 0;
+    this.maxSpeedRequiredDuration = 0.5; // Must maintain max speed for 0.5 seconds
   }
 
   setupEnvironment() {
-    // Brighter space environment - easier to see
-    this.scene.fog = new THREE.Fog(0x0a1428, 60, 200);
-    this.scene.background = new THREE.Color(0x0a1428);
+    // Space environment - SAME as Level 0 for consistency
+    this.scene.fog = new THREE.Fog(0x000000, 100, 600); // Same as Level 0
+    this.scene.background = new THREE.Color(0x0a0e27); // Same as Level 0
     
     this.createStarfield();
-    this.createSpeedLines();
-    this.createGridIndicators();
+    this.createSpeedLines();  // Create speed trail lines
     this.createNebulaBackground();
+    
+    // Speed effect overlay
+    this.speedOverlay = document.getElementById('speed-overlay');
+    this.baseFov = 75;  // Base FOV
+    this.targetFov = 75;
   }
 
   setupLighting() {
@@ -136,9 +150,9 @@ export class Level1_TheAscent extends BaseLevel {
   }
 
   setupCamera() {
-    // Normal follow camera like Level 0
-    this.engine.cameraSystem.offset = new THREE.Vector3(0, 8, 20);
-    this.engine.cameraSystem.lookAheadOffset = new THREE.Vector3(0, 0, -15);
+    // VERY CLOSE camera for tight view - fills screen with action
+    this.engine.cameraSystem.offset = new THREE.Vector3(0, 3, 8); // Much closer
+    this.engine.cameraSystem.lookAheadOffset = new THREE.Vector3(0, 0, 0);
   }
 
   spawnObjects() {
@@ -146,7 +160,7 @@ export class Level1_TheAscent extends BaseLevel {
     this.spawnWave(-40);
     this.spawnWave(-65);
     this.spawnWave(-90);
-    console.log('🚀 Level 1 loaded: Race to Light Speed! Use WASD to move between lanes.');
+    console.log('🚀 Chapter 1 loaded: Race to Light Speed! Use WASD to move between lanes.');
   }
 
   createNebulaBackground() {
@@ -218,39 +232,42 @@ export class Level1_TheAscent extends BaseLevel {
   }
 
   createStarfield() {
-    const starCount = 800;
+    // Initialize starfield relative to player position (or 0 if no player yet)
+    const baseZ = this.player ? this.player.mesh.position.z : 0;
+    
+    const starCount = 3000;
     const positions = new Float32Array(starCount * 3);
     const colors = new Float32Array(starCount * 3);
-    const sizes = new Float32Array(starCount);
     
     for (let i = 0; i < starCount; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const radius = 50 + Math.random() * 120;
+      // Place stars in a cylinder ahead of current position
+      const radius = 100 + Math.random() * 400; // 100-500 units from center
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.random() * Math.PI;
       
-      positions[i * 3] = Math.cos(angle) * radius;
-      positions[i * 3 + 1] = (Math.random() - 0.3) * 100;
-      positions[i * 3 + 2] = Math.random() * 400 - 200;
+      positions[i * 3] = Math.sin(phi) * Math.cos(theta) * radius;
+      positions[i * 3 + 1] = Math.sin(phi) * Math.sin(theta) * radius;
+      // Place ALL stars ahead of current position, from -100 to -2000 relative
+      positions[i * 3 + 2] = baseZ - 100 - Math.random() * 1900;
       
-      // Varied star colors (white, blue, yellow)
+      // Varied star colors (white, blue, yellow) - brighter
       const colorType = Math.random();
       if (colorType < 0.5) {
         // White
-        colors[i * 3] = 0.9 + Math.random() * 0.1;
-        colors[i * 3 + 1] = 0.9 + Math.random() * 0.1;
+        colors[i * 3] = 1.0;
+        colors[i * 3 + 1] = 1.0;
         colors[i * 3 + 2] = 1.0;
       } else if (colorType < 0.8) {
         // Blue
-        colors[i * 3] = 0.6 + Math.random() * 0.2;
-        colors[i * 3 + 1] = 0.7 + Math.random() * 0.2;
+        colors[i * 3] = 0.7 + Math.random() * 0.2;
+        colors[i * 3 + 1] = 0.8 + Math.random() * 0.2;
         colors[i * 3 + 2] = 1.0;
       } else {
         // Yellow/orange
         colors[i * 3] = 1.0;
-        colors[i * 3 + 1] = 0.8 + Math.random() * 0.2;
-        colors[i * 3 + 2] = 0.5 + Math.random() * 0.3;
+        colors[i * 3 + 1] = 0.9 + Math.random() * 0.1;
+        colors[i * 3 + 2] = 0.6 + Math.random() * 0.3;
       }
-      
-      sizes[i] = 1 + Math.random() * 2;
     }
     
     const geometry = new THREE.BufferGeometry();
@@ -258,10 +275,10 @@ export class Level1_TheAscent extends BaseLevel {
     geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     
     const material = new THREE.PointsMaterial({
-      size: 2,
+      size: 2,  // Same as Level 0
       vertexColors: true,
       transparent: true,
-      opacity: 1.0,
+      opacity: 0.9,
       sizeAttenuation: false
     });
     
@@ -310,29 +327,38 @@ export class Level1_TheAscent extends BaseLevel {
     
     // Grid-based spawning: spawn obstacles in specific lanes
     const lanes = [
-      { x: -this.gridLaneWidth, y: this.gridLaneHeight },   // Top-left
-      { x: 0, y: this.gridLaneHeight },                      // Top-center
-      { x: this.gridLaneWidth, y: this.gridLaneHeight },    // Top-right
-      { x: -this.gridLaneWidth, y: 0 },                      // Middle-left
-      { x: 0, y: 0 },                                         // Middle-center
-      { x: this.gridLaneWidth, y: 0 },                       // Middle-right
-      { x: -this.gridLaneWidth, y: -this.gridLaneHeight },  // Bottom-left
-      { x: 0, y: -this.gridLaneHeight },                     // Bottom-center
-      { x: this.gridLaneWidth, y: -this.gridLaneHeight }    // Bottom-right
+      { x: -this.gridLaneWidth, y: this.gridLaneHeight },   // Top-left (0)
+      { x: 0, y: this.gridLaneHeight },                      // Top-center (1)
+      { x: this.gridLaneWidth, y: this.gridLaneHeight },    // Top-right (2)
+      { x: -this.gridLaneWidth, y: 0 },                      // Middle-left (3)
+      { x: 0, y: 0 },                                         // Middle-center (4)
+      { x: this.gridLaneWidth, y: 0 },                       // Middle-right (5)
+      { x: -this.gridLaneWidth, y: -this.gridLaneHeight },  // Bottom-left (6)
+      { x: 0, y: -this.gridLaneHeight },                     // Bottom-center (7)
+      { x: this.gridLaneWidth, y: -this.gridLaneHeight }    // Bottom-right (8)
     ];
     
+    // Shuffle lanes array to ensure equal distribution across all rows
+    const shuffledLanes = lanes.map((lane, idx) => ({ lane, idx, sort: Math.random() }))
+      .sort((a, b) => a.sort - b.sort)
+      .map(item => item.idx);
+    
     // Randomly select lanes to place obstacles (leave some clear)
-    const obstacleCount = Math.floor(2 + Math.random() * 3 * difficulty);
+    const obstacleCount = Math.floor(2 + Math.random() * 3 * difficulty);  // More obstacles
     const usedLanes = new Set();
     
     // Always leave at least 2 lanes clear for player to pass
     const maxObstacles = Math.min(obstacleCount, 7);
     
     for (let i = 0; i < maxObstacles && this.entities.length < this.maxActiveEntities; i++) {
-      let laneIndex;
-      do {
-        laneIndex = Math.floor(Math.random() * lanes.length);
-      } while (usedLanes.has(laneIndex));
+      // Use shuffled order to pick lanes evenly
+      let laneIndex = shuffledLanes[i % shuffledLanes.length];
+      let attempts = 0;
+      while (usedLanes.has(laneIndex) && attempts < lanes.length) {
+        laneIndex = shuffledLanes[(i + attempts) % shuffledLanes.length];
+        attempts++;
+      }
+      if (usedLanes.has(laneIndex)) continue;
       usedLanes.add(laneIndex);
       
       const lane = lanes[laneIndex];
@@ -342,17 +368,46 @@ export class Level1_TheAscent extends BaseLevel {
         z + (Math.random() - 0.5) * 10
       );
       
-      const size = 0.8 + Math.random() * 1.0;
-      const meteor = new Meteor(this.scene, this.engine.physicsSystem, pos, size);
+      const size = 1.2 + Math.random() * 1.0;  // Bigger meteors (was 0.8-1.6, now 1.2-2.2)
+      // Use procedural meteors (no 3D models) for performance
+      const meteor = new Meteor(this.scene, this.engine.physicsSystem, pos, size, null, false);
       this.entities.push(meteor);
     }
     
-    // Photons - place in clear lanes to guide player
+    // Photons - distribute evenly across ALL lanes (including bottom)
     const clearLanes = lanes.filter((_, idx) => !usedLanes.has(idx));
-    const photonCount = Math.min(2 + Math.floor(Math.random() * 2), clearLanes.length);
+    const photonCount = Math.min(1 + Math.floor(Math.random() * 2), clearLanes.length);
+    
+    // Prioritize lanes by row: alternate between top, middle, bottom
+    // This ensures photons appear in bottom lanes too
+    const lanesByRow = {
+      bottom: clearLanes.filter((_, idx) => {
+        const originalIdx = lanes.findIndex(l => l.y === -this.gridLaneHeight && clearLanes[idx] === l) !== -1;
+        return clearLanes[idx].y === -this.gridLaneHeight;
+      }),
+      middle: clearLanes.filter((_, idx) => clearLanes[idx].y === 0),
+      top: clearLanes.filter((_, idx) => clearLanes[idx].y === this.gridLaneHeight)
+    };
+    
+    // Rotate through rows to ensure even distribution
+    const rowOrder = ['bottom', 'middle', 'top'];
+    const photonRotation = Math.floor(this.gameTime) % 3;  // Rotate which row gets priority
     
     for (let i = 0; i < photonCount && this.entities.length < this.maxActiveEntities; i++) {
-      const lane = clearLanes[i];
+      // Pick row in rotating order
+      const rowKey = rowOrder[(photonRotation + i) % 3];
+      const rowLanes = lanesByRow[rowKey];
+      
+      let lane;
+      if (rowLanes.length > 0) {
+        lane = rowLanes[Math.floor(Math.random() * rowLanes.length)];
+      } else {
+        // Fallback to any clear lane
+        lane = clearLanes[i % clearLanes.length];
+      }
+      
+      if (!lane) continue;
+      
       const pos = new THREE.Vector3(
         lane.x + (Math.random() - 0.5) * 2,
         lane.y + (Math.random() - 0.5) * 1,
@@ -385,6 +440,9 @@ export class Level1_TheAscent extends BaseLevel {
   }
 
   update(deltaTime) {
+    // STOP everything when game is paused (level complete)
+    if (this.gamePaused) return;
+    
     this.gameTime += deltaTime;
     
     // === LIGHT SPEED SEQUENCE MODE ===
@@ -413,6 +471,7 @@ export class Level1_TheAscent extends BaseLevel {
     this.handleBlackHoleGravity(deltaTime);
     this.updateShadowComets(deltaTime);
     this.updateSlingshotEffect(deltaTime);
+    this.updateSlowDebuff(deltaTime);  // Handle comet slow effect
     
     // Invulnerability flash
     if (this.invulnerableTime > 0) {
@@ -422,19 +481,28 @@ export class Level1_TheAscent extends BaseLevel {
       this.player.mesh.visible = true;
     }
     
-    // Screen shake decay
+    // Speed visual effects (vignette + FOV) - applies when moving fast
+    this.updateSpeedEffects(deltaTime);
+    
+    // Screen shake for impacts/danger only (not from speed)
     if (this.screenShakeIntensity > 0) {
       const shakeX = (Math.random() - 0.5) * this.screenShakeIntensity;
       const shakeY = (Math.random() - 0.5) * this.screenShakeIntensity;
       this.engine.cameraSystem.camera.position.x += shakeX;
       this.engine.cameraSystem.camera.position.y += shakeY;
-      this.screenShakeIntensity *= 0.9;
+      this.screenShakeIntensity *= 0.92; // Decay
       if (this.screenShakeIntensity < 0.01) this.screenShakeIntensity = 0;
     }
     
-    // Win condition
-    if (this.checkWinCondition() && !this.lightSpeedTriggered) {
-      this.triggerLightSpeedBreak();
+    // Win condition - must sustain max speed
+    if (this.currentSpeed >= this.maxSpeed) {
+      this.maxSpeedSustainedTime += deltaTime;
+      if (this.maxSpeedSustainedTime >= this.maxSpeedRequiredDuration && !this.lightSpeedTriggered) {
+        this.triggerLightSpeedBreak();
+      }
+    } else {
+      // Reset counter if speed drops below max
+      this.maxSpeedSustainedTime = 0;
     }
     
     // Difficulty scaling
@@ -515,13 +583,15 @@ export class Level1_TheAscent extends BaseLevel {
     this.player.body.position.x += (targetX - currentX) * Math.min(lerpSpeed, 1);
     this.player.body.position.y += (targetY - currentY) * Math.min(lerpSpeed, 1);
     
-    // === SLINGSHOT INPUT (F key near black hole edge) ===
-    if (inputManager.justPressed('f') && this.isBeingPulled && this.slingshotCooldown <= 0) {
+    // === SLINGSHOT INPUT (F key - only works in the narrow slingshot zone) ===
+    if (inputManager.justPressed('f') && this.canSlingshot && this.slingshotCooldown <= 0) {
       this.activateSlingshot();
     }
     
     // Auto-forward with speed boost if slingshot active
-    let forwardSpeed = 8 + (this.currentSpeed / this.maxSpeed) * 20;
+    // Higher light speed % = FASTER flying
+    const speedPercent = this.currentSpeed / this.maxSpeed;  // 0 to 1
+    let forwardSpeed = 8 + speedPercent * 30;  // 8 at 0%, 38 at 100%
     if (this.slingshotDuration > 0) {
       forwardSpeed *= this.slingshotBoostMultiplier;
     }
@@ -536,6 +606,11 @@ export class Level1_TheAscent extends BaseLevel {
     
     // Sync mesh position
     this.player.mesh.position.copy(this.player.body.position);
+    
+    // Player rotation - ALWAYS rotate when flying (visible spinning)
+    this.player.mesh.rotation.x += deltaTime * 1.2;  // Faster X rotation
+    this.player.mesh.rotation.y += deltaTime * 1.8;  // Faster Y rotation  
+    this.player.mesh.rotation.z += deltaTime * 0.5;  // Moderate Z rotation
     
     // Particle trail
     if (this.player.particleTrail) {
@@ -564,28 +639,23 @@ export class Level1_TheAscent extends BaseLevel {
   updatePlayerVisuals() {
     const speedRatio = this.currentSpeed / this.maxSpeed;
     
-    // Emissive intensity based on speed
-    this.player.mesh.material.emissiveIntensity = 1 + speedRatio * 2.5;
-    this.player.light.intensity = 2 + speedRatio * 4;
-    this.player.light.distance = 8 + speedRatio * 12;
+    // Emissive intensity based on speed - start with good base glow like Level 0
+    this.player.mesh.material.emissiveIntensity = 2 + speedRatio * 2;
+    this.player.light.intensity = 3 + speedRatio * 4;
+    this.player.light.distance = 10 + speedRatio * 10;
     
-    // Blue shift color at high speed
-    const r = 1 - speedRatio * 0.4;
-    const g = 0.67 + speedRatio * 0.25;
-    const b = 0.3 + speedRatio * 0.7;
-    this.player.mesh.material.color.setRGB(r, g, b);
-    this.player.mesh.material.emissive.setRGB(r, g, b);
-    this.player.light.color.setRGB(r, g, b);
+    // Default: Keep original orange color from Player.js (0xffaa00)
+    this.player.mesh.material.emissive.setHex(0xffaa00);
+    this.player.light.color.setHex(0xffaa00);
     
-    // Slingshot boost visual
+    // Slingshot boost visual - override to cyan
     if (this.slingshotDuration > 0) {
       this.player.mesh.material.emissive.setHex(0x00ffaa);
       this.player.light.color.setHex(0x00ffaa);
       this.player.mesh.material.emissiveIntensity = 3;
     }
-    
-    // Black hole pull warning
-    if (this.isBeingPulled && this.slingshotDuration <= 0) {
+    // Black hole pull warning - override to red
+    else if (this.isBeingPulled) {
       const pullFlash = Math.sin(this.gameTime * 15) * 0.3 + 0.7;
       this.player.mesh.material.emissive.setRGB(1 * pullFlash, 0.3 * pullFlash, 0.3 * pullFlash);
     }
@@ -604,8 +674,7 @@ export class Level1_TheAscent extends BaseLevel {
     this.slingshotCooldown = 3.0; // 3 second cooldown
     this.isBeingPulled = false;
     
-    // Visual feedback
-    this.screenShakeIntensity = 0.3;
+    // Visual feedback - no shake, just audio
     this.engine.audioSystem?.playNote('C6', 0.2, { type: 'sine' });
     
     // Flash effect
@@ -629,19 +698,52 @@ export class Level1_TheAscent extends BaseLevel {
     }
   }
 
+  updateSlowDebuff(deltaTime) {
+    // Handle comet slow debuff
+    if (this.slowDebuffTime > 0) {
+      this.slowDebuffTime -= deltaTime;
+      
+      // Keep player slowed
+      this.player.speed = this.player.baseSpeed * 0.4;
+      
+      // Visual feedback - purple tint flicker
+      if (Math.sin(this.gameTime * 10) > 0) {
+        this.player.mesh.material.emissive.setHex(0x6600aa);
+      }
+      
+      if (this.slowDebuffTime <= 0) {
+        // Restore normal speed
+        this.player.speed = this.player.baseSpeed;
+        this.slowDebuffTime = 0;
+        console.log('⚡ Speed restored!');
+      }
+    }
+  }
+
   /**
    * Light Speed Break sequence - epic flight to portal with screen effects
    */
   updateLightSpeedSequence(deltaTime) {
     this.lightSpeedSequenceTime += deltaTime;
     
+    // Hide grid indicators during end sequence
+    if (this.gridIndicators && this.gridIndicators.visible) {
+      this.gridIndicators.visible = false;
+    }
+    
+    // Keep speed lines visible with max intensity
+    if (this.speedLines && !this.speedLines.visible) {
+      this.speedLines.visible = true;
+      this.speedLines.material.opacity = 1.0;
+    }
+    
     // Ultra-fast forward movement
     const ultraSpeed = 60;
     this.player.body.position.z -= ultraSpeed * deltaTime;
     this.player.mesh.position.copy(this.player.body.position);
     
-    // Dramatic edge screen shake
-    const shakeIntensity = 0.5 + Math.sin(this.lightSpeedSequenceTime * 8) * 0.2;
+    // Gentle screen shake - reduced intensity
+    const shakeIntensity = 0.15 + Math.sin(this.lightSpeedSequenceTime * 6) * 0.08;
     const shakeX = (Math.random() - 0.5) * shakeIntensity;
     const shakeY = (Math.random() - 0.5) * shakeIntensity;
     this.engine.cameraSystem.camera.position.x += shakeX;
@@ -650,6 +752,11 @@ export class Level1_TheAscent extends BaseLevel {
     // Gentle centering
     this.player.body.position.x *= 0.96;
     this.player.body.position.y *= 0.96;
+    
+    // Player rotation - continuous spinning during light speed
+    this.player.mesh.rotation.x += deltaTime * 2.0;  // Faster during light speed
+    this.player.mesh.rotation.y += deltaTime * 3.0;
+    this.player.mesh.rotation.z += deltaTime * 1.0;
     
     // Update particle trail
     if (this.player.particleTrail) {
@@ -660,31 +767,21 @@ export class Level1_TheAscent extends BaseLevel {
     this.updateSpeedLines(deltaTime);
     this.updateStarfield(deltaTime);
     
-    // Pulsing player glow
-    const pulseIntensity = 3 + Math.sin(this.lightSpeedSequenceTime * 5) * 1;
-    this.player.mesh.material.emissiveIntensity = pulseIntensity;
-    this.player.light.intensity = 6 + Math.sin(this.lightSpeedSequenceTime * 5) * 2;
+    // Keep player color consistent - bright cyan/white at max speed
+    // No rainbow cycling
+    this.player.mesh.material.emissiveIntensity = 3.5;
+    this.player.light.intensity = 8;
+    this.player.mesh.material.emissive.setRGB(0.5, 0.9, 1.0); // Bright cyan
+    this.player.light.color.setRGB(0.5, 0.9, 1.0);
     
-    // Rainbow color cycling
-    const hue = (this.lightSpeedSequenceTime * 0.3) % 1;
-    const color = new THREE.Color().setHSL(hue, 0.8, 0.6);
-    this.player.mesh.material.emissive.copy(color);
-    this.player.light.color.copy(color);
-    
-    // Background color shift
-    const bgHue = (this.lightSpeedSequenceTime * 0.1) % 1;
-    const bgColor = new THREE.Color().setHSL(bgHue, 0.3, 0.08);
-    this.scene.background = bgColor;
+    // Keep background consistent - no color shift
+    this.scene.background = new THREE.Color(0x0a0e27); // Same as normal gameplay
     
     // Update portal
     if (this.finalPortal) {
       this.finalPortal.update(deltaTime, this.player.mesh.position);
       
-      // Check portal collision
-      const distToPortal = this.player.mesh.position.distanceTo(this.finalPortal.mesh.position);
-      if (distToPortal < 20) {
-        this.onPortalEnter();
-      }
+      // Portal handles its own collision and transition via Portal.js
     }
     
     // Bloom pulsing
@@ -692,8 +789,8 @@ export class Level1_TheAscent extends BaseLevel {
       this.engine.bloomPass.strength = 2.5 + Math.sin(this.lightSpeedSequenceTime * 4) * 0.8;
     }
     
-    // Time limit check
-    if (this.lightSpeedSequenceTime >= this.lightSpeedDuration + 2) {
+    // Time limit check - if portal not reached, force portal enter
+    if (this.lightSpeedSequenceTime >= this.lightSpeedDuration + 2 && !this.isComplete) {
       this.onPortalEnter();
     }
   }
@@ -704,7 +801,7 @@ export class Level1_TheAscent extends BaseLevel {
     
     console.log('🌟 LIGHT SPEED BREAK! Maximum velocity achieved!');
     
-    // Clear all obstacles
+    // Smoothly clear obstacles over time instead of instant
     this.entities.forEach(entity => {
       if (!entity.destroyed) {
         entity.destroy();
@@ -715,15 +812,16 @@ export class Level1_TheAscent extends BaseLevel {
     // Spawn epic portal
     this.spawnFinalPortal();
     
-    // Initial flash effect
+    // Gradual bloom increase instead of sudden
     if (this.engine.bloomPass) {
-      this.engine.bloomPass.strength = 6;
+      const originalStrength = this.engine.bloomPass.strength;
+      this.engine.bloomPass.strength = originalStrength + 2; // Gentler increase
     }
     
-    // Brighter background
-    this.scene.background = new THREE.Color(0x1a2244);
+    // Keep background consistent - no sudden change
+    // this.scene.background stays the same
     
-    // Speed lines at max with bright color
+    // Speed lines gradually increase brightness
     if (this.speedLines) {
       this.speedLines.material.opacity = 1.0;
       this.speedLines.material.color.setHex(0xaaeeff);
@@ -791,219 +889,82 @@ export class Level1_TheAscent extends BaseLevel {
   spawnFinalPortal() {
     const portalZ = this.player.mesh.position.z - this.portalDistance;
     
-    // Create epic portal
-    const portalGroup = new THREE.Group();
-    portalGroup.position.set(0, 0, portalZ);
+    // Use Portal.js entity - same as Level 0 for consistency
+    this.finalPortal = new Portal(
+      this.scene,
+      this.engine.physicsSystem,
+      new THREE.Vector3(0, 0, portalZ),
+      this.engine  // Pass engine for level transition
+    );
     
-    // Main ring - larger and more dramatic
-    const ringGeo = new THREE.TorusGeometry(20, 1.2, 32, 64);
-    const ringMat = new THREE.MeshBasicMaterial({
-      color: 0x00ffff,
-      transparent: true,
-      opacity: 1.0
-    });
-    const ring = new THREE.Mesh(ringGeo, ringMat);
-    portalGroup.add(ring);
-    
-    // Secondary spinning ring
-    const ring2Geo = new THREE.TorusGeometry(22, 0.5, 16, 48);
-    const ring2Mat = new THREE.MeshBasicMaterial({
-      color: 0xffaa00,
-      transparent: true,
-      opacity: 0.8
-    });
-    const ring2 = new THREE.Mesh(ring2Geo, ring2Mat);
-    ring2.rotation.x = Math.PI * 0.3;
-    portalGroup.add(ring2);
-    
-    // Third ring
-    const ring3Geo = new THREE.TorusGeometry(24, 0.3, 16, 48);
-    const ring3Mat = new THREE.MeshBasicMaterial({
-      color: 0xff44aa,
-      transparent: true,
-      opacity: 0.6
-    });
-    const ring3 = new THREE.Mesh(ring3Geo, ring3Mat);
-    ring3.rotation.y = Math.PI * 0.4;
-    portalGroup.add(ring3);
-    
-    // Inner glow - bright center
-    const innerGeo = new THREE.CircleGeometry(18, 64);
-    const innerMat = new THREE.MeshBasicMaterial({
-      color: 0xffffff,
-      transparent: true,
-      opacity: 0.5,
-      side: THREE.DoubleSide
-    });
-    const inner = new THREE.Mesh(innerGeo, innerMat);
-    portalGroup.add(inner);
-    
-    // Outer glow particles
-    const particleCount = 200;
-    const particleGeo = new THREE.BufferGeometry();
-    const positions = new Float32Array(particleCount * 3);
-    
-    for (let i = 0; i < particleCount; i++) {
-      const angle = (i / particleCount) * Math.PI * 2;
-      const radius = 15 + Math.random() * 10;
-      positions[i * 3] = Math.cos(angle) * radius;
-      positions[i * 3 + 1] = Math.sin(angle) * radius;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 10;
-    }
-    
-    particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    const particleMat = new THREE.PointsMaterial({
-      color: 0x88ffff,
-      size: 1.5,
-      transparent: true,
-      opacity: 0.8,
-      blending: THREE.AdditiveBlending
-    });
-    const particles = new THREE.Points(particleGeo, particleMat);
-    portalGroup.add(particles);
-    
-    // Lights
-    const centerLight = new THREE.PointLight(0x00ffff, 30, 150);
-    portalGroup.add(centerLight);
-    
-    const accentLight = new THREE.PointLight(0xffaa00, 15, 80);
-    accentLight.position.y = 10;
-    portalGroup.add(accentLight);
-    
-    this.scene.add(portalGroup);
-    
-    this.finalPortal = {
-      mesh: portalGroup,
-      ring: ring,
-      ring2: ring2,
-      ring3: ring3,
-      particles: particles,
-      time: 0,
-      update: (dt, playerPos) => {
-        this.finalPortal.time += dt;
-        
-        // Spin all rings at different speeds
-        ring.rotation.z += dt * 0.8;
-        ring2.rotation.z -= dt * 0.5;
-        ring2.rotation.x += dt * 0.3;
-        ring3.rotation.z += dt * 0.3;
-        ring3.rotation.y += dt * 0.4;
-        
-        // Rotate particles
-        particles.rotation.z -= dt * 0.2;
-        
-        // Pulse lights
-        centerLight.intensity = 30 + Math.sin(this.finalPortal.time * 3) * 10;
-        accentLight.intensity = 15 + Math.sin(this.finalPortal.time * 2.5 + 1) * 5;
-        
-        // Pulse inner glow
-        inner.material.opacity = 0.4 + Math.sin(this.finalPortal.time * 2) * 0.2;
-        
-        // Color shift
-        const hue = (this.finalPortal.time * 0.1) % 1;
-        const shiftColor = new THREE.Color().setHSL(hue, 0.7, 0.5);
-        ring2Mat.color.copy(shiftColor);
-      }
+    // Override portal's default transition to show Chapter 1 specific message
+    this.finalPortal.triggerWhiteFlashTransition = () => {
+      this.onPortalEnter();
     };
+    
+    console.log('🌀 Final portal spawned using Portal.js!');
   }
 
   onPortalEnter() {
     if (this.isComplete) return;
+    this.isComplete = true;
     
     console.log('🌀 Entering portal! Level Complete!');
-    
-    // White flash overlay with epic completion screen
-    const overlay = document.createElement('div');
-    overlay.style.cssText = `
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      background: radial-gradient(ellipse at center, #ffffff 0%, #88aaff 50%, #1a2244 100%);
-      opacity: 0;
-      z-index: 9999;
-      transition: opacity 0.8s ease;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-family: 'Courier New', monospace;
-      overflow: hidden;
-    `;
-    document.body.appendChild(overlay);
-    
-    // Add particle effect to overlay
-    const particles = document.createElement('div');
-    particles.style.cssText = `
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(circle at 50% 50%, transparent 0%, rgba(0,0,0,0.3) 100%);
-      animation: pulse 1s ease-in-out infinite;
-    `;
-    overlay.appendChild(particles);
-    
-    // Add CSS animation
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes pulse {
-        0%, 100% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.05); opacity: 0.8; }
-      }
-      @keyframes float {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-20px); }
-      }
-      @keyframes glow {
-        0%, 100% { text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff; }
-        50% { text-shadow: 0 0 40px #ffaa00, 0 0 80px #ffaa00; }
-      }
-    `;
-    document.head.appendChild(style);
-    
-    // Fade in
-    setTimeout(() => {
-      overlay.style.opacity = '1';
-    }, 50);
-    
-    // Show epic message
-    setTimeout(() => {
-      overlay.innerHTML = `
-        <div style="text-align: center; color: #fff; animation: float 2s ease-in-out infinite;">
-          <h1 style="font-size: 64px; margin-bottom: 30px; animation: glow 2s ease-in-out infinite; letter-spacing: 8px;">
-            ✨ LIGHT SPEED ✨
-          </h1>
-          <p style="font-size: 28px; color: #aaddff; margin-bottom: 20px; letter-spacing: 4px;">
-            THE ASCENT COMPLETE
-          </p>
-          <div style="margin: 40px 0; padding: 30px; background: rgba(0,0,0,0.3); border-radius: 20px; border: 2px solid rgba(255,255,255,0.2);">
-            <p style="font-size: 20px; color: #88ff88; margin-bottom: 15px;">
-              🚀 Maximum Velocity Achieved
-            </p>
-            <p style="font-size: 18px; color: #ffaa44;">
-              Speed: ${Math.floor(this.currentSpeed)}% Light Speed
-            </p>
-          </div>
-          <p style="margin-top: 50px; font-size: 16px; color: rgba(255,255,255,0.6); letter-spacing: 2px;">
-            Preparing next dimension...
-          </p>
-          <div style="margin-top: 30px; width: 200px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; margin-left: auto; margin-right: auto; overflow: hidden;">
-            <div style="width: 0%; height: 100%; background: linear-gradient(90deg, #00ffff, #ffaa00); animation: loading 3s ease forwards;"></div>
-          </div>
-        </div>
-        <style>
-          @keyframes loading {
-            0% { width: 0%; }
-            100% { width: 100%; }
-          }
-        </style>
-      `;
-    }, 600);
-    
-    this.isComplete = true;
     
     // Remove edge glow if exists
     if (this.edgeGlow) {
       this.engine.cameraSystem.camera.remove(this.edgeGlow);
     }
+    
+    // White flash overlay - SAME STYLE AS LEVEL 0 PORTAL
+    const overlay = document.createElement('div');
+    overlay.id = 'portal-flash';
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: white;
+      opacity: 0;
+      z-index: 9999;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    `;
+    document.body.appendChild(overlay);
+    
+    // Fade in white
+    setTimeout(() => {
+      overlay.style.opacity = '1';
+    }, 50);
+    
+    // Show "Chapter Complete" message - matching Chapter 0 style
+    setTimeout(() => {
+      overlay.innerHTML = `
+        <div style="
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          height: 100%;
+          font-family: 'Courier New', monospace;
+          color: #000;
+          text-align: center;
+        ">
+          <h1 style="font-size: 48px; margin-bottom: 20px;">✨ CHAPTER COMPLETE ✨</h1>
+          <p style="font-size: 24px; color: #666;">The Ascent has been conquered.</p>
+        </div>
+      `;
+    }, 500);
+    
+    // Transition after showing message (ready for next chapter when implemented)
+    // KEEP the overlay and STOP the game - don't continue flying
+    setTimeout(() => {
+      // Don't remove overlay - keep the end screen visible
+      // Pause the engine so player stops flying
+      this.gamePaused = true;  // Flag to stop update loop
+      console.log('🎮 Game complete! Next level coming soon...');
+    }, 3500);
   }
 
   updateProceduralSpawning() {
@@ -1022,8 +983,17 @@ export class Level1_TheAscent extends BaseLevel {
     const playerZ = this.player.mesh.position.z;
     const cleanupZ = playerZ + this.despawnBehindDistance;
     
+    // Also check if objects are too far ahead (shouldn't happen but safety check)
+    const maxAheadZ = playerZ - this.spawnAheadDistance - 30;
+    
     this.entities = this.entities.filter(entity => {
+      // Remove if passed behind player
       if (entity.mesh && entity.mesh.position.z > cleanupZ) {
+        entity.destroy();
+        return false;
+      }
+      // Remove if somehow too far ahead (edge case)
+      if (entity.mesh && entity.mesh.position.z < maxAheadZ) {
         entity.destroy();
         return false;
       }
@@ -1048,10 +1018,62 @@ export class Level1_TheAscent extends BaseLevel {
     this.speedLines.geometry.attributes.position.needsUpdate = true;
   }
 
+  updateSpeedEffects(deltaTime) {
+    const speedRatio = this.isInLightSpeedSequence ? 1 : this.currentSpeed / this.maxSpeed;
+    
+    // Vignette overlay intensity based on speed
+    if (this.speedOverlay) {
+      if (speedRatio > 0.3) {
+        this.speedOverlay.classList.add('active');
+        const intensity = (speedRatio - 0.3) / 0.7;  // 0-1 range above 30% speed
+        this.speedOverlay.style.opacity = intensity * 0.8;
+      } else {
+        this.speedOverlay.classList.remove('active');
+        this.speedOverlay.style.opacity = 0;
+      }
+    }
+    
+    // Dynamic FOV increase with speed
+    if (this.targetFov !== undefined) {
+      this.targetFov = this.baseFov + speedRatio * 15;  // 75 to 90 FOV
+      const currentFov = this.engine.cameraSystem.camera.fov;
+      const newFov = currentFov + (this.targetFov - currentFov) * deltaTime * 3;
+      this.engine.cameraSystem.camera.fov = newFov;
+      this.engine.cameraSystem.camera.updateProjectionMatrix();
+    }
+  }
+
   updateStarfield(deltaTime) {
     if (!this.starfield) return;
+    
     const playerZ = this.player.mesh.position.z;
-    this.starfield.position.z = playerZ * 0.3;
+    const positions = this.starfield.geometry.attributes.position.array;
+    const starCount = positions.length / 3;
+    
+    // Aggressively recycle stars to maintain continuous field ahead
+    for (let i = 0; i < starCount; i++) {
+      const idx = i * 3;
+      const starZ = positions[idx + 2];
+      
+      // Recycle if star is more than 300 units behind player
+      // OR more than 2000 units ahead (refresh cycling)
+      const isBehind = starZ > playerZ + 300;
+      const isTooFarAhead = starZ < playerZ - 2000;
+      
+      if (isBehind || isTooFarAhead) {
+        // Place stars in wide zone ahead of player (100-1800 units ahead)
+        // This ensures continuous visibility even at high speed
+        const radius = 100 + Math.random() * 400;
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.random() * Math.PI;
+        
+        positions[idx] = Math.sin(phi) * Math.cos(theta) * radius;
+        positions[idx + 1] = Math.sin(phi) * Math.sin(theta) * radius;
+        positions[idx + 2] = playerZ - 100 - Math.random() * 1700;  // 100-1800 units ahead
+      }
+    }
+    
+    this.starfield.geometry.attributes.position.needsUpdate = true;
   }
 
   handleCollisions() {
@@ -1081,9 +1103,20 @@ export class Level1_TheAscent extends BaseLevel {
         break; // One hit per frame
       }
       
-      if (entity instanceof ShadowComet && entity.active && distance < 2) {
-        this.onShadowCometHit(entity);
-        break;
+      if (entity instanceof ShadowComet && entity.active) {
+        // Comet hitbox: Check if player is in same Y lane AND within Z range
+        // This makes the whole row dangerous when warning appears
+        const yDiff = Math.abs(playerPos.y - entity.mesh.position.y);
+        const zDiff = Math.abs(playerPos.z - entity.mesh.position.z);
+        
+        // Player is hit if:
+        // - Same Y lane (within 1.5 units)
+        // - Close on Z axis (within 3 units)
+        // - Comet is active and crossing screen
+        if (yDiff < 1.5 && zDiff < 3) {
+          this.onShadowCometHit(entity);
+          break;
+        }
       }
     }
   }
@@ -1091,9 +1124,17 @@ export class Level1_TheAscent extends BaseLevel {
   handleBlackHoleGravity(deltaTime) {
     if (!this.player) return;
     
+    // IF SLINGSHOT IS ACTIVE - PLAYER IS IMMUNE TO ALL BLACK HOLE EFFECTS
+    if (this.slingshotDuration > 0) {
+      this.isBeingPulled = false;
+      this.canSlingshot = false;
+      return;  // Skip all black hole gravity while boosting
+    }
+    
     const playerPos = this.player.mesh.position;
     this.isBeingPulled = false;
     this.nearestBlackHole = null;
+    this.canSlingshot = false;  // Reset each frame
     let nearestDist = Infinity;
     
     for (let i = 0; i < this.entities.length; i++) {
@@ -1109,61 +1150,93 @@ export class Level1_TheAscent extends BaseLevel {
         this.nearestBlackHole = entity;
       }
       
-      // Check if in pull range (outer zone)
-      const pullRange = entity.slingshotRadius * 1.5;
-      const slingshotZone = entity.slingshotRadius;
-      const dangerZone = entity.trapRadius;
+      // Zone definitions
+      const pullRange = entity.slingshotRadius * 1.3;        // Max pull range
+      const greenRingInner = entity.slingshotRadius * 0.85;  // Inner edge of green ring
+      const greenRingOuter = entity.slingshotRadius;         // Outer edge of green ring
+      const dangerZone = entity.trapRadius;                  // Red ring zone
       
       if (dist < pullRange) {
         // Calculate pull direction toward black hole
         const direction = new THREE.Vector3().subVectors(bhPos, playerPos).normalize();
         
         if (dist < dangerZone) {
-          // DANGER ZONE - Strong pull, massive speed loss
+          // DANGER ZONE (RED RING) - Very strong pull, massive speed loss
           this.isBeingPulled = true;
           this.pullIntensity = 1.0;
+          this.canSlingshot = false;
           
           // Heavy speed penalty
-          this.currentSpeed = Math.max(5, this.currentSpeed - 50 * deltaTime);
+          this.currentSpeed = Math.max(3, this.currentSpeed - 70 * deltaTime);
           
           // Strong pull force
-          const pullStrength = 15 * deltaTime;
+          const pullStrength = 25 * deltaTime;
           this.player.body.position.x += direction.x * pullStrength;
           this.player.body.position.y += direction.y * pullStrength;
           
-          // Screen shake
-          this.screenShakeIntensity = Math.max(this.screenShakeIntensity, 0.3);
+          // Intense screen shake
+          this.screenShakeIntensity = Math.max(this.screenShakeIntensity, 0.5);
           
           // Warning sound
-          if (Math.random() < 0.1) {
-            this.engine.audioSystem?.playNote('C2', 0.1, { type: 'sawtooth' });
+          if (Math.random() < 0.15) {
+            this.engine.audioSystem?.playNote('C2', 0.15, { type: 'sawtooth' });
           }
           
-        } else if (dist < slingshotZone) {
-          // SLINGSHOT ZONE - Player can press F to boost
+          // Flash red - DANGER
+          this.player.mesh.material.emissive.setHex(0xff2222);
+          
+        } else if (dist >= greenRingInner && dist <= greenRingOuter) {
+          // IN GREEN RING - Check which half of the ring player is on
+          // Player approaching = black hole Z is less than player Z (ahead of player)
+          const isApproaching = bhPos.z < playerPos.z;
+          
           this.isBeingPulled = true;
-          this.pullIntensity = 0.5;
+          this.pullIntensity = 0.6;
+          
+          // Allow slingshot anywhere in green ring as long as player is still approaching the black hole
+          this.canSlingshot = isApproaching && this.slingshotCooldown <= 0;
           
           // Moderate pull
-          const pullStrength = 5 * deltaTime;
+          const pullStrength = 10 * deltaTime;
           this.player.body.position.x += direction.x * pullStrength;
           this.player.body.position.y += direction.y * pullStrength;
           
-          // Slight speed reduction
-          this.currentSpeed = Math.max(10, this.currentSpeed - 10 * deltaTime);
+          // Some speed reduction
+          this.currentSpeed = Math.max(8, this.currentSpeed - 15 * deltaTime);
           
-          // Visual indicator - flash green to show slingshot is possible
-          if (this.slingshotCooldown <= 0) {
+          // Flash GREEN if can slingshot!
+          if (isNearHalfOfRing && this.slingshotCooldown <= 0) {
             this.player.mesh.material.emissive.setHex(0x00ff88);
+          } else {
+            // Yellow/Orange if in green ring but WRONG HALF (far side)
+            this.player.mesh.material.emissive.setHex(0xffaa44);
           }
           
+        } else if (dist < entity.slingshotRadius) {
+          // OUTER ZONES - Gravitational pull but NO slingshot here
+          this.isBeingPulled = true;
+          this.pullIntensity = 0.4;
+          this.canSlingshot = false;
+          
+          // Moderate pull
+          const pullStrength = 8 * deltaTime;
+          this.player.body.position.x += direction.x * pullStrength;
+          this.player.body.position.y += direction.y * pullStrength;
+          
+          // Light speed reduction
+          this.currentSpeed = Math.max(10, this.currentSpeed - 10 * deltaTime);
+          
+          // Flash yellow - warning, approaching
+          this.player.mesh.material.emissive.setHex(0xffaa44);
+          
         } else {
-          // OUTER RANGE - Light gravitational influence
+          // FAR OUTER RANGE - Light gravitational influence only
           this.isBeingPulled = true;
           this.pullIntensity = 0.2;
+          this.canSlingshot = false;
           
           // Very light pull
-          const pullStrength = 2 * deltaTime;
+          const pullStrength = 4 * deltaTime;
           this.player.body.position.x += direction.x * pullStrength;
           this.player.body.position.y += direction.y * pullStrength;
         }
@@ -1177,16 +1250,51 @@ export class Level1_TheAscent extends BaseLevel {
   updateShadowComets(deltaTime) {
     if (this.isInLightSpeedSequence) return;
     
-    if (this.gameTime >= this.nextCometTime && this.entities.length < this.maxActiveEntities) {
+    if (this.gameTime >= this.nextCometTime && this.entities.length < this.maxActiveEntities - 5) {
+      // Calculate player's current forward speed
+      const speedPercent = this.currentSpeed / this.maxSpeed;
+      const playerSpeed = 8 + speedPercent * 30;  // Current forward speed
+      
+      // Comet mechanics:
+      // - Warning time: 1.5s
+      // - Comet speed: 80 units/s horizontally
+      // - Comet travels from X=50 to X=-50 (or vice versa) = 100 units
+      // - Comet travel time: 100/80 = 1.25s
+      // 
+      // We want: Player arrives at targetZ exactly when comet is crossing (middle of screen)
+      // Total time for comet to reach center: warningTime + (50/cometSpeed) = 1.5 + 0.625 = 2.125s
+      // Distance player travels in that time: playerSpeed * 2.125
+      
+      const warningTime = 1.5;
+      const cometSpeed = 80;
+      const timeToCenter = warningTime + (50 / cometSpeed);  // Time until comet crosses center
+      const distanceAhead = playerSpeed * timeToCenter;  // How far ahead to spawn
+      
+      // Spawn comet zone slightly ahead so player arrives when comets cross
+      const targetZ = this.player.mesh.position.z - distanceAhead;
+      
+      // Spawn 3-4 comets spread across the zone
+      const groupSize = 3 + Math.floor(Math.random() * 2);  // 3 or 4 comets
+      const zSpacing = 3;  // Space between comets on Z axis
+      
+      // Random Y lane (one row of comets)
+      const yPositions = [-this.gridLaneHeight, 0, this.gridLaneHeight];
+      const rowY = yPositions[Math.floor(Math.random() * yPositions.length)];
       const direction = Math.random() > 0.5 ? 'left' : 'right';
-      const targetZ = this.player.mesh.position.z - 25 - Math.random() * 15;
       
-      const comet = new ShadowComet(this.scene, this.engine.physicsSystem, targetZ, direction);
-      this.entities.push(comet);
+      for (let i = 0; i < groupSize; i++) {
+        // Spread comets along Z so they cross at slightly different times
+        const cometZ = targetZ - (i - (groupSize - 1) / 2) * zSpacing;
+        const comet = new ShadowComet(this.scene, this.engine.physicsSystem, cometZ, direction, rowY);
+        this.entities.push(comet);
+      }
+      
+      // Sound and shake for the wave
       this.engine.audioSystem.playNote('G4', 0.1, { type: 'triangle' });
-      this.screenShakeIntensity = Math.max(this.screenShakeIntensity, 0.05);
+      this.screenShakeIntensity = Math.max(this.screenShakeIntensity, 0.08);
       
-      this.nextCometTime = this.gameTime + this.cometInterval / this.difficultyMultiplier;
+      // Interval between waves - scale with difficulty
+      this.nextCometTime = this.gameTime + (this.cometInterval * 1.5) / this.difficultyMultiplier;
     }
   }
 
@@ -1209,15 +1317,32 @@ export class Level1_TheAscent extends BaseLevel {
   }
 
   onShadowCometHit(comet) {
+    // Speed penalty
     this.currentSpeed = Math.max(0, this.currentSpeed - comet.speedPenalty);
-    this.screenShakeIntensity = 0.4;
+    
+    // SLOW DEBUFF - reduces player movement speed temporarily
+    this.player.speed = this.player.baseSpeed * 0.4;  // 60% slower movement
+    this.slowDebuffTime = comet.slowDuration || 1.5;  // Slow for 1.5 seconds
+    
+    // Strong screen shake - annoying effect
+    this.screenShakeIntensity = 0.6;
     this.invulnerableTime = 1.0;
-    this.engine.audioSystem?.playNote('C1', 0.4, { type: 'sawtooth' });
-    this.player.currentLumen = Math.max(0, this.player.currentLumen - 15);
+    
+    // Deep bass sound
+    this.engine.audioSystem?.playNote('C1', 0.5, { type: 'sawtooth' });
+    
+    // Energy loss
+    this.player.currentLumen = Math.max(0, this.player.currentLumen - 20);
+    
+    // Visual freeze effect - flash purple
+    this.player.mesh.material.emissive.setHex(0x6600aa);
+    
+    console.log('💫 Comet hit! Slowed for ' + this.slowDebuffTime + 's');
   }
 
   checkWinCondition() {
-    return this.currentSpeed >= this.maxSpeed;
+    // Win requires sustained max speed, not instant
+    return this.currentSpeed >= this.maxSpeed && this.maxSpeedSustainedTime >= this.maxSpeedRequiredDuration;
   }
 
   getSpeedPercentage() {
@@ -1225,6 +1350,18 @@ export class Level1_TheAscent extends BaseLevel {
   }
 
   unload() {
+    // Reset FOV to default
+    if (this.engine.cameraSystem && this.engine.cameraSystem.camera) {
+      this.engine.cameraSystem.camera.fov = 75;
+      this.engine.cameraSystem.camera.updateProjectionMatrix();
+    }
+    
+    // Hide speed overlay
+    if (this.speedOverlay) {
+      this.speedOverlay.classList.remove('active');
+      this.speedOverlay.style.opacity = 0;
+    }
+    
     if (this.starfield) {
       this.scene.remove(this.starfield);
       this.starfield.geometry.dispose();
@@ -1262,7 +1399,8 @@ export class Level1_TheAscent extends BaseLevel {
     }
     
     if (this.finalPortal) {
-      this.scene.remove(this.finalPortal.mesh);
+      // Use Portal.js destroy method
+      this.finalPortal.destroy();
     }
     
     super.unload();

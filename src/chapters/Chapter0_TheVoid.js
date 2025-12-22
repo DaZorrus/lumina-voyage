@@ -1,15 +1,15 @@
 import * as THREE from 'three';
-import { BaseLevel } from './BaseLevel.js';
+import { BaseChapter } from './BaseChapter.js';
 import { Player } from '../entities/Player.js';
 import { EnergyOrb } from '../entities/EnergyOrb.js';
 import { Portal } from '../entities/Portal.js';
 import { PortalBeam } from '../entities/PortalBeam.js';
 
 /**
- * Level0_TheVoid - Tutorial level
+ * Chapter0_TheVoid - Tutorial chapter
  * Goal: Collect 5 energy orbs to complete
  */
-export class Level0_TheVoid extends BaseLevel {
+export class Chapter0_TheVoid extends BaseChapter {
   constructor(engine) {
     super(engine);
     this.name = 'The Void';
@@ -18,19 +18,20 @@ export class Level0_TheVoid extends BaseLevel {
     this.climaxTriggered = false;
     this.portalBeam = null;
     this.screenShakeIntensity = 0;
+    this.previousSpeed = 0;
     
     // Pulse tracking for wave-based detection
     this.lastPulseOrigin = null;
     this.lastPulseTime = 0;
     this.pulseRadius = 10;
-    this.pulseDuration = 3.0; // How long pulse wave expands // 
+    this.pulseDuration = 3.0; // How long pulse wave expands
     this.gameTime = 0; // Track overall game time
   }
 
   setupEnvironment() {
-    // Dark fog - MUCH FARTHER to see starfield and distant orbs
-    this.scene.fog = new THREE.Fog(0x000000, 20, 300); // Was 10, 50
-    this.scene.background = new THREE.Color(0x0a0e27);
+    // Dark fog - VERY FAR to ensure starfield is visible
+    this.scene.fog = new THREE.Fog(0x000000, 100, 600); // Extended range for starfield
+    this.scene.background = new THREE.Color(0x0a0e27); // Darker background
     
     // Add some ambient particles/stars
     this.createStarfield();
@@ -70,7 +71,7 @@ export class Level0_TheVoid extends BaseLevel {
       new THREE.Vector3(6, 2, -35),   
       new THREE.Vector3(12, -2, -60),   
       new THREE.Vector3(20, 1, -85),   
-      new THREE.Vector3(30, 0, -115)   
+      new THREE.Vector3(15, 0, -115)   
     ];
 
     orbPositions.forEach(pos => {
@@ -83,17 +84,17 @@ export class Level0_TheVoid extends BaseLevel {
       this.entities.push(orb);
     });
 
-    console.log(`📍 Level 0 loaded: Collect ${this.totalOrbs} energy orbs`);
+    console.log(`📍 Chapter 0 loaded: Collect ${this.totalOrbs} energy orbs`);
   }
 
   createStarfield() {
-    const starCount = 600;
+    const starCount = 3000;
     const positions = new Float32Array(starCount * 3);
     const colors = new Float32Array(starCount * 3);
     
     for (let i = 0; i < starCount; i++) {
       // Random position in MUCH LARGER sphere (far background)
-      const radius = 150 + Math.random() * 150; // 100-200 units away (was 30-50)
+      const radius = 250 + Math.random() * 250; // 100-200 units away (was 30-50)
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.random() * Math.PI;
       
@@ -119,8 +120,8 @@ export class Level0_TheVoid extends BaseLevel {
       sizeAttenuation: false // Don't shrink with distance
     });
     
-    const stars = new THREE.Points(geometry, material);
-    this.scene.add(stars);
+    this.starfield = new THREE.Points(geometry, material);
+    this.scene.add(this.starfield);
   }
 
   update(deltaTime) {
@@ -154,12 +155,13 @@ export class Level0_TheVoid extends BaseLevel {
         // Update camera FOV based on orbs collected
         this.engine.cameraSystem.setOrbsCollected(this.player.orbsCollected);
         
-        // Screen shake when at max speed (all 5 orbs collected)
-        if (this.player.orbsCollected >= 5) {
-          this.screenShakeIntensity = 0.5;
-        }
+        // Small shake when collecting orbs
+        this.screenShakeIntensity = Math.max(this.screenShakeIntensity, 0.2);
       }
     });
+    
+    // Store current speed for next frame
+    this.previousSpeed = this.player.speed;
 
     // Remove collected orbs safely (avoid mutating array during iteration)
     this.entities = this.entities.filter(entity => !(entity instanceof EnergyOrb && entity.collected));
@@ -176,15 +178,50 @@ export class Level0_TheVoid extends BaseLevel {
       this.portal.update(deltaTime, this.player.mesh.position);
     }
     
-    // Apply screen shake
+    // Update starfield - recycle stars as player moves
+    this.updateStarfield(deltaTime);
+    
+    // Screen shake decay
     if (this.screenShakeIntensity > 0) {
       const shakeX = (Math.random() - 0.5) * this.screenShakeIntensity;
       const shakeY = (Math.random() - 0.5) * this.screenShakeIntensity;
       this.engine.cameraSystem.camera.position.x += shakeX;
       this.engine.cameraSystem.camera.position.y += shakeY;
-      this.screenShakeIntensity *= 0.95; // Decay
+      this.screenShakeIntensity *= 0.95;
       if (this.screenShakeIntensity < 0.01) this.screenShakeIntensity = 0;
     }
+  }
+
+  updateStarfield(deltaTime) {
+    if (!this.starfield || !this.player) return;
+    
+    const playerZ = this.player.mesh.position.z;
+    const positions = this.starfield.geometry.attributes.position.array;
+    const starCount = positions.length / 3;
+    
+    // Recycle stars that are out of visible range
+    for (let i = 0; i < starCount; i++) {
+      const idx = i * 3;
+      const starZ = positions[idx + 2];
+      
+      // Player moves toward -Z, so stars with Z > playerZ + 400 are behind
+      // Also recycle stars more than 800 units ahead (beyond fog range)
+      const isBehind = starZ > playerZ + 400;
+      const isTooFarAhead = starZ < playerZ - 800;
+      
+      if (isBehind || isTooFarAhead) {
+        // Move star to safe zone ahead of player (50-500 units ahead)
+        const radius = 250 + Math.random() * 250;
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.random() * Math.PI;
+        
+        positions[idx] = Math.sin(phi) * Math.cos(theta) * radius;
+        positions[idx + 1] = Math.sin(phi) * Math.sin(theta) * radius;
+        positions[idx + 2] = playerZ - 50 - Math.random() * 450;  // 50-500 units ahead
+      }
+    }
+    
+    this.starfield.geometry.attributes.position.needsUpdate = true;
   }
 
   checkWinCondition() {

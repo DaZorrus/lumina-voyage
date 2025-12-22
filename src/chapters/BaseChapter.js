@@ -3,9 +3,9 @@ import { Player } from '../entities/Player.js';
 import { EnergyOrb } from '../entities/EnergyOrb.js';
 
 /**
- * BaseLevel - Base class for all levels
+ * BaseChapter - Base class for all chapters
  */
-export class BaseLevel {
+export class BaseChapter {
   constructor(engine) {
     this.engine = engine;
     this.scene = new THREE.Scene();
@@ -15,10 +15,18 @@ export class BaseLevel {
   }
 
   load() {
+    console.log('📍 BaseChapter.load() starting...');
     this.setupEnvironment();
+    console.log('✅ Environment setup');
+    
     this.setupLighting();
+    console.log('✅ Lighting setup');
+    
     this.spawnPlayer();
+    console.log('✅ Player spawned:', this.player);
+    
     this.spawnObjects();
+    console.log('✅ Objects spawned');
   }
 
   setupEnvironment() {
@@ -38,7 +46,7 @@ export class BaseLevel {
   }
 
   update(deltaTime) {
-    // Update player (pass level instance for pulse wave tracking)
+    // Update player (pass chapter instance for pulse wave tracking)
     if (this.player) {
       this.player.update(deltaTime, this.engine.inputManager, this.entities, this);
     }
@@ -64,7 +72,7 @@ export class BaseLevel {
     if (this.isComplete) return;
     
     this.isComplete = true;
-    console.log('🎉 Level Complete!');
+    console.log('🎉 Chapter Complete!');
     
     // TODO: Spawn portal and transition
   }
