@@ -32,6 +32,7 @@ export class ParticleTrail {
     });
     
     this.mesh = new THREE.Points(geometry, material);
+    this.mesh.frustumCulled = false; // CRITICAL: Prevent culling when particles spread out
     scene.add(this.mesh);
     
     // Initialize particle data with longer life for comet tail
@@ -48,9 +49,8 @@ export class ParticleTrail {
   }
 
   emit(position, velocity) {
-    // Emit multiple particles per frame for denser trail
+    // Emit particles every frame for continuous trail
     this.emitCounter++;
-    if (this.emitCounter % 2 !== 0) return; // Emit every other frame
     
     // Find dead particle
     const particle = this.particles.find(p => p.life <= 0);

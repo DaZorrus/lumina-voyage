@@ -29,6 +29,7 @@ export class Engine {
     // State
     this.isRunning = false;
     this.isPaused = false;
+    this.pauseMenuVisible = false;
   }
 
   async init() {
@@ -62,6 +63,9 @@ export class Engine {
     // Setup HUD update
     this.setupHUD();
     
+    // Setup pause menu
+    this.setupPauseMenu();
+    
     console.log('✅ Engine initialized');
   }
 
@@ -93,6 +97,137 @@ export class Engine {
     this.speedBarPercent = document.getElementById('speed-bar-percent');
     this.hudLevel1 = document.getElementById('hud-level1');
     this.hudRight = document.getElementById('hud-right');
+  }
+
+  setupPauseMenu() {
+    this.pauseMenu = document.getElementById('pause-menu');
+    this.settingsPanel = document.getElementById('settings-panel');
+    this.pauseHint = document.getElementById('pause-hint');
+    
+    // ESC key listener
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        // Don't pause if in menu or level complete
+        if (!this.isRunning) return;
+        if (this.currentLevel?.isComplete) return;
+        if (this.currentLevel?.gamePaused) return;
+        
+        // Close settings if open (settings panel from pause menu)
+        if (this.settingsPanel && !this.settingsPanel.classList.contains('hidden')) {
+          this.settingsPanel.classList.add('hidden');
+          return;
+        }
+        
+        this.togglePause();
+      }
+    });
+    
+    // Resume button
+    document.getElementById('resume-btn')?.addEventListener('click', () => {
+      this.togglePause();
+    });
+    
+    // Restart button
+    document.getElementById('restart-btn')?.addEventListener('click', () => {
+      this.restartLevel();
+    });
+    
+    // Settings button
+    document.getElementById('settings-btn')?.addEventListener('click', () => {
+      this.settingsPanel.classList.remove('hidden');
+    });
+    
+    // Settings close
+    document.getElementById('settings-close')?.addEventListener('click', () => {
+      this.settingsPanel.classList.add('hidden');
+    });
+    
+    // Quit button
+    document.getElementById('quit-btn')?.addEventListener('click', () => {
+      this.quitToMenu();
+    });
+    
+    // Volume sliders
+    document.getElementById('music-volume')?.addEventListener('input', (e) => {
+      const volume = e.target.value / 100;
+      this.audioSystem?.setMusicVolume?.(volume);
+    });
+    
+    document.getElementById('sfx-volume')?.addEventListener('input', (e) => {
+      const volume = e.target.value / 100;
+      this.audioSystem?.setSFXVolume?.(volume);
+    });
+  }
+
+  togglePause() {
+    if (this.isPaused) {
+      this.resume();
+      this.pauseMenu.classList.add('hidden');
+      if (this.settingsPanel) this.settingsPanel.classList.add('hidden');
+      this.pauseMenuVisible = false;
+      // Hide cursor when resuming
+      document.body.style.cursor = 'none';
+    } else {
+      this.pause();
+      this.pauseMenu.classList.remove('hidden');
+      this.pauseMenuVisible = true;
+      // Show cursor when paused
+      document.body.style.cursor = 'default';
+    }
+  }
+
+  restartLevel() {
+    // Hide pause menu
+    this.pauseMenu.classList.add('hidden');
+    if (this.settingsPanel) this.settingsPanel.classList.add('hidden');
+    this.pauseMenuVisible = false;
+    this.isPaused = false;
+    // Hide cursor when restarting
+      document.body.style.cursor = 'none';
+    
+    // Get current level class and reload it
+    if (this.currentLevel) {
+      const LevelClass = this.currentLevel.constructor;
+      this.loadLevel(LevelClass);
+    }
+  }
+
+  quitToMenu() {
+    // Hide pause menu
+    this.pauseMenu.classList.add('hidden');
+    if (this.settingsPanel) this.settingsPanel.classList.add('hidden');
+    this.pauseMenuVisible = false;
+    this.isPaused = false;
+    
+    // Stop the game
+    this.isRunning = false;
+    
+    // Cleanup current level
+    if (this.currentLevel) {
+      this.currentLevel.unload();
+      this.currentLevel = null;
+    }
+    
+    // Use global returnToMenu if available (from main.js)
+    if (window.returnToMenu) {
+      window.returnToMenu();
+      return;
+    }
+    
+    // Fallback: Show main menu
+    const menu = document.getElementById('main-menu');
+    if (menu) menu.classList.remove('hidden');
+    
+    // Hide HUD
+    document.getElementById('hud')?.classList.add('hidden');
+    document.getElementById('hud-right')?.classList.add('hidden');
+    document.getElementById('hud-level1')?.classList.add('hidden');
+    document.getElementById('pause-hint')?.classList.add('hidden');
+    
+    // Show cursor
+    document.body.style.cursor = 'auto';
+    
+    console.log('🏠 Returned to main menu');
   }
 
   updateHUD() {
@@ -246,6 +381,18 @@ export class Engine {
     this.composer.setSize(width, height);
   }
 
+  stop() {
+    this.isRunning = false;
+    this.isPaused = false;
+    
+    if (this.currentLevel) {
+      this.currentLevel.unload();
+      this.currentLevel = null;
+    }
+    
+    console.log('⏹️ Engine stopped');
+  }
+
   cleanup() {
     this.isRunning = false;
     
@@ -255,6 +402,6 @@ export class Engine {
     
     this.audioSystem.cleanup();
     
-    console.log('🛑 Engine stopped');
+    console.log('🛑 Engine cleaned up');
   }
 }

@@ -93,7 +93,8 @@ export class PhysicsSystem {
       const body = this.bodies.get(entity.id);
       if (body && entity.mesh) {
         entity.mesh.position.copy(body.position);
-        entity.mesh.quaternion.copy(body.quaternion);
+        // Don't sync quaternion - let level control rotation manually
+        // entity.mesh.quaternion.copy(body.quaternion);
       }
     });
   }

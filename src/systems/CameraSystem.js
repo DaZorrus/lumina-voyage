@@ -18,7 +18,7 @@ export class CameraSystem {
     this.target = null;
     this.offset = new THREE.Vector3(0, 3, 8);
     this.lookAheadOffset = new THREE.Vector3(0, 0, 0); // Look ahead for Level 1
-    this.smoothFactor = 0.1;
+    this.smoothFactor = 8; // Higher value = faster catch-up, multiplied by deltaTime
     this.bankAngle = 0;
     this.maxBankAngle = 0.2;
     
@@ -79,26 +79,18 @@ export class CameraSystem {
     // Calculate target position
     const targetPosition = this.target.mesh.position.clone().add(this.offset);
     
-    // Smooth lerp
-    this.camera.position.lerp(targetPosition, this.smoothFactor);
+    // Smooth lerp with deltaTime for frame-rate independent smoothing
+    const lerpFactor = 1 - Math.exp(-this.smoothFactor * deltaTime);
+    this.camera.position.lerp(targetPosition, lerpFactor);
     
     // Look at player (or ahead if lookAheadOffset is set)
     const lookAtTarget = this.target.mesh.position.clone().add(this.lookAheadOffset);
     this.camera.lookAt(lookAtTarget);
     
-    // Banking effect (camera tilt when turning)
-    if (Math.abs(mouseVelocityX) > 2) {
-      const targetBank = THREE.MathUtils.clamp(
-        mouseVelocityX * 0.01,
-        -this.maxBankAngle,
-        this.maxBankAngle
-      );
-      this.bankAngle = THREE.MathUtils.lerp(this.bankAngle, targetBank, 0.1);
-    } else {
-      this.bankAngle *= 0.9; // Decay
-    }
-    
-    this.camera.rotation.z = this.bankAngle;
+    // Banking effect disabled to prevent any shake-like feeling
+    // Camera tilt was causing perceived shake during fast movement
+    this.bankAngle *= 0.95; // Just decay any existing tilt
+    this.camera.rotation.z = 0; // Keep camera level
   }
 
   transitionTo(newPosition, newTarget, duration = 2) {
