@@ -805,6 +805,70 @@
       box-shadow: 0 0 30px rgba(255, 68, 68, 0.5);
     }
 
+    /* Settings Panel (from pause menu) */
+    #settings-panel {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.95);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2100;
+      backdrop-filter: blur(10px);
+    }
+
+    #settings-panel.hidden {
+      display: none;
+    }
+
+    .settings-panel-content {
+      background: rgba(10, 14, 39, 0.9);
+      border: 2px solid #00D9FF;
+      border-radius: 10px;
+      padding: 40px;
+      box-shadow: 0 0 40px rgba(0, 217, 255, 0.3);
+      min-width: 400px;
+    }
+
+    .settings-panel-content h2 {
+      font-size: 36px;
+      margin-bottom: 30px;
+      text-shadow: 0 0 20px #00D9FF;
+      color: #00D9FF;
+      letter-spacing: 6px;
+      text-align: center;
+    }
+
+    .setting-item {
+      margin-bottom: 25px;
+    }
+
+    .setting-item label {
+      display: block;
+      color: #00D9FF;
+      font-size: 16px;
+      margin-bottom: 10px;
+      text-shadow: 0 0 5px rgba(0, 217, 255, 0.5);
+    }
+
+    .setting-item input[type="range"] {
+      width: 100%;
+      margin-bottom: 5px;
+    }
+
+    .setting-item span {
+      color: #00D9FF;
+      font-size: 14px;
+    }
+
+    #settings-close {
+      margin-top: 20px;
+      width: 100%;
+    }
+
     #pause-hint {
       position: fixed;
       bottom: 20px;
@@ -1000,8 +1064,35 @@
     <div class="pause-menu-buttons">
       <button class="pause-btn" id="resume-btn">RESUME</button>
       <button class="pause-btn" id="restart-btn">RESTART LEVEL</button>
-      <button class="pause-btn" id="settings-btn">SETTINGS</button>
+      <button class="pause-btn" id="pause-settings-btn">SETTINGS</button>
       <button class="pause-btn danger" id="quit-btn">QUIT TO MENU</button>
+    </div>
+  </div>
+
+  <!-- Settings panel overlay (from pause menu) -->
+  <div id="settings-panel" class="hidden">
+    <div class="settings-panel-content">
+      <h2>SETTINGS</h2>
+      
+      <div class="setting-item">
+        <label for="pause-master-volume">Master Volume</label>
+        <input type="range" id="pause-master-volume" min="0" max="100" value="80">
+        <span id="pause-master-value">80%</span>
+      </div>
+      
+      <div class="setting-item">
+        <label for="pause-music-volume">Music Volume</label>
+        <input type="range" id="pause-music-volume" min="0" max="100" value="50">
+        <span id="pause-music-value">50%</span>
+      </div>
+      
+      <div class="setting-item">
+        <label for="pause-sfx-volume">SFX Volume</label>
+        <input type="range" id="pause-sfx-volume" min="0" max="100" value="80">
+        <span id="pause-sfx-value">80%</span>
+      </div>
+      
+      <button class="pause-btn" id="settings-close">BACK</button>
     </div>
   </div>
 

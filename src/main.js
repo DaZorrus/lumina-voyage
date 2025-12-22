@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import { Engine } from './core/Engine.js';
 import { Chapter0_TheVoid } from './chapters/Chapter0_TheVoid.js';
 import { Chapter1_TheAscent } from './chapters/Chapter1_TheAscent.js';
@@ -14,6 +15,11 @@ let settings = {
   sfx: 80
 };
 let unlockedLevels = [true, true, false]; // Level 0, 1 unlocked; Level 2 locked
+
+// Menu background scene
+let menuScene = null;
+let menuCamera = null;
+let menuAnimationId = null;
 
 const chapterClasses = [
   Chapter0_TheVoid,
@@ -67,9 +73,13 @@ async function init() {
   if (progressBar) progressBar.style.width = '100%';
   if (progressGlow) progressGlow.style.width = '100%';
   
+  // Create menu background
+  createMenuBackground();
+  
   // Wait a moment then show menu
   setTimeout(() => {
     showScreen('menu');
+    startMenuAnimation();
     console.log('✅ Game ready!');
   }, 500);
   
@@ -92,6 +102,13 @@ function showScreen(name) {
   }
   
   currentScreen = name;
+  
+  // Start/stop menu animation based on screen
+  if (name === 'menu' || name === 'levelSelect' || name === 'settings' || name === 'credits') {
+    startMenuAnimation();
+  } else if (name === null) {
+    stopMenuAnimation();
+  }
 }
 
 function setupMenuButtons() {
@@ -323,6 +340,17 @@ window.returnToMenu = () => {
   // Stop engine
   if (engine) {
     engine.stop();
+    
+    // Clean up current level
+    if (engine.currentLevel) {
+      engine.currentLevel.unload();
+      engine.currentLevel = null;
+    }
+    
+    // Clear the scene
+    if (engine.sceneManager && engine.sceneManager.currentLevel) {
+      engine.sceneManager.currentLevel = null;
+    }
   }
   
   // Hide all HUDs
@@ -353,6 +381,92 @@ window.addEventListener('beforeunload', () => {
     engine.cleanup();
   }
 });
+
+function createMenuBackground() {
+  // Create menu scene
+  menuScene = new THREE.Scene();
+  menuScene.background = new THREE.Color(0x0a0e27);
+  
+  // Create camera
+  menuCamera = new THREE.PerspectiveCamera(
+    60,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    1000
+  );
+  menuCamera.position.set(0, 0, 0);
+  
+  // Create starfield
+  const starCount = 5000;
+  const positions = new Float32Array(starCount * 3);
+  const colors = new Float32Array(starCount * 3);
+  
+  for (let i = 0; i < starCount; i++) {
+    const radius = 100 + Math.random() * 400;
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.random() * Math.PI;
+    
+    positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+    positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+    positions[i * 3 + 2] = radius * Math.cos(phi);
+    
+    // Color variation - white to blue
+    const brightness = 0.6 + Math.random() * 0.4;
+    colors[i * 3] = brightness;
+    colors[i * 3 + 1] = brightness * 0.9;
+    colors[i * 3 + 2] = 1.0;
+  }
+  
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  
+  const material = new THREE.PointsMaterial({
+    size: 2,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.8,
+    blending: THREE.AdditiveBlending
+  });
+  
+  const starfield = new THREE.Points(geometry, material);
+  menuScene.add(starfield);
+  
+  console.log('✨ Menu background created');
+}
+
+function startMenuAnimation() {
+  if (!menuScene || !menuCamera || !engine?.renderer) return;
+  
+  // Stop existing animation if any
+  if (menuAnimationId) {
+    cancelAnimationFrame(menuAnimationId);
+  }
+  
+  let time = 0;
+  
+  function animate() {
+    menuAnimationId = requestAnimationFrame(animate);
+    
+    time += 0.001;
+    
+    // Slow camera rotation
+    menuCamera.rotation.y = time * 0.3;
+    menuCamera.rotation.x = Math.sin(time * 0.5) * 0.1;
+    
+    // Render menu background
+    engine.renderer.render(menuScene, menuCamera);
+  }
+  
+  animate();
+}
+
+function stopMenuAnimation() {
+  if (menuAnimationId) {
+    cancelAnimationFrame(menuAnimationId);
+    menuAnimationId = null;
+  }
+}
 
 // Start initialization
 init().catch(error => {

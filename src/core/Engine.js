@@ -132,9 +132,10 @@ export class Engine {
       this.restartLevel();
     });
     
-    // Settings button
-    document.getElementById('settings-btn')?.addEventListener('click', () => {
+    // Settings button (from pause menu)
+    document.getElementById('pause-settings-btn')?.addEventListener('click', () => {
       this.settingsPanel.classList.remove('hidden');
+      this.setupPauseSettings();
     });
     
     // Settings close
@@ -146,17 +147,79 @@ export class Engine {
     document.getElementById('quit-btn')?.addEventListener('click', () => {
       this.quitToMenu();
     });
+  }
+  
+  setupPauseSettings() {
+    // Load current settings from localStorage
+    let settings = { master: 80, music: 50, sfx: 80 };
+    try {
+      const saved = localStorage.getItem('luminaVoyage_settings');
+      if (saved) {
+        settings = JSON.parse(saved);
+      }
+    } catch (e) {
+      console.warn('Could not load settings:', e);
+    }
     
-    // Volume sliders
-    document.getElementById('music-volume')?.addEventListener('input', (e) => {
-      const volume = e.target.value / 100;
-      this.audioSystem?.setMusicVolume?.(volume);
-    });
+    // Setup sliders with current values
+    const masterSlider = document.getElementById('pause-master-volume');
+    const musicSlider = document.getElementById('pause-music-volume');
+    const sfxSlider = document.getElementById('pause-sfx-volume');
     
-    document.getElementById('sfx-volume')?.addEventListener('input', (e) => {
-      const volume = e.target.value / 100;
-      this.audioSystem?.setSFXVolume?.(volume);
-    });
+    const masterValue = document.getElementById('pause-master-value');
+    const musicValue = document.getElementById('pause-music-value');
+    const sfxValue = document.getElementById('pause-sfx-value');
+    
+    if (masterSlider) {
+      masterSlider.value = settings.master;
+      if (masterValue) masterValue.textContent = `${settings.master}%`;
+      
+      masterSlider.addEventListener('input', (e) => {
+        const value = parseInt(e.target.value);
+        settings.master = value;
+        if (masterValue) masterValue.textContent = `${value}%`;
+        this.saveAndApplySettings(settings);
+      });
+    }
+    
+    if (musicSlider) {
+      musicSlider.value = settings.music;
+      if (musicValue) musicValue.textContent = `${settings.music}%`;
+      
+      musicSlider.addEventListener('input', (e) => {
+        const value = parseInt(e.target.value);
+        settings.music = value;
+        if (musicValue) musicValue.textContent = `${value}%`;
+        this.saveAndApplySettings(settings);
+      });
+    }
+    
+    if (sfxSlider) {
+      sfxSlider.value = settings.sfx;
+      if (sfxValue) sfxValue.textContent = `${settings.sfx}%`;
+      
+      sfxSlider.addEventListener('input', (e) => {
+        const value = parseInt(e.target.value);
+        settings.sfx = value;
+        if (sfxValue) sfxValue.textContent = `${value}%`;
+        this.saveAndApplySettings(settings);
+      });
+    }
+  }
+  
+  saveAndApplySettings(settings) {
+    try {
+      localStorage.setItem('luminaVoyage_settings', JSON.stringify(settings));
+    } catch (e) {
+      console.warn('Could not save settings:', e);
+    }
+    
+    // Apply to audio system if available
+    if (this.audioSystem) {
+      const masterMultiplier = settings.master / 100;
+      // TODO: Implement proper volume control in AudioSystem
+      console.log('Volume settings:', settings);
+    }
   }
 
   togglePause() {

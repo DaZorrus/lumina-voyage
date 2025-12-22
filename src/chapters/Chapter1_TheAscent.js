@@ -498,10 +498,14 @@ export class Chapter1_TheAscent extends BaseChapter {
     if (this.currentSpeed >= this.maxSpeed) {
       this.maxSpeedSustainedTime += deltaTime;
       if (this.maxSpeedSustainedTime >= this.maxSpeedRequiredDuration && !this.lightSpeedTriggered) {
+        console.log('⚡ Win condition met! Speed:', this.currentSpeed, 'Sustained:', this.maxSpeedSustainedTime);
         this.triggerLightSpeedBreak();
       }
     } else {
       // Reset counter if speed drops below max
+      if (this.maxSpeedSustainedTime > 0) {
+        console.log('⚠️ Speed dropped below max:', this.currentSpeed, '/', this.maxSpeed, '- resetting timer');
+      }
       this.maxSpeedSustainedTime = 0;
     }
     
@@ -1079,6 +1083,9 @@ export class Chapter1_TheAscent extends BaseChapter {
   handleCollisions() {
     if (!this.player || this.invulnerableTime > 0) return;
     
+    // Skip collisions during slingshot boost (invulnerable)
+    if (this.slingshotDuration > 0) return;
+    
     const playerPos = this.player.mesh.position;
     const playerRadius = 0.5;
     
@@ -1205,10 +1212,10 @@ export class Chapter1_TheAscent extends BaseChapter {
           this.currentSpeed = Math.max(8, this.currentSpeed - 15 * deltaTime);
           
           // Flash GREEN if can slingshot!
-          if (isNearHalfOfRing && this.slingshotCooldown <= 0) {
+          if (isApproaching && this.slingshotCooldown <= 0) {
             this.player.mesh.material.emissive.setHex(0x00ff88);
           } else {
-            // Yellow/Orange if in green ring but WRONG HALF (far side)
+            // Yellow/Orange if in green ring but past the black hole or on cooldown
             this.player.mesh.material.emissive.setHex(0xffaa44);
           }
           
