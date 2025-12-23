@@ -220,10 +220,33 @@ export class ShadowComet {
     this.scene.remove(this.warningArrow);
     this.physicsSystem.removeBody(this.id);
     
-    this.mesh.geometry.dispose();
-    this.mesh.material.dispose();
-    this.trail.geometry.dispose();
-    this.trail.material.dispose();
+    // Clean up comet core if exists
+    if (this.cometCore) {
+      this.cometCore.geometry.dispose();
+      this.cometCore.material.dispose();
+    }
+    
+    // Clean up model if loaded
+    if (this.modelMesh) {
+      this.modelMesh.traverse(child => {
+        if (child.geometry) child.geometry.dispose();
+        if (child.material) {
+          if (Array.isArray(child.material)) {
+            child.material.forEach(mat => mat.dispose());
+          } else {
+            child.material.dispose();
+          }
+        }
+      });
+    }
+    
+    // Clean up trail
+    if (this.trail) {
+      this.trail.geometry.dispose();
+      this.trail.material.dispose();
+    }
+    
+    // Clean up warning elements
     this.warningLine.geometry.dispose();
     this.warningLine.material.dispose();
     this.warningArrow.geometry.dispose();

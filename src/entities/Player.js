@@ -244,6 +244,13 @@ export class Player {
     this.orbsCollected++;
     console.log(`⭐ Orb collected! Total: ${this.orbsCollected}`);
     
+    // Save to localStorage for music layer persistence
+    try {
+      localStorage.setItem('luminaVoyage_orbsCollected', this.orbsCollected.toString());
+    } catch (e) {
+      console.warn('Could not save orbs collected:', e);
+    }
+    
     // Multi-sensory progression
     // Visual: Increase brightness AND light range
     // Kinetic: Increase speed
@@ -392,10 +399,10 @@ export class Player {
     this.guideBeamTarget = null;
   }
 
-  die() {
-    console.log('💀 Player died!');
-    // TODO: Trigger game over
-  }
+  // die() {
+  //   console.log('💀 Player died!');
+  //   // TODO: Trigger game over
+  // }
 
   onCollide(otherBody) {
     // Collision handling (will be used for meteors, etc.)
