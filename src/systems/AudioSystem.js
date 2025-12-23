@@ -96,6 +96,27 @@ export class AudioSystem {
     this.synth.triggerAttackRelease(note, duration, Tone.now(), velocity);
   }
 
+  // Play a specific note with custom oscillator type
+  playSpecificNote(noteName, velocity = 0.5, options = {}) {
+    if (!this.initialized) return;
+    
+    const synth = new Tone.Synth({
+      oscillator: { type: options.type || 'sine' },
+      envelope: { 
+        attack: options.attack || 0.01, 
+        decay: options.decay || 0.2, 
+        sustain: options.sustain || 0.1, 
+        release: options.release || 0.3 
+      }
+    }).toDestination();
+    
+    synth.volume.value = -10; // Lower volume for SFX
+    synth.triggerAttackRelease(noteName, options.duration || '8n', Tone.now(), velocity);
+    
+    // Cleanup after playing
+    setTimeout(() => synth.dispose(), 1000);
+  }
+
   playPulseSound() {
     if (!this.initialized) return;
     
@@ -106,7 +127,7 @@ export class AudioSystem {
     }).toDestination();
     
     pingSynth.volume.value = -8; 
-    pingSynth.triggerAttackRelease('G4', '8n', Tone.now(), 0.4); // Lower pitch G4 instead of C6
+    pingSynth.triggerAttackRelease('G4', '8n', Tone.now(), 0.4); 
     
     // Cleanup after playing
     setTimeout(() => pingSynth.dispose(), 800);
@@ -148,6 +169,21 @@ export class AudioSystem {
 
   addMusicLayer(orbCount) {
     if (!this.initialized) return;
+    
+    // Skip if this layer already exists
+    const layerMap = {
+      1: 'bass',
+      2: 'pad', 
+      3: 'melody',
+      4: 'harmony',
+      5: 'rhythm'
+    };
+    
+    const layerName = layerMap[orbCount];
+    if (layerName && this.layers[layerName]) {
+      console.log(`⏭️ Music layer ${orbCount} (${layerName}) already exists, skipping...`);
+      return;
+    }
     
     console.log(`🎵 Adding music layer ${orbCount}...`);
     
@@ -237,6 +273,31 @@ export class AudioSystem {
     this.ambientPad.triggerRelease(['C2', 'G2', 'C3', 'E3']);
     this.pad.triggerRelease();
     this.ambientPlaying = false;
+  }
+  
+  stopAllMusicLayers() {
+    if (!this.initialized) return;
+    
+    console.log('🔇 Stopping all music layers...');
+    
+    // Stop Transport which controls all patterns
+    Tone.Transport.stop();
+    Tone.Transport.cancel(); // Clear all scheduled events
+    
+    // Release all layer synths
+    if (this.layers.pad) {
+      this.layers.pad.releaseAll();
+    }
+    
+    // Dispose of all layers
+    Object.keys(this.layers).forEach(key => {
+      if (this.layers[key]) {
+        this.layers[key].dispose();
+        this.layers[key] = null;
+      }
+    });
+    
+    this.activeLayerCount = 0;
   }
 
   updateTempo(speed) {

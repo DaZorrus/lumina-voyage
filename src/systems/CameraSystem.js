@@ -142,4 +142,21 @@ export class CameraSystem {
     this.baseFov = fov;
     this.targetFov = fov;
   }
+  
+  /**
+   * Reset camera to default state
+   */
+  reset() {
+    console.log('📷 Resetting camera...');
+    this.target = null;
+    this.offset.set(0, 3, 8);
+    this.lookAheadOffset.set(0, 0, 0);
+    this.baseFov = 70;
+    this.targetFov = 70;
+    this.camera.fov = 70;
+    this.orbsCollected = 0;
+    this.currentDistance = 15;
+    this.camera.position.set(0, 5, 10);
+    this.camera.updateProjectionMatrix();
+  }
 }
