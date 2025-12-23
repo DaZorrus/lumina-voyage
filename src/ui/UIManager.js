@@ -64,7 +64,7 @@ export class UIManager {
     this.menuCamera.position.set(0, 0, 0);
     
     // Create starfield
-    const starCount = 2000;
+    const starCount = 1500;
     const positions = new Float32Array(starCount * 3);
     const colors = new Float32Array(starCount * 3);
     const sizes = new Float32Array(starCount);

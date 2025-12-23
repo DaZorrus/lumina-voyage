@@ -15,6 +15,7 @@ let settings = {
   sfx: 80
 };
 let unlockedLevels = [true, true, false]; // Level 0, 1 unlocked; Level 2 locked
+let orbsCollected = 0; // Track total orbs collected across sessions
 
 // Menu background scene
 let menuScene = null;
@@ -49,6 +50,7 @@ async function init() {
   // Load settings from localStorage
   loadSettings();
   loadProgress();
+  loadOrbsCollected();
   
   // Simulate loading with progress bar animation
   const progressBar = document.getElementById('loading-progress');
@@ -333,6 +335,27 @@ function saveProgress() {
   }
 }
 
+function loadOrbsCollected() {
+  try {
+    const saved = localStorage.getItem('luminaVoyage_orbsCollected');
+    if (saved) {
+      orbsCollected = parseInt(saved) || 0;
+      console.log('📊 Loaded orbs collected:', orbsCollected);
+    }
+  } catch (e) {
+    console.warn('Could not load orbs collected:', e);
+  }
+}
+
+function saveOrbsCollected() {
+  try {
+    localStorage.setItem('luminaVoyage_orbsCollected', orbsCollected.toString());
+    console.log('💾 Saved orbs collected:', orbsCollected);
+  } catch (e) {
+    console.warn('Could not save orbs collected:', e);
+  }
+}
+
 // Export for use by engine (level completion)
 window.unlockLevel = (index) => {
   if (index < unlockedLevels.length) {
@@ -342,20 +365,51 @@ window.unlockLevel = (index) => {
 };
 
 window.returnToMenu = () => {
+  console.log('🏠 Returning to menu...');
+  
+  // Save orbs collected ONLY if actually collected orbs in this session
+  // Don't save 0 orbs if Chapter 1 was played without Chapter 0
+  if (engine?.currentLevel?.player && engine.currentLevel.player.orbsCollected > 0) {
+    orbsCollected = Math.max(orbsCollected, engine.currentLevel.player.orbsCollected);
+    saveOrbsCollected();
+    console.log('💾 Saved orbs collected:', orbsCollected);
+  } else {
+    console.log('⏭️ No new orbs collected, keeping previous progress');
+  }
+  
+  // Stop ALL audio (layers + ambient)
+  if (engine?.audioSystem) {
+    engine.audioSystem.stopAllMusicLayers();
+    engine.audioSystem.stopAmbient();
+    console.log('🔇 Stopped all audio');
+  }
+  
   // Stop engine
   if (engine) {
     engine.stop();
     
     // Clean up current level
     if (engine.currentLevel) {
+      console.log('🧹 Cleaning up level...');
       engine.currentLevel.unload();
       engine.currentLevel = null;
     }
     
-    // Clear the scene
-    if (engine.sceneManager && engine.sceneManager.currentLevel) {
+    // Clear the scene manager reference
+    if (engine.sceneManager) {
       engine.sceneManager.currentLevel = null;
     }
+    
+    // Reset camera
+    if (engine.cameraSystem) {
+      engine.cameraSystem.reset();
+    }
+  }
+  
+  // Restart menu ambient music (only ambient, no layers)
+  if (engine?.audioSystem && engine.audioSystem.initialized) {
+    engine.audioSystem.startAmbient();
+    console.log('🎵 Menu ambient music restarted');
   }
   
   // Hide all HUDs
@@ -370,6 +424,9 @@ window.returnToMenu = () => {
   
   // Show menu
   showScreen('menu');
+  
+  // Restart menu background animation
+  createMenuBackground();
 };
 
 window.restartCurrentLevel = () => {
