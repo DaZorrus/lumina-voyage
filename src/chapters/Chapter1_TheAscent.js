@@ -24,12 +24,12 @@ export class Chapter1_TheAscent extends BaseChapter {
     this.currentSpeed = 0;
     this.maxSpeed = 100;           // Light speed threshold
     this.baseAcceleration = 2.0;   // Passive acceleration
-    this.photonSpeedBoost = 5;     // Speed gained per photon (reduced for difficulty)
+    this.photonSpeedBoost = 5;     // Speed gained per photon 
     this.meteorSpeedPenalty = 15;  // Speed lost per meteor hit
     
     // === 3x3 GRID SYSTEM ===
-    this.gridLaneWidth = 6;        // Width of each lane (narrower map)
-    this.gridLaneHeight = 4;       // Height of each lane (narrower map)
+    this.gridLaneWidth = 6;        // Width of each lane 
+    this.gridLaneHeight = 4;       // Height of each lane 
     this.currentLaneX = 1;         // 0=left, 1=center, 2=right
     this.currentLaneY = 1;         // 0=bottom, 1=center, 2=top
     this.laneTransitionSpeed = 15; // How fast to move between lanes
@@ -494,17 +494,26 @@ export class Chapter1_TheAscent extends BaseChapter {
       if (this.screenShakeIntensity < 0.01) this.screenShakeIntensity = 0;
     }
     
-    // Win condition - must sustain max speed
-    if (this.currentSpeed >= this.maxSpeed) {
+    // Win condition - must sustain max speed (with small tolerance for floating point issues)
+    const speedTolerance = 2; // Allow 2 units below max for tolerance
+    const isAtMaxSpeed = this.currentSpeed >= (this.maxSpeed - speedTolerance);
+    
+    if (isAtMaxSpeed) {
       this.maxSpeedSustainedTime += deltaTime;
+      
+      // Debug logging every 0.1 seconds
+      if (Math.floor(this.maxSpeedSustainedTime * 10) > Math.floor((this.maxSpeedSustainedTime - deltaTime) * 10)) {
+        console.log(`🏁 Accumulating win time: ${this.maxSpeedSustainedTime.toFixed(2)}s / ${this.maxSpeedRequiredDuration}s (Speed: ${this.currentSpeed.toFixed(1)}/${this.maxSpeed})`);
+      }
+      
       if (this.maxSpeedSustainedTime >= this.maxSpeedRequiredDuration && !this.lightSpeedTriggered) {
         console.log('⚡ Win condition met! Speed:', this.currentSpeed, 'Sustained:', this.maxSpeedSustainedTime);
         this.triggerLightSpeedBreak();
       }
     } else {
-      // Reset counter if speed drops below max
+      // Reset counter if speed drops significantly below max
       if (this.maxSpeedSustainedTime > 0) {
-        console.log('⚠️ Speed dropped below max:', this.currentSpeed, '/', this.maxSpeed, '- resetting timer');
+        console.log(`⚠️ Speed dropped: ${this.currentSpeed.toFixed(1)}/${this.maxSpeed} - resetting timer from ${this.maxSpeedSustainedTime.toFixed(2)}s`);
       }
       this.maxSpeedSustainedTime = 0;
     }
@@ -571,7 +580,7 @@ export class Chapter1_TheAscent extends BaseChapter {
       
       if (moved) {
         this.inputCooldown = this.inputCooldownMax;
-        this.engine.audioSystem?.playNote('E4', 0.05, { type: 'sine' });
+        this.engine.audioSystem?.playSpecificNote('E4', 0.05, { type: 'sine' });
       }
     }
     
@@ -679,7 +688,7 @@ export class Chapter1_TheAscent extends BaseChapter {
     this.isBeingPulled = false;
     
     // Visual feedback - no shake, just audio
-    this.engine.audioSystem?.playNote('C6', 0.2, { type: 'sine' });
+    this.engine.audioSystem?.playSpecificNote('C6', 0.2, { type: 'sine' });
     
     // Flash effect
     if (this.engine.bloomPass) {
@@ -832,12 +841,12 @@ export class Chapter1_TheAscent extends BaseChapter {
     }
     
     // Play epic sound
-    this.engine.audioSystem?.playNote('C5', 0.5, { type: 'sine' });
+    this.engine.audioSystem?.playSpecificNote('C5', 0.5, { type: 'sine' });
     setTimeout(() => {
-      this.engine.audioSystem?.playNote('E5', 0.4, { type: 'sine' });
+      this.engine.audioSystem?.playSpecificNote('E5', 0.4, { type: 'sine' });
     }, 150);
     setTimeout(() => {
-      this.engine.audioSystem?.playNote('G5', 0.3, { type: 'sine' });
+      this.engine.audioSystem?.playSpecificNote('G5', 0.3, { type: 'sine' });
     }, 300);
     
     // Create screen edge glow effect
@@ -942,8 +951,9 @@ export class Chapter1_TheAscent extends BaseChapter {
       overlay.style.opacity = '1';
     }, 50);
     
-    // Show "Chapter Complete" message - matching Chapter 0 style
+    // Show "Chapter Complete" message first (no buttons yet)
     setTimeout(() => {
+      overlay.style.pointerEvents = 'auto';
       overlay.innerHTML = `
         <div style="
           display: flex;
@@ -961,14 +971,70 @@ export class Chapter1_TheAscent extends BaseChapter {
       `;
     }, 500);
     
-    // Transition after showing message (ready for next chapter when implemented)
-    // KEEP the overlay and STOP the game - don't continue flying
+    // Show buttons after a delay (like Chapter 0)
     setTimeout(() => {
-      // Don't remove overlay - keep the end screen visible
-      // Pause the engine so player stops flying
-      this.gamePaused = true;  // Flag to stop update loop
-      console.log('🎮 Game complete! Next level coming soon...');
-    }, 3500);
+      overlay.innerHTML = `
+        <div style="
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          height: 100%;
+          font-family: 'Courier New', monospace;
+          color: #000;
+          text-align: center;
+        ">
+          <h1 style="font-size: 48px; margin-bottom: 20px;">✨ CHAPTER COMPLETE ✨</h1>
+          <p style="font-size: 24px; color: #666; margin-bottom: 40px;">The Ascent has been conquered.</p>
+          <div style="display: flex; gap: 20px;">
+            <button id="continueBtn" style="
+              padding: 15px 40px;
+              font-size: 20px;
+              font-family: 'Courier New', monospace;
+              background: rgba(100, 100, 100, 0.5);
+              color: #999;
+              border: 2px solid #666;
+              cursor: not-allowed;
+              opacity: 0.5;
+            " disabled>Continue (Coming Soon)</button>
+            <button id="returnToMenuBtn" style="
+              padding: 15px 40px;
+              font-size: 20px;
+              font-family: 'Courier New', monospace;
+              background: rgba(0, 0, 0, 0.8);
+              color: #fff;
+              border: 2px solid #fff;
+              cursor: pointer;
+              transition: all 0.3s ease;
+            ">Return to Main Menu</button>
+          </div>
+        </div>
+      `;
+      
+      // Add button hover effect and click handler
+      const btn = document.getElementById('returnToMenuBtn');
+      if (btn) {
+        btn.addEventListener('mouseenter', () => {
+          btn.style.background = '#fff';
+          btn.style.color = '#000';
+        });
+        btn.addEventListener('mouseleave', () => {
+          btn.style.background = 'rgba(0, 0, 0, 0.8)';
+          btn.style.color = '#fff';
+        });
+        btn.addEventListener('click', () => {
+          overlay.remove();
+          // returnToMenu() will handle all cleanup
+          window.returnToMenu();
+        });
+      }
+    }, 2000);
+    
+    // Pause the engine so player stops flying
+    setTimeout(() => {
+      this.gamePaused = true;
+      console.log('🎮 Chapter complete! Waiting for user action...');
+    }, 2100);
   }
 
   updateProceduralSpawning() {
@@ -1101,7 +1167,9 @@ export class Chapter1_TheAscent extends BaseChapter {
       if (entity instanceof Photon && distance < 1.5) {
         const boost = entity.collect();
         this.currentSpeed = Math.min(this.currentSpeed + boost, this.maxSpeed);
-        this.engine.audioSystem.playNote('C5', 0.1, { type: 'sine' });
+        // Brighter sound for photon collection
+        this.engine.audioSystem.playSpecificNote('E5', 0.15, { type: 'sine' });
+        setTimeout(() => this.engine.audioSystem.playSpecificNote('G5', 0.1, { type: 'sine' }), 50);
         this.player.currentLumen = Math.min(this.player.currentLumen + 5, this.player.maxLumen);
       }
       
@@ -1184,9 +1252,10 @@ export class Chapter1_TheAscent extends BaseChapter {
           // Intense screen shake
           this.screenShakeIntensity = Math.max(this.screenShakeIntensity, 0.5);
           
-          // Warning sound
-          if (Math.random() < 0.15) {
-            this.engine.audioSystem?.playNote('C2', 0.15, { type: 'sawtooth' });
+          // Loud warning alarm sound - more frequent and distinct
+          if (Math.random() < 0.25) {
+            this.engine.audioSystem?.playSpecificNote('C2', 0.25, { type: 'sawtooth' });
+            setTimeout(() => this.engine.audioSystem?.playSpecificNote('C3', 0.15, { type: 'square' }), 40);
           }
           
           // Flash red - DANGER
@@ -1297,7 +1366,7 @@ export class Chapter1_TheAscent extends BaseChapter {
       }
       
       // Sound and shake for the wave
-      this.engine.audioSystem.playNote('G4', 0.1, { type: 'triangle' });
+      this.engine.audioSystem.playSpecificNote('G4', 0.1, { type: 'triangle' });
       this.screenShakeIntensity = Math.max(this.screenShakeIntensity, 0.08);
       
       // Interval between waves - scale with difficulty
@@ -1319,7 +1388,13 @@ export class Chapter1_TheAscent extends BaseChapter {
     
     this.screenShakeIntensity = 0.35;
     this.invulnerableTime = 0.5;
-    this.engine.audioSystem?.playNote('C2', 0.2, { type: 'sawtooth' });
+    
+    // Dramatic crash sound - deeper, more powerful tones
+    this.engine.audioSystem?.playSpecificNote('C1', 0.7, { type: 'sawtooth', decay: 0.4 });
+    setTimeout(() => this.engine.audioSystem?.playSpecificNote('F1', 0.5, { type: 'square', decay: 0.3 }), 40);
+    setTimeout(() => this.engine.audioSystem?.playSpecificNote('G1', 0.4, { type: 'triangle', decay: 0.3 }), 80);
+    setTimeout(() => this.engine.audioSystem?.playSpecificNote('C2', 0.3, { type: 'sine', decay: 0.2 }), 120);
+    
     this.player.currentLumen = Math.max(0, this.player.currentLumen - 5);
   }
 
@@ -1335,8 +1410,10 @@ export class Chapter1_TheAscent extends BaseChapter {
     this.screenShakeIntensity = 0.6;
     this.invulnerableTime = 1.0;
     
-    // Deep bass sound
-    this.engine.audioSystem?.playNote('C1', 0.5, { type: 'sawtooth' });
+    // Ominous whoosh sound with slow debuff indication
+    this.engine.audioSystem?.playSpecificNote('C1', 0.6, { type: 'sawtooth' });
+    setTimeout(() => this.engine.audioSystem?.playSpecificNote('Eb1', 0.4, { type: 'triangle' }), 80);
+    setTimeout(() => this.engine.audioSystem?.playSpecificNote('Gb1', 0.3, { type: 'sine' }), 160);
     
     // Energy loss
     this.player.currentLumen = Math.max(0, this.player.currentLumen - 20);

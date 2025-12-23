@@ -28,6 +28,12 @@ export class Chapter0_TheVoid extends BaseChapter {
     this.gameTime = 0; // Track overall game time
   }
 
+  // Override to prevent music restoration - Chapter 0 builds music progressively
+  restoreMusicLayers() {
+    console.log('⏭️ Chapter 0: Skipping music layer restore (will build progressively)');
+    // Don't restore any music layers - they will be added as player collects orbs
+  }
+
   setupEnvironment() {
     // Dark fog - VERY FAR to ensure starfield is visible
     this.scene.fog = new THREE.Fog(0x000000, 100, 600); // Extended range for starfield
@@ -154,6 +160,10 @@ export class Chapter0_TheVoid extends BaseChapter {
         
         // Update camera FOV based on orbs collected
         this.engine.cameraSystem.setOrbsCollected(this.player.orbsCollected);
+        
+        // Play collection sound - bright chime
+        this.engine.audioSystem?.playSpecificNote('E5', 0.2, { type: 'sine' });
+        setTimeout(() => this.engine.audioSystem?.playSpecificNote('G5', 0.15, { type: 'sine' }), 60);
         
         // Small shake when collecting orbs
         this.screenShakeIntensity = Math.max(this.screenShakeIntensity, 0.2);
@@ -320,6 +330,140 @@ export class Chapter0_TheVoid extends BaseChapter {
       position,
       this.engine
     );
+    
+    // Override portal's transition to show completion screen
+    this.portal.triggerWhiteFlashTransition = () => {
+      this.showCompletionScreen();
+    };
+  }
+  
+  showCompletionScreen() {
+    // White flash overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'portal-flash';
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: white;
+      opacity: 0;
+      z-index: 9999;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    `;
+    document.body.appendChild(overlay);
+    
+    // Fade in white
+    setTimeout(() => {
+      overlay.style.opacity = '1';
+    }, 50);
+    
+    // Show message first
+    setTimeout(() => {
+      overlay.style.pointerEvents = 'auto';
+      overlay.innerHTML = `
+        <div style="
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          height: 100%;
+          font-family: 'Courier New', monospace;
+          color: #000;
+          text-align: center;
+        ">
+          <h1 style="font-size: 48px; margin-bottom: 20px;">✨ CHAPTER COMPLETE ✨</h1>
+          <p style="font-size: 24px; color: #666;">The Void has been illuminated.</p>
+        </div>
+      `;
+    }, 500);
+    
+    // Show buttons after delay
+    setTimeout(() => {
+      overlay.innerHTML = `
+        <div style="
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          height: 100%;
+          font-family: 'Courier New', monospace;
+          color: #000;
+          text-align: center;
+        ">
+          <h1 style="font-size: 48px; margin-bottom: 20px;">✨ CHAPTER COMPLETE ✨</h1>
+          <p style="font-size: 24px; color: #666; margin-bottom: 40px;">The Void has been illuminated.</p>
+          <div style="display: flex; gap: 20px;">
+            <button id="continueBtn" style="
+              padding: 15px 40px;
+              font-size: 20px;
+              font-family: 'Courier New', monospace;
+              background: rgba(255, 255, 255, 0.9);
+              color: #000;
+              border: 2px solid #000;
+              cursor: pointer;
+              transition: all 0.3s ease;
+            ">Continue to Chapter 1</button>
+            <button id="returnToMenuBtn" style="
+              padding: 15px 40px;
+              font-size: 20px;
+              font-family: 'Courier New', monospace;
+              background: rgba(0, 0, 0, 0.8);
+              color: #fff;
+              border: 2px solid #fff;
+              cursor: pointer;
+              transition: all 0.3s ease;
+            ">Return to Main Menu</button>
+          </div>
+        </div>
+      `;
+      
+      // Add button handlers for Continue
+      const continueBtn = document.getElementById('continueBtn');
+      if (continueBtn) {
+        continueBtn.addEventListener('mouseenter', () => {
+          continueBtn.style.background = '#000';
+          continueBtn.style.color = '#fff';
+          continueBtn.style.borderColor = '#fff';
+        });
+        continueBtn.addEventListener('mouseleave', () => {
+          continueBtn.style.background = 'rgba(255, 255, 255, 0.9)';
+          continueBtn.style.color = '#000';
+          continueBtn.style.borderColor = '#000';
+        });
+        continueBtn.addEventListener('click', async () => {
+          overlay.remove();
+          // Properly cleanup current chapter and load next
+          if (this.engine.currentLevel) {
+            this.engine.currentLevel.unload();
+            this.engine.currentLevel = null;
+          }
+          // Import and transition to Chapter 1
+          const { Chapter1_TheAscent } = await import('./Chapter1_TheAscent.js');
+          this.engine.transitionToLevel(Chapter1_TheAscent);
+        });
+      }
+      
+      // Add button handlers for Menu
+      const btn = document.getElementById('returnToMenuBtn');
+      if (btn) {
+        btn.addEventListener('mouseenter', () => {
+          btn.style.background = '#fff';
+          btn.style.color = '#000';
+        });
+        btn.addEventListener('mouseleave', () => {
+          btn.style.background = 'rgba(0, 0, 0, 0.8)';
+          btn.style.color = '#fff';
+        });
+        btn.addEventListener('click', () => {
+          overlay.remove();
+          // returnToMenu() will handle all cleanup
+          window.returnToMenu();
+        });
+      }
+    }, 2000);
   }
 
   unload() {

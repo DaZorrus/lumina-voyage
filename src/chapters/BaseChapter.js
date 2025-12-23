@@ -33,6 +33,29 @@ export class BaseChapter {
       this.engine.audioSystem.startAmbient();
       console.log('🎵 Chapter music started');
     }
+    
+    // Restore music layers if player has collected orbs previously
+    this.restoreMusicLayers();
+  }
+  
+  restoreMusicLayers() {
+    // Only restore music layers if player has actually collected 5 orbs (completed Chapter 0)
+    try {
+      const saved = localStorage.getItem('luminaVoyage_orbsCollected');
+      const orbsCollected = saved ? parseInt(saved) : 0;
+      
+      // Only restore if player collected all 5 orbs (meaning they played Chapter 0)
+      if (orbsCollected >= 5 && this.engine.audioSystem) {
+        console.log(`🎵 Restoring ${orbsCollected} music layers (Chapter 0 completed)...`);
+        for (let i = 1; i <= Math.min(orbsCollected, 5); i++) {
+          this.engine.audioSystem.addMusicLayer(i);
+        }
+      } else {
+        console.log(`⏭️ Skipping music layer restore (orbs: ${orbsCollected}/5)`);
+      }
+    } catch (e) {
+      console.warn('Could not restore music layers:', e);
+    }
   }
 
   setupEnvironment() {
