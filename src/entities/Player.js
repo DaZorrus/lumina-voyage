@@ -12,7 +12,7 @@ export class Player {
     this.scene = scene;
     this.physicsSystem = physicsSystem;
     this.audioSystem = audioSystem;
-    
+
     // Properties
     this.currentLumen = 20;
     this.maxLumen = 100;
@@ -22,11 +22,11 @@ export class Player {
     this.pulseRadius = this.basePulseRadius;
     this.pulseCooldown = 0;
     this.pulseCooldownMax = 2.0; // 2 seconds
-    
+
     // Progression tracking
     this.orbsCollected = 0;
     this.hasUsedPulse = false;
-    
+
     // Create mesh - LOW POLY ICOSAHEDRON (like React code)
     const geometry = new THREE.IcosahedronGeometry(0.5, 0); // 0 subdivisions = low poly
     const material = new THREE.MeshStandardMaterial({
@@ -37,19 +37,21 @@ export class Player {
       metalness: 0.7,
       flatShading: true // Low poly look
     });
-    
+
     this.mesh = new THREE.Mesh(geometry, material);
     this.mesh.position.copy(position);
     this.mesh.scale.setScalar(0.6); // Start smaller
     scene.add(this.mesh);
-    
-    // Add point light to player - START DIM
-    this.light = new THREE.PointLight(0xffaa00, 0.2, 4); // Weak light initially
+
+    console.log('👤 Player mesh added to scene at', position);
+
+    // Add point light to player - Visible from start
+    this.light = new THREE.PointLight(0xffaa00, 2, 8); // Brighter light (was 0.2, 4)
     this.mesh.add(this.light);
-    
+
     // Guide beam (will be created on pulse)
     this.guideBeam = null;
-    
+
     // Physics body
     this.body = physicsSystem.addBody(this, {
       mass: 1,
@@ -58,16 +60,16 @@ export class Player {
       linearDamping: 0.95, // High damping = stop quickly when no input
       angularDamping: 0.9
     });
-    
+
     // Particle trail
     this.particleTrail = new ParticleTrail(scene, 100);
-    
+
     // Active pulse waves
     this.activePulses = [];
-    
+
     // For tracking velocity
     this.lastPosition = position.clone();
-    
+
     // Breathing effect
     this.breathingTimer = 0;
     this.breathingSpeed = 0.5; // Cycles per second
@@ -79,60 +81,60 @@ export class Player {
     this.breathingTimer += deltaTime * this.breathingSpeed;
     // === MOVEMENT ===
     const moveVector = new THREE.Vector3();
-    
+
     if (inputManager.isPressed('w')) moveVector.z -= 1;
     if (inputManager.isPressed('s')) moveVector.z += 1;
     if (inputManager.isPressed('a')) moveVector.x -= 1;
     if (inputManager.isPressed('d')) moveVector.x += 1;
     if (inputManager.isPressed('e')) moveVector.y += 1; // Up
     if (inputManager.isPressed('q')) moveVector.y -= 1; // Down
-    
+
     if (moveVector.length() > 0) {
       moveVector.normalize().multiplyScalar(this.speed);
       this.physicsSystem.applyForce(this, moveVector);
     }
-    
+
     // === ENERGY DECAY ===
     const decayRate = this.energyDecayRate || 0.5; // Default 0.5, can override per level
     this.currentLumen -= decayRate * deltaTime;
     this.currentLumen = Math.max(0, this.currentLumen);
-    
+
     if (this.currentLumen <= 0) {
       this.die();
     }
-    
+
     // === VISUAL FEEDBACK ===
     this.updateVisuals();
-    
+
     // === PARTICLE TRAIL ===
     const currentPos = this.mesh.position.clone();
     const velocity = currentPos.clone().sub(this.lastPosition).divideScalar(deltaTime);
     const speed = velocity.length();
-    
+
     // === ROTATION (low poly spin) - Speed-based rotation ===
     // Faster movement = faster spin for dynamic feedback
     const speedMultiplier = 1 + Math.min(speed * 0.1, 2); // Cap at 3x to prevent shake
     this.mesh.rotation.x += deltaTime * 1.2 * speedMultiplier;
     this.mesh.rotation.y += deltaTime * 1.8 * speedMultiplier;
-    
+
     // === PULSE MECHANIC ===
     if (this.pulseCooldown > 0) {
       this.pulseCooldown -= deltaTime;
     }
-    
+
     if (inputManager.justPressed('f') && this.pulseCooldown <= 0) {
       this.pulse(entities, levelInstance); // Pass levelInstance for wave tracking
       this.pulseCooldown = this.pulseCooldownMax;
     }
-    
+
     // === EMIT TRAIL ===
     if (speed > 0.1) {
       this.particleTrail.emit(currentPos, velocity);
     }
-    
+
     this.particleTrail.update(deltaTime);
     this.lastPosition.copy(currentPos);
-    
+
     // === UPDATE PULSE WAVES ===
     this.activePulses = this.activePulses.filter(pulse => pulse.update(deltaTime));
   }
@@ -140,22 +142,22 @@ export class Player {
   updateVisuals() {
     // Scale and intensity based on energy
     const energyPercent = this.currentLumen / this.maxLumen;
-    
+
     // Breathing effect (sin wave)
     const breathingFactor = Math.sin(this.breathingTimer * Math.PI * 2) * 0.3 + 1; // 0.7 to 1.3
-    
+
     // Emissive intensity with breathing
     const baseIntensity = 1 + energyPercent * 2;
     this.mesh.material.emissiveIntensity = baseIntensity * breathingFactor;
-    
+
     // Light intensity with breathing
     this.light.intensity = (1 + energyPercent * 2) * breathingFactor;
-    
+
     // Scale with subtle breathing
     const baseScale = 0.8 + energyPercent * 0.4;
     const scalePulse = Math.sin(this.breathingTimer * Math.PI * 2) * 0.05 + 1; // 0.95 to 1.05
     this.mesh.scale.setScalar(baseScale * scalePulse);
-    
+
     // Color shift when low
     if (energyPercent < 0.3) {
       this.mesh.material.emissive.setHex(0xff4400); // Red-orange
@@ -170,17 +172,17 @@ export class Player {
     console.log('   Position:', this.mesh.position);
     console.log('   Pulse Radius:', this.pulseRadius);
     console.log('   Entities count:', entities.length);
-    
+
     // Save pulse data for wave-based detection
     const pulseOrigin = this.mesh.position.clone();
-    
+
     // Pass to level for tracking (if level exists)
     if (levelInstance) {
       levelInstance.lastPulseOrigin = pulseOrigin;
       levelInstance.lastPulseTime = levelInstance.gameTime || 0;
       console.log('   Level pulse time set:', levelInstance.gameTime);
     }
-    
+
     // Hide tutorial hint on first pulse
     if (!this.hasUsedPulse) {
       this.hasUsedPulse = true;
@@ -190,10 +192,10 @@ export class Player {
         tutorialHint.classList.add('hidden');
       }
     }
-    
+
     // Audio feedback
     this.audioSystem.playPulseSound();
-    
+
     // === VISUAL EFFECT: Spawn PulseWave ===
     console.log('   💫 Creating PulseWave...');
     const pulseWave = new PulseWave(
@@ -204,18 +206,18 @@ export class Player {
     );
     this.activePulses.push(pulseWave);
     console.log('   Active pulses:', this.activePulses.length);
-    
+
     // === GUIDE BEAM to nearest orb ===
     console.log('   🎯 Creating guide beam...');
     this.createGuideBeam(entities);
-    
+
     // Flash the light
     const originalIntensity = this.light.intensity;
     this.light.intensity = 5;
     setTimeout(() => {
       this.light.intensity = originalIntensity;
     }, 100);
-    
+
     // Note: Wave-based detection now handled in Level update loop
     // This allows for proper expanding wave animation
   }
@@ -223,10 +225,10 @@ export class Player {
   takeDamage(amount) {
     this.currentLumen -= amount;
     console.log(`💔 Took ${amount} damage. Lumen: ${this.currentLumen.toFixed(1)}`);
-    
+
     // Audio feedback
     this.audioSystem.playCollisionSound(0.5);
-    
+
     if (this.currentLumen <= 0) {
       this.die();
     }
@@ -235,7 +237,7 @@ export class Player {
   heal(amount) {
     this.currentLumen = Math.min(this.maxLumen, this.currentLumen + amount);
     console.log(`💚 Healed ${amount}. Lumen: ${this.currentLumen.toFixed(1)}`);
-    
+
     // Audio feedback
     this.audioSystem.playNote(0.7);
   }
@@ -243,37 +245,37 @@ export class Player {
   onOrbCollected() {
     this.orbsCollected++;
     console.log(`⭐ Orb collected! Total: ${this.orbsCollected}`);
-    
+
     // Save to localStorage for music layer persistence
     try {
       localStorage.setItem('luminaVoyage_orbsCollected', this.orbsCollected.toString());
     } catch (e) {
       console.warn('Could not save orbs collected:', e);
     }
-    
+
     // Multi-sensory progression
     // Visual: Increase brightness AND light range
     // Kinetic: Increase speed
     this.speed = this.baseSpeed + (this.orbsCollected * 2); // +2 speed per orb
-    
+
     // Increase pulse radius
     this.pulseRadius = this.basePulseRadius + (this.orbsCollected * 2); // +2 radius per orb
-    
+
     // Increase base emissive AND light intensity/range
     this.baseEmissiveIntensity = 0.5 + (this.orbsCollected * 0.5); // Start at 0.5, increase
     this.light.intensity = 0.5 + (this.orbsCollected * 1.5); // Brighter with each orb
     this.light.distance = 8 + (this.orbsCollected * 3); // Farther reach
-    
+
     // Increase scale
     const newScale = 0.6 + (this.orbsCollected * 0.1); // Get bigger
     this.mesh.scale.setScalar(newScale);
-    
+
     // Audio: Add music layer (handled by AudioSystem)
     this.audioSystem.addMusicLayer(this.orbsCollected);
-    
+
     console.log(`🚀 Speed: ${this.speed}, Light: ${this.light.intensity.toFixed(1)}, Scale: ${newScale.toFixed(1)}`);
   }
-  
+
   /**
    * Create guide beam to nearest orb (from React code)
    * Now follows player position in real-time!
@@ -286,21 +288,21 @@ export class Player {
       this.guideBeam.material.dispose();
       this.guideBeam = null;
     }
-    
+
     // Clear previous beam update interval
     if (this.guideBeamInterval) {
       clearInterval(this.guideBeamInterval);
       this.guideBeamInterval = null;
     }
-    
+
     // Find nearest uncollected orb
     const uncollectedOrbs = entities.filter(e => e.constructor.name === 'EnergyOrb' && !e.collected);
-    
+
     if (uncollectedOrbs.length === 0) return;
-    
+
     let nearestOrb = null;
     let minDistance = Infinity;
-    
+
     uncollectedOrbs.forEach(orb => {
       const dist = this.mesh.position.distanceTo(orb.mesh.position);
       if (dist < minDistance) {
@@ -308,14 +310,14 @@ export class Player {
         nearestOrb = orb;
       }
     });
-    
+
     if (!nearestOrb) return;
-    
+
     // Store reference for real-time updates
     this.guideBeamTarget = nearestOrb;
-    
+
     console.log('📍 Guide beam pointing to nearest orb');
-    
+
     // Create beam geometry with many segments for smooth curve
     const points = this.calculateBeamPoints(this.mesh.position, nearestOrb.mesh.position);
     const geometry = new THREE.BufferGeometry().setFromPoints(points);
@@ -325,10 +327,10 @@ export class Player {
       opacity: 0.8,
       linewidth: 2
     });
-    
+
     this.guideBeam = new THREE.Line(geometry, material);
     this.scene.add(this.guideBeam);
-    
+
     // Make nearest orb IMMEDIATELY glow bright (most important!)
     if (nearestOrb.mesh && nearestOrb.mesh.material) {
       nearestOrb.isRevealed = true;
@@ -341,47 +343,47 @@ export class Player {
       nearestOrb.light.intensity = 3;
       nearestOrb.light.color.setHex(0xFFD700);
     }
-    
+
     // Real-time beam update every 16ms (60fps)
     this.guideBeamInterval = setInterval(() => {
       if (!this.guideBeam || !this.guideBeamTarget || this.guideBeamTarget.collected) {
         this.removeGuideBeam();
         return;
       }
-      
+
       // Update beam points to follow player
       const newPoints = this.calculateBeamPoints(this.mesh.position, this.guideBeamTarget.mesh.position);
       this.guideBeam.geometry.setFromPoints(newPoints);
       this.guideBeam.geometry.attributes.position.needsUpdate = true;
     }, 16);
-    
+
     // Remove beam after 3 seconds
     setTimeout(() => {
       this.removeGuideBeam();
     }, 3000);
   }
-  
+
   /**
    * Calculate smooth curved beam points
    */
   calculateBeamPoints(start, end) {
     const points = [];
     const segments = 20;
-    
+
     for (let i = 0; i <= segments; i++) {
       const t = i / segments;
       const pos = new THREE.Vector3().lerpVectors(start, end, t);
-      
+
       // Add subtle wave effect
       const waveOffset = Math.sin(t * Math.PI * 3 + Date.now() * 0.003) * 0.1 * (1 - Math.abs(t - 0.5) * 2);
       pos.y += waveOffset;
-      
+
       points.push(pos);
     }
-    
+
     return points;
   }
-  
+
   /**
    * Remove guide beam and cleanup
    */
