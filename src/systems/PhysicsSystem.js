@@ -7,12 +7,12 @@ export class PhysicsSystem {
   constructor() {
     this.world = new CANNON.World();
     this.world.gravity.set(0, 0, 0); // Zero gravity for space environment
-    
+
     // Performance optimizations
     this.world.broadphase = new CANNON.NaiveBroadphase();
     this.world.solver.iterations = 10;
     this.world.solver.tolerance = 0.1;
-    
+
     // Default material
     this.defaultMaterial = new CANNON.Material('default');
     this.defaultContactMaterial = new CANNON.ContactMaterial(
@@ -24,7 +24,7 @@ export class PhysicsSystem {
       }
     );
     this.world.addContactMaterial(this.defaultContactMaterial);
-    
+
     // Storage for bodies
     this.bodies = new Map();
   }
@@ -62,6 +62,14 @@ export class PhysicsSystem {
     }
   }
 
+  clear() {
+    // Remove all bodies from world
+    const bodies = [...this.bodies.values()];
+    bodies.forEach(body => this.world.removeBody(body));
+    this.bodies.clear();
+    console.log('🧹 Physics world cleared');
+  }
+
   getBody(entityId) {
     return this.bodies.get(entityId);
   }
@@ -80,10 +88,10 @@ export class PhysicsSystem {
     // Fixed timestep to prevent physics instability
     const fixedTimeStep = 1 / 60;
     const maxSubSteps = 3;
-    
+
     // Clamp deltaTime to prevent spiral of death
     const clampedDelta = Math.min(deltaTime, 0.1);
-    
+
     this.world.step(fixedTimeStep, clampedDelta, maxSubSteps);
   }
 
