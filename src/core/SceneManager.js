@@ -19,25 +19,34 @@ export class SceneManager {
    */
   loadLevel(LevelClass) {
     console.log('📦 SceneManager: Loading level...');
-    
+
     // Unload current level
     if (this.currentLevel) {
       this.unloadCurrentLevel();
     }
-    
+
     // Create new level instance
     this.currentLevel = new LevelClass(this.engine);
     this.currentLevel.load();
-    
+
     // Update composer with new scene
     this.updateComposer();
-    
+
     // Set audio scale based on level
     const levelIndex = this.getLevelIndex(this.currentLevel.name);
     this.engine.audioSystem.setScaleByLevel(levelIndex);
-    
+
+    // Ensure camera is looking at player BEFORE first render
+    if (this.currentLevel.player && this.currentLevel.player.mesh) {
+      const playerPos = this.currentLevel.player.mesh.position;
+      this.engine.cameraSystem.camera.lookAt(playerPos);
+      this.engine.cameraSystem.camera.updateProjectionMatrix();
+    }
+
     console.log(`✅ Level loaded: ${this.currentLevel.name}`);
-    
+    console.log(`   Composer passes: ${this.engine.composer.passes.length}`);
+    console.log(`   Scene children: ${this.currentLevel.scene.children.length}`);
+
     return this.currentLevel;
   }
 
@@ -46,9 +55,10 @@ export class SceneManager {
    */
   unloadCurrentLevel() {
     if (!this.currentLevel) return;
-    
+
     console.log(`🗑️ Unloading level: ${this.currentLevel.name}`);
     this.currentLevel.unload();
+    this.engine.physicsSystem.clear(); // Ensure clean slate
     this.currentLevel = null;
   }
 
@@ -57,19 +67,25 @@ export class SceneManager {
    */
   updateComposer() {
     if (!this.engine.composer || !this.currentLevel) return;
-    
-    // Remove old render pass
-    if (this.engine.composer.passes.length > 0 && 
-        this.engine.composer.passes[0] instanceof RenderPass) {
-      this.engine.composer.passes.shift();
-    }
-    
-    // Add new render pass
+
+    // Completely rebuild passes to ensure correct order
+    // Remove ALL existing passes
+    this.engine.composer.passes = [];
+
+    // 1. Add RenderPass FIRST (renders the scene)
     const renderPass = new RenderPass(
-      this.currentLevel.scene, 
+      this.currentLevel.scene,
       this.engine.cameraSystem.camera
     );
-    this.engine.composer.passes.unshift(renderPass);
+    this.engine.composer.addPass(renderPass);
+
+    // 2. Add BloomPass SECOND (post-process effect)
+    if (this.engine.bloomPass) {
+      this.engine.bloomPass.renderToScreen = true; // This is the final output
+      this.engine.composer.addPass(this.engine.bloomPass);
+    }
+
+    console.log('🎬 Composer updated with', this.engine.composer.passes.length, 'passes');
   }
 
   /**
@@ -80,45 +96,45 @@ export class SceneManager {
   transitionToLevel(NextLevelClass, options = {}) {
     if (this.isTransitioning) return;
     this.isTransitioning = true;
-    
+
     const {
       duration = 1000,
       color = 'white',
       message = null,
       messageDuration = 1500
     } = options;
-    
+
     console.log('🌀 SceneManager: Starting level transition...');
-    
+
     // Create transition overlay
     this.createTransitionOverlay(color);
-    
+
     // Fade in
     requestAnimationFrame(() => {
       this.transitionOverlay.style.opacity = '1';
     });
-    
+
     // Show message if provided
     if (message) {
       setTimeout(() => {
         this.showTransitionMessage(message);
       }, duration * 0.5);
     }
-    
+
     // Load new level after fade
     setTimeout(() => {
       const newLevel = this.loadLevel(NextLevelClass);
-      
+
       // Update engine's reference
       this.engine.currentLevel = newLevel;
-      
+
       // Show HUD
       document.getElementById('hud')?.classList.remove('hidden');
-      
+
       // Start fade out
       setTimeout(() => {
         this.transitionOverlay.style.opacity = '0';
-        
+
         // Cleanup after fade out
         setTimeout(() => {
           this.removeTransitionOverlay();
@@ -159,11 +175,11 @@ export class SceneManager {
    */
   showTransitionMessage(message) {
     if (!this.transitionOverlay) return;
-    
-    const { title, subtitle } = typeof message === 'string' 
+
+    const { title, subtitle } = typeof message === 'string'
       ? { title: message, subtitle: null }
       : message;
-    
+
     this.transitionOverlay.innerHTML = `
       <h1 style="font-size: 48px; margin-bottom: 20px; color: #000;">
         ${title}
