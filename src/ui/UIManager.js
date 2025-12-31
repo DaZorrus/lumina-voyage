@@ -1,5 +1,6 @@
 import { Storage } from '../utils/Storage.js';
 import { MenuBackground } from './MenuBackground.js';
+import { ChapterComplete } from './ChapterComplete.js';
 
 /**
  * UIManager - Handles all UI screens (Loading, Menu, Level Select)
@@ -24,6 +25,9 @@ export class UIManager {
     // Loading state
     this.loadProgress = 0;
     this.loadingComplete = false;
+
+    // Chapter Complete UI
+    this.chapterCompleteUI = new ChapterComplete(this.engine);
   }
 
   saveSettings() {
@@ -275,12 +279,37 @@ export class UIManager {
 
       document.body.style.cursor = 'none';
       console.log('✅ Level started successfully');
+
+      // Show chapter title
+      this.showChapterStartTitle(levelIndex);
     }
   }
 
-  /**
-   * Return to main menu
-   */
+  showChapterStartTitle(levelIndex) {
+    const titleOverlay = document.getElementById('chapter-title-overlay');
+    const titleText = document.getElementById('chapter-title-text');
+    const subtitleText = document.getElementById('chapter-subtitle-text');
+
+    if (!titleOverlay || !titleText || !subtitleText) return;
+
+    const chapters = {
+      0: { title: 'Chapter 0', subtitle: 'The Void' },
+      1: { title: 'Chapter 1', subtitle: 'The Ascent' }
+    };
+
+    const chapter = chapters[levelIndex] || { title: `Chapter ${levelIndex}`, subtitle: '' };
+    titleText.textContent = chapter.title;
+    subtitleText.textContent = chapter.subtitle;
+
+    // Show
+    titleOverlay.classList.remove('hidden');
+
+    // Hide after delay
+    setTimeout(() => {
+      titleOverlay.classList.add('hidden');
+    }, 3000);
+  }
+
   /**
    * Return to main menu
    */
@@ -346,5 +375,9 @@ export class UIManager {
     }
 
     document.body.style.cursor = 'default';
+  }
+
+  showChapterComplete(levelIndex, options = {}) {
+    this.chapterCompleteUI.show(levelIndex, options);
   }
 }

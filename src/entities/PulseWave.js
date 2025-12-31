@@ -12,48 +12,54 @@ export class PulseWave {
     this.duration = duration;
     this.time = 0;
     this.active = true;
-    
+
     // Create expanding ring geometry - Clean proportions like React reference
     // Inner radius 0.9, outer 1.0 = thin elegant ring
     const geometry = new THREE.RingGeometry(0.9, 1.0, 64);
-    const material = new THREE.MeshBasicMaterial({
-      color: 0xffffff, // White for clean look
+    const material = new THREE.MeshStandardMaterial({
+      color: 0x000000, // Black base
+      emissive: 0xffffff, // White glow
+      emissiveIntensity: 8.0, // High enough to keep bloom active until very low opacity
       transparent: true,
-      opacity: 0.8,
+      opacity: 0.2, // Low base opacity so it's not too bright
       side: THREE.DoubleSide,
       blending: THREE.AdditiveBlending
     });
-    
+
     this.mesh = new THREE.Mesh(geometry, material);
     this.mesh.position.copy(origin);
     this.mesh.rotation.x = -Math.PI / 2; // Lay flat
     scene.add(this.mesh);
   }
-  
+
   update(deltaTime) {
     if (!this.active) return false;
-    
+
     this.time += deltaTime;
-    
+
     // Calculate progress (0 to 1)
     const progress = this.time / this.duration;
-    
+
     if (progress >= 1) {
       this.destroy();
       return false;
     }
-    
+
     // Expand scale
     const scale = progress * this.maxRadius;
     this.mesh.scale.set(scale, scale, scale);
-    
-    // Fade out (cubic easing)
-    const opacity = 1 - Math.pow(progress, 3);
+
+    // Fade out - keep base opacity low but intensity high
+    const opacity = 0.2 * (1 - Math.pow(progress, 2));
     this.mesh.material.opacity = opacity;
-    
+
+    // Maintain high intensity so bloom threshold (0.85) is only crossed 
+    // when the wave is nearly invisible (opacity < ~0.1)
+    this.mesh.material.emissiveIntensity = 8.0;
+
     return true;
   }
-  
+
   destroy() {
     this.active = false;
     if (this.mesh) {

@@ -101,7 +101,8 @@ export class SceneManager {
       duration = 1000,
       color = 'white',
       message = null,
-      messageDuration = 1500
+      messageDuration = 1500,
+      skipFadeIn = false
     } = options;
 
     console.log('🌀 SceneManager: Starting level transition...');
@@ -109,10 +110,16 @@ export class SceneManager {
     // Create transition overlay
     this.createTransitionOverlay(color);
 
-    // Fade in
-    requestAnimationFrame(() => {
+    // Fade in or start opaque
+    if (skipFadeIn) {
       this.transitionOverlay.style.opacity = '1';
-    });
+    } else {
+      requestAnimationFrame(() => {
+        this.transitionOverlay.style.opacity = '1';
+      });
+    }
+
+    const startDelay = skipFadeIn ? 0 : duration;
 
     // Show message if provided
     if (message) {
@@ -141,7 +148,7 @@ export class SceneManager {
           this.isTransitioning = false;
         }, duration);
       }, messageDuration);
-    }, duration + (message ? messageDuration : 0));
+    }, startDelay + (message ? messageDuration : 0));
   }
 
   /**
