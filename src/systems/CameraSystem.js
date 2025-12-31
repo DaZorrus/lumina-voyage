@@ -14,19 +14,19 @@ export class CameraSystem {
     );
 
     this.camera.position.set(0, 5, 10);
-    
+
     this.target = null;
     this.offset = new THREE.Vector3(0, 3, 8);
     this.lookAheadOffset = new THREE.Vector3(0, 0, 0); // Look ahead for Level 1
     this.smoothFactor = 8; // Higher value = faster catch-up, multiplied by deltaTime
     this.bankAngle = 0;
     this.maxBankAngle = 0.2;
-    
+
     // FOV dynamics (juice effect)
     this.baseFov = 70; // Base FOV for Level 0
     this.targetFov = this.baseFov;
     this.orbsCollected = 0; // Track for FOV increase
-    
+
     // Zoom control
     this.minDistance = 8;
     this.maxDistance = 30;
@@ -39,7 +39,7 @@ export class CameraSystem {
       e.preventDefault();
       this.currentDistance += e.deltaY * 0.01;
       this.currentDistance = Math.max(this.minDistance, Math.min(this.maxDistance, this.currentDistance));
-      
+
       // Update offset based on distance
       const ratio = this.currentDistance / 15;
       this.offset.set(0, 3 * ratio, 8 * ratio);
@@ -48,11 +48,11 @@ export class CameraSystem {
 
   follow(targetEntity) {
     this.target = targetEntity;
-    
+
     // Reset camera settings for new target
     this.lookAheadOffset.set(0, 0, 0);
     this.orbsCollected = 0;
-    
+
     // Set initial farther position
     if (this.target && this.target.mesh) {
       this.camera.position.set(
@@ -67,26 +67,19 @@ export class CameraSystem {
   update(deltaTime, mouseVelocityX) {
     if (!this.target || !this.target.mesh) return;
 
-    // === FOV DYNAMICS (Juice Effect) ===
-    // Increase FOV with collected orbs for sense of speed
-    this.targetFov = this.baseFov + (this.orbsCollected * 2); // +2 FOV per orb
-    
-    // Smooth FOV transitions
-    const currentFov = this.camera.fov;
-    this.camera.fov = THREE.MathUtils.lerp(currentFov, this.targetFov, deltaTime * 2);
-    this.camera.updateProjectionMatrix();
-    
+    // FOV is now managed by levels for better precision
+
     // Calculate target position
     const targetPosition = this.target.mesh.position.clone().add(this.offset);
-    
+
     // Smooth lerp with deltaTime for frame-rate independent smoothing
     const lerpFactor = 1 - Math.exp(-this.smoothFactor * deltaTime);
     this.camera.position.lerp(targetPosition, lerpFactor);
-    
+
     // Look at player (or ahead if lookAheadOffset is set)
     const lookAtTarget = this.target.mesh.position.clone().add(this.lookAheadOffset);
     this.camera.lookAt(lookAtTarget);
-    
+
     // Banking effect disabled to prevent any shake-like feeling
     // Camera tilt was causing perceived shake during fast movement
     this.bankAngle *= 0.95; // Just decay any existing tilt
@@ -109,7 +102,7 @@ export class CameraSystem {
 
   shake(intensity = 0.5, duration = 0.3) {
     const originalPos = this.camera.position.clone();
-    
+
     gsap.to(this.camera.position, {
       x: `+=${(Math.random() - 0.5) * intensity}`,
       y: `+=${(Math.random() - 0.5) * intensity}`,
@@ -127,14 +120,14 @@ export class CameraSystem {
     this.camera.aspect = aspect;
     this.camera.updateProjectionMatrix();
   }
-  
+
   /**
    * Update FOV based on orbs collected (juice effect)
    */
   setOrbsCollected(count) {
     this.orbsCollected = count;
   }
-  
+
   /**
    * Set base FOV for current level
    */
@@ -142,7 +135,7 @@ export class CameraSystem {
     this.baseFov = fov;
     this.targetFov = fov;
   }
-  
+
   /**
    * Reset camera to default state
    */
