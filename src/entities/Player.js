@@ -13,6 +13,7 @@ export class Player {
     this.physicsSystem = physicsSystem;
     this.audioSystem = audioSystem;
 
+
     // Properties
     this.currentLumen = 20;
     this.maxLumen = 100;
@@ -32,7 +33,7 @@ export class Player {
     const material = new THREE.MeshStandardMaterial({
       color: 0xffaa00,
       emissive: 0xffaa00,
-      emissiveIntensity: 0.02, // Start dim
+      emissiveIntensity: 1.2, // Solid base visibility (was 0.02)
       roughness: 0.35,
       metalness: 0.7,
       flatShading: true // Low poly look
@@ -73,7 +74,46 @@ export class Player {
     // Breathing effect
     this.breathingTimer = 0;
     this.breathingSpeed = 0.5; // Cycles per second
-    this.baseEmissiveIntensity = 1;
+
+    // Visual state tracking
+    this.baseColor = new THREE.Color(0xffaa00);
+    this.currentColor = new THREE.Color(0xffaa00);
+    this.targetColor = new THREE.Color(0xffaa00);
+    this.intensityMultiplier = 1.0;
+    this.targetIntensityMultiplier = 1.0;
+
+    // Load progression from storage for consistent look and stats across chapters
+    this.baseEmissiveIntensity = 1.2; // FIXED GLOW: No longer scales (was progressive)
+
+    // Feature flags
+    this.isTrailEnabled = true;
+    this.isPulseEnabled = true;
+
+    this.loadProgression();
+  }
+
+  loadProgression() {
+    try {
+      const saved = localStorage.getItem('luminaVoyage_orbsCollected');
+      if (saved) {
+        const count = parseInt(saved);
+        this.orbsCollected = Math.min(count, 5); // Cap for safety
+
+        // Anchored to baseSpeed to prevent stacking over multiple plays
+        this.speed = this.baseSpeed + (this.orbsCollected * 1.5);
+        this.pulseRadius = this.basePulseRadius + (this.orbsCollected * 1.5);
+
+        // Visuals remain consistent (no emissive scaling as requested)
+        this.light.distance = 15;
+
+        const newScale = 0.6 + (this.orbsCollected * 0.08);
+        this.mesh.scale.setScalar(newScale);
+
+        console.log(`✨ Player progression loaded: ${this.orbsCollected} orbs. Speed: ${this.speed.toFixed(1)}`);
+      }
+    } catch (e) {
+      console.warn('Could not load player progression:', e);
+    }
   }
 
   update(deltaTime, inputManager, entities = [], levelInstance = null) {
@@ -122,13 +162,16 @@ export class Player {
       this.pulseCooldown -= deltaTime;
     }
 
-    if (inputManager.justPressed('f') && this.pulseCooldown <= 0) {
+    if (this.isPulseEnabled && inputManager.justPressed('f') && this.pulseCooldown <= 0) {
       this.pulse(entities, levelInstance); // Pass levelInstance for wave tracking
       this.pulseCooldown = this.pulseCooldownMax;
     }
 
     // === EMIT TRAIL ===
-    if (speed > 0.1) {
+    if (this.isTrailEnabled && speed > 0.1) {
+      if (this.particleTrail.setBaseColor) {
+        this.particleTrail.setBaseColor(this.currentColor);
+      }
       this.particleTrail.emit(currentPos, velocity);
     }
 
@@ -137,35 +180,57 @@ export class Player {
 
     // === UPDATE PULSE WAVES ===
     this.activePulses = this.activePulses.filter(pulse => pulse.update(deltaTime));
+
+    // Smoothly transition colors and intensity multipliers
+    this.currentColor.lerp(this.targetColor, deltaTime * 5);
+    this.intensityMultiplier += (this.targetIntensityMultiplier - this.intensityMultiplier) * deltaTime * 5;
+  }
+
+  setVisualState(state = 'normal') {
+    switch (state) {
+      case 'boost':
+        this.targetColor.setHex(0x99eeff); // Bright Cyan for light speed
+        this.targetIntensityMultiplier = 1.3;
+        break;
+      case 'danger':
+        this.targetColor.setHex(0xaa00ff); // Purple for debuffs
+        this.targetIntensityMultiplier = 1.6;
+        break;
+      case 'climax':
+        this.targetColor.setHex(0xffffff);
+        this.targetIntensityMultiplier = 5.0;
+        break;
+      case 'normal':
+      default:
+        this.targetColor.copy(this.baseColor);
+        this.targetIntensityMultiplier = 1.0;
+        break;
+    }
   }
 
   updateVisuals() {
     // Scale and intensity based on energy
     const energyPercent = this.currentLumen / this.maxLumen;
 
-    // Breathing effect (sin wave)
-    const breathingFactor = Math.sin(this.breathingTimer * Math.PI * 2) * 0.3 + 1; // 0.7 to 1.3
+    // Breathing effect (sin wave) - Very distinct breathing (1.2 to 1.8 range)
+    // Synchronized breathing timer ensures it's always active
+    const breathingFactor = Math.sin(this.breathingTimer * Math.PI * 2) * 0.3 + 1.5;
 
-    // Emissive intensity with breathing
-    const baseIntensity = 1 + energyPercent * 2;
-    this.mesh.material.emissiveIntensity = baseIntensity * breathingFactor;
+    // Calculate intensity: Unified fixed base (no orb scaling as requested)
+    const baseIntensity = 1.8; // Bright and premium
+    const energyBonus = energyPercent * 0.4;
 
-    // Light intensity with breathing
-    this.light.intensity = (1 + energyPercent * 2) * breathingFactor;
+    // Apply current intensity multiplier (from visual states like climax or boost)
+    const finalIntensity = (baseIntensity + energyBonus) * this.intensityMultiplier;
 
-    // Scale with subtle breathing
-    const baseScale = 0.8 + energyPercent * 0.4;
-    const scalePulse = Math.sin(this.breathingTimer * Math.PI * 2) * 0.05 + 1; // 0.95 to 1.05
-    this.mesh.scale.setScalar(baseScale * scalePulse);
+    // Sync mesh and light perfectly
+    this.mesh.material.emissiveIntensity = finalIntensity * (breathingFactor / 1.5);
+    this.mesh.material.emissive.copy(this.currentColor);
 
-    // Color shift when low
-    if (energyPercent < 0.3) {
-      this.mesh.material.emissive.setHex(0xff4400); // Red-orange
-      this.light.color.setHex(0xff4400);
-    } else {
-      this.mesh.material.emissive.setHex(0xffaa00); // Orange-yellow
-      this.light.color.setHex(0xffaa00);
-    }
+    // Light intensity matches emissive for physical accuracy
+    this.light.intensity = this.mesh.material.emissiveIntensity * 1.8;
+    this.light.color.copy(this.currentColor);
+    this.light.distance = 18; // Wide aura reach
   }
 
   pulse(entities, levelInstance = null) {
@@ -255,19 +320,17 @@ export class Player {
 
     // Multi-sensory progression
     // Visual: Increase brightness AND light range
-    // Kinetic: Increase speed
-    this.speed = this.baseSpeed + (this.orbsCollected * 2); // +2 speed per orb
+    // Kinetic: Increase speed (softer scale)
+    this.speed = this.baseSpeed + (this.orbsCollected * 1.5);
 
     // Increase pulse radius
-    this.pulseRadius = this.basePulseRadius + (this.orbsCollected * 2); // +2 radius per orb
+    this.pulseRadius = this.basePulseRadius + (this.orbsCollected * 1.5);
 
-    // Increase base emissive AND light intensity/range
-    this.baseEmissiveIntensity = 0.5 + (this.orbsCollected * 0.5); // Start at 0.5, increase
-    this.light.intensity = 0.5 + (this.orbsCollected * 1.5); // Brighter with each orb
-    this.light.distance = 8 + (this.orbsCollected * 3); // Farther reach
+    // Visual: Keep glow fixed as requested
+    this.light.distance = 15;
 
-    // Increase scale
-    const newScale = 0.6 + (this.orbsCollected * 0.1); // Get bigger
+    // Increase scale (subtle)
+    const newScale = 0.6 + (this.orbsCollected * 0.08);
     this.mesh.scale.setScalar(newScale);
 
     // Audio: Add music layer (handled by AudioSystem)
