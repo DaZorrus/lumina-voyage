@@ -958,6 +958,288 @@
       letter-spacing: 6px;
       text-transform: uppercase;
     }
+
+    /* ========================================
+       INSTRUCTIONS SCREEN
+       ======================================== */
+    #instructions-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+    }
+
+    #instructions-screen.hidden {
+      display: none;
+    }
+
+    .instructions-title {
+      font-size: 40px;
+      color: #00D9FF;
+      letter-spacing: 10px;
+      margin-bottom: 25px;
+      text-transform: uppercase;
+      text-shadow: 0 0 20px rgba(0, 217, 255, 0.6);
+      border-bottom: 2px solid rgba(0, 217, 255, 0.3);
+      padding-bottom: 10px;
+    }
+
+    /* --- TABS --- */
+    .instructions-tabs {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .tab-btn {
+      padding: 12px 30px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.5);
+      cursor: pointer;
+      font-family: 'Courier New', monospace;
+      font-weight: bold;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tab-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    .tab-btn.active {
+      background: rgba(0, 217, 255, 0.1);
+      border-color: #00D9FF;
+      color: #00D9FF;
+      box-shadow: 0 0 15px rgba(0, 217, 255, 0.2);
+    }
+
+    /* Hiệu ứng gạch dưới tab active */
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: #00D9FF;
+    }
+
+    /* --- CONTENT BOX --- */
+    .instructions-content {
+      width: 850px;
+      min-height: 450px;
+      background: rgba(15, 20, 30, 0.6);
+      border: 1px solid rgba(0, 217, 255, 0.2);
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+      border-radius: 8px;
+      padding: 40px;
+      position: relative;
+    }
+
+    /* Đường kẻ trang trí nền */
+    .instructions-content::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image:
+        linear-gradient(rgba(0, 217, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 217, 255, 0.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .tab-content {
+      display: none;
+      height: 100%;
+      position: relative;
+      z-index: 1;
+      animation: slideUp 0.4s ease-out;
+    }
+
+    .tab-content.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .tab-content h3 {
+      font-size: 24px;
+      color: #fff;
+      margin-bottom: 5px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+    }
+
+    .tab-subtitle {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 30px;
+      font-style: italic;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 15px;
+    }
+
+    /* --- GRID SYSTEM FOR INFO CARDS --- */
+    .instr-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .instr-card {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-left: 3px solid rgba(255, 255, 255, 0.2);
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .instr-card:hover {
+      background: rgba(255, 255, 255, 0.06);
+      transform: translateX(5px);
+    }
+
+    .instr-card h4 {
+      font-size: 14px;
+      color: #00D9FF;
+      margin-bottom: 10px;
+      letter-spacing: 2px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .instr-card.warm h4 {
+      color: #ffaa00;
+    }
+
+    /* Màu vàng cho Chapter 0 */
+    .instr-card.danger h4 {
+      color: #ff4444;
+    }
+
+    /* Màu đỏ cho nguy hiểm */
+
+    .instr-card p {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+      line-height: 1.5;
+    }
+
+    .highlight-gold {
+      color: #ffaa00;
+      font-weight: bold;
+    }
+
+    .highlight-blue {
+      color: #00D9FF;
+      font-weight: bold;
+    }
+
+    .highlight-purple {
+      color: #d400ff;
+      font-weight: bold;
+      text-shadow: 0 0 5px #d400ff;
+    }
+
+    .highlight-green {
+      color: #00ff00;
+      font-weight: bold;
+      text-shadow: 0 0 5px #00ff00;
+    }
+
+    .highlight-red {
+      color: #ff4444;
+      font-weight: bold;
+      text-shadow: 0 0 5px #ff4444;
+    }
+
+    /* --- CONTROLS LAYOUT --- */
+    .controls-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+
+    .control-section h4 {
+      color: rgba(255, 255, 255, 0.3);
+      font-size: 12px;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .control-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+    }
+
+    .control-desc {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 14px;
+    }
+
+    /* --- KEYCAP STYLE (Phím bấm đẹp) --- */
+    .key-cap {
+      display: inline-block;
+      min-width: 32px;
+      padding: 4px 8px;
+      background: linear-gradient(to bottom, #333, #111);
+      color: #00D9FF;
+      border: 1px solid #555;
+      border-bottom: 3px solid #000;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-weight: bold;
+      font-size: 13px;
+      text-align: center;
+      box-shadow: 0 4px 4px rgba(0, 0, 0, 0.4);
+      text-shadow: 0 0 5px rgba(0, 217, 255, 0.6);
+      margin: 0 2px;
+    }
+
+    .key-group {
+      display: flex;
+      align-items: center;
+    }
+
+    .btn-back {
+      margin-top: 25px;
+      width: 200px;
+    }
   </style>
 </head>
 
@@ -978,6 +1260,7 @@
     <p class="menu-subtitle">An Atmospheric Journey Through Light</p>
     <div class="menu-buttons">
       <button class="menu-btn primary" id="btn-start">START JOURNEY</button>
+      <button class="menu-btn" id="btn-instructions">HOW TO PLAY</button>
       <button class="menu-btn" id="btn-settings">SETTINGS</button>
       <button class="menu-btn" id="btn-credits">CREDITS</button>
     </div>
@@ -1089,6 +1372,168 @@
     </div>
 
     <button class="btn-back" id="btn-back-credits">← BACK</button>
+  </div>
+
+  <!-- ========== INSTRUCTIONS SCREEN ========== -->
+  <div id="instructions-screen" class="hidden">
+    <h2 class="instructions-title">System Manual</h2>
+
+    <div class="instructions-tabs">
+      <button class="tab-btn active" data-tab="ch0">Chapter 0</button>
+      <button class="tab-btn" data-tab="ch1">Chapter 1</button>
+      <button class="tab-btn" data-tab="controls">Controls</button>
+    </div>
+
+    <div class="instructions-content">
+
+      <!-- CHAPTER 0: THE VOID -->
+      <div class="tab-content active" id="tab-ch0">
+        <h3>The Void</h3>
+        <div class="tab-subtitle">Initiation Sequence • Low Speed • Exploration</div>
+
+        <div class="instr-grid">
+          <div class="instr-card warm">
+            <h4>⚡ MISSION GOAL</h4>
+            <p>Drift through the silence. Collect <span class="highlight-gold">Energy Orbs</span> to unlock the
+              portal.</p>
+          </div>
+
+          <div class="instr-card warm">
+            <h4>👁️ VISIBILITY</h4>
+            <p>The Void is dark. Follow the faint trail of star-dust and use your intuition.</p>
+          </div>
+
+          <div class="instr-card warm">
+            <h4>📡 SONAR PULSE</h4>
+            <p>Press <span class="key-cap">F</span> to emit a pulse wave. It reveals distant Orbs hidden in the
+              darkness.</p>
+          </div>
+
+          <div class="instr-card warm">
+            <h4>🛡️ STATUS</h4>
+            <p>No enemies detected. Focus on mastering flight controls and orientation.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHAPTER 1: THE ASCENT -->
+      <div class="tab-content" id="tab-ch1">
+        <h3>The Ascent</h3>
+        <div class="tab-subtitle">High Velocity • Hazard Evasion • Gravity Slingshot</div>
+
+        <div class="instr-grid">
+          <!-- 1. Goal: Photons -->
+          <div class="instr-card">
+            <h4>🚀 ACCELERATION</h4>
+            <p>Collect <span class="highlight-blue">Blue Photons</span> to gain velocity. <br>Target: Reach <span
+                class="highlight-blue">100% LIGHT SPEED</span> to escape.</p>
+          </div>
+
+          <!-- 2. Hazards: Meteors & Comets -->
+          <div class="instr-card danger">
+            <h4>☄️ EVASIVE MANEUVERS</h4>
+            <p>Dodge <span class="highlight-red">Asteroids</span> and <span
+                style="color: #d400ff; font-weight: bold;">Shadow Comets</span>.<br>Collisions cause critical speed
+              loss.</p>
+          </div>
+
+          <!-- 3. Mechanic: Slingshot (Good) -->
+          <div class="instr-card">
+            <h4>🌀 GRAVITY SLINGSHOT</h4>
+            <p>Fly through the <span class="highlight-green">GREEN OUTER RING</span> of a Black Hole.</p>
+            <p style="margin-top:5px; font-size: 13px;">
+              ➢ When you glow <span class="highlight-green">GREEN</span>, press <span class="key-cap">F</span> to
+              Boost!
+            </p>
+          </div>
+
+          <!-- 4. Mechanic: Black Hole Center (Bad) -->
+          <div class="instr-card danger">
+            <h4>⛔ EVENT HORIZON</h4>
+            <p>Do NOT enter the <span class="highlight-red">Center</span> of Black Holes.<br>High gravity will trap
+              you and drain speed.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTROLS -->
+      <div class="tab-content" id="tab-controls">
+        <h3>Ship Controls</h3>
+        <div class="tab-subtitle">Control Schemes • Mode Dependent</div>
+
+        <div class="controls-layout">
+          <!-- Left Column: Chapter 0 (Free Flight) -->
+          <div class="control-section">
+            <h4 style="border-bottom-color: #ffaa00;"><span style="color: #ffaa00;">CHAPTER 0</span> • FREE FLIGHT</h4>
+
+            <div class="control-row">
+              <div class="key-group">
+                <span class="key-cap">W</span>
+                <span class="key-cap">S</span>
+              </div>
+              <span class="control-desc">Forward / Backward</span>
+            </div>
+
+            <div class="control-row">
+              <div class="key-group">
+                <span class="key-cap">A</span>
+                <span class="key-cap">D</span>
+              </div>
+              <span class="control-desc">Move Left / Right</span>
+            </div>
+
+            <div class="control-row">
+              <div class="key-group">
+                <span class="key-cap">E</span>
+                <span class="key-cap">Q</span>
+              </div>
+              <span class="control-desc">Fly Up / Down</span>
+            </div>
+
+            <div class="control-row">
+              <span class="key-cap">F</span>
+              <span class="control-desc">Sonar Pulse (Find Orbs)</span>
+            </div>
+          </div>
+
+          <!-- Right Column: Chapter 1 (3x3 Grid) -->
+          <div class="control-section">
+            <h4 style="border-bottom-color: #00D9FF;"><span style="color: #00D9FF;">CHAPTER 1</span> • LANE RUNNER</h4>
+
+            <div class="control-row">
+              <div class="key-group">
+                <span class="key-cap">W</span>
+                <span class="key-cap">S</span>
+              </div>
+              <span class="control-desc">Switch Lane Up / Down</span>
+            </div>
+
+            <div class="control-row">
+              <div class="key-group">
+                <span class="key-cap">A</span>
+                <span class="key-cap">D</span>
+              </div>
+              <span class="control-desc">Switch Lane Left / Right</span>
+            </div>
+
+            <div class="control-row">
+              <span class="key-cap">F</span>
+              <span class="control-desc">Slingshot (Timing)</span>
+            </div>
+
+            <!-- Global Control -->
+            <div class="control-row"
+              style="margin-top: 25px; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 15px;">
+              <span class="key-cap">ESC</span>
+              <span class="control-desc">Pause Menu</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <button class="btn-back" id="btn-back-instructions">BACK TO MENU</button>
   </div>
 
   <!-- ========== GAME CANVAS ========== -->

@@ -1,6 +1,7 @@
 import { Storage } from '../utils/Storage.js';
 import { MenuBackground } from './MenuBackground.js';
 import { ChapterComplete } from './ChapterComplete.js';
+import { InstructionScreen } from './InstructionScreen.js';
 
 /**
  * UIManager - Handles all UI screens (Loading, Menu, Level Select)
@@ -28,6 +29,9 @@ export class UIManager {
 
     // Chapter Complete UI
     this.chapterCompleteUI = new ChapterComplete(this.engine);
+
+    // Instruction Screen
+    this.instructionScreen = new InstructionScreen(this);
   }
 
   saveSettings() {
@@ -102,6 +106,16 @@ export class UIManager {
       if (el) el.classList.add('hidden');
     });
 
+    // Ẩn màn hình Instruction thông qua class riêng
+    this.instructionScreen.hide();
+
+    // Hiện màn hình được yêu cầu
+    if (screenName === 'instructions-screen') {
+      this.instructionScreen.show();
+      this.currentScreen = screenName;
+      return; // Kết thúc hàm luôn
+    }
+
     // Show requested screen
     const screen = document.getElementById(screenName);
     if (screen) {
@@ -162,6 +176,10 @@ export class UIManager {
 
     document.getElementById('btn-credits')?.addEventListener('click', () => {
       this.showScreen('credits-screen');
+    });
+
+    document.getElementById('btn-instructions')?.addEventListener('click', () => {
+      this.showScreen('instructions-screen');
     });
 
     // Settings sliders
