@@ -17,8 +17,12 @@ export class PauseMenu {
             if (e.key === 'Escape') {
                 // Don't pause if not running or level complete
                 if (!this.engine.isRunning) return;
-                if (this.engine.currentLevel?.isComplete) return;
-                if (this.engine.currentLevel?.gamePaused) return; // Cutscenes etc
+
+                // Don't pause if completion UI is showing
+                if (this.engine.uiManager?.chapterCompleteUI?.active) return;
+
+                // Don't pause if level explicitly blocks it (cutscenes etc)
+                if (this.engine.currentLevel?.gamePaused) return;
 
                 // Close settings if open
                 if (this.settingsPanel && !this.settingsPanel.classList.contains('hidden')) {

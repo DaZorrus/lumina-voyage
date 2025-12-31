@@ -15,6 +15,7 @@ async function init() {
   // Create engine and UI manager
   engine = new Engine();
   uiManager = new UIManager(engine);
+  engine.uiManager = uiManager; // Expose for accessibility in entities/chapters
 
   // Simulate loading
   uiManager.setLoadProgress(10);
