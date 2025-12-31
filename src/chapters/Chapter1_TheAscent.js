@@ -19,6 +19,12 @@ export class Chapter1_TheAscent extends BaseChapter {
   constructor(engine) {
     super(engine);
     this.name = 'The Ascent';
+    this.completionTitle = '🚀 LIGHT SPEED REACHED 🚀';
+    this.completionSubtitle = 'The Ascent has been conquered.';
+
+    // Start delay timer
+    this.startDelay = 2.5; // 1s for fade out + 1.5s of frozen visibility
+    this.gameStarted = false;
 
     // Speed / Progress system
     this.currentSpeed = 0;
@@ -94,21 +100,29 @@ export class Chapter1_TheAscent extends BaseChapter {
     // Win condition - sustained max speed
     this.maxSpeedSustainedTime = 0;
     this.maxSpeedRequiredDuration = 0.5; // Must maintain max speed for 0.5 seconds
+
+    // Initialize spawning cursor to prevent first-frame catch-up stutter
+    this.lastSpawnZ = -this.spawnAheadDistance;
   }
 
   setupEnvironment() {
-    // Space environment - SAME as Level 0 for consistency
-    this.scene.fog = new THREE.Fog(0x000000, 100, 600); // Same as Level 0
-    this.scene.background = new THREE.Color(0x0a0e27); // Same as Level 0
+    // Brighter space fog for deep depth visibility
+    this.scene.fog = new THREE.Fog(0x000000, 200, 2000);
+    this.scene.background = new THREE.Color(0x0a0c1a);
+
+    // IMPORTANT: Add camera to scene so its children (Nebula, Starfield) render
+    if (this.engine.cameraSystem && this.engine.cameraSystem.camera) {
+      this.scene.add(this.engine.cameraSystem.camera);
+    }
 
     this.createStarfield();
-    this.createSpeedLines();  // Create speed trail lines
-    this.createNebulaBackground();
+    this.createSpeedLines();
+    this.createGridIndicators();
 
     // Speed effect overlay
     this.speedOverlay = document.getElementById('speed-overlay');
     this.baseFov = 75;  // Base FOV
-    this.targetFov = 75;
+    this.targetFov = 80;
   }
 
   setupLighting() {
@@ -153,12 +167,20 @@ export class Chapter1_TheAscent extends BaseChapter {
 
     this.engine.cameraSystem.follow(this.player);
     this.setupCamera();
+
+    // Feature flags for Chapter 1
+    this.player.isPulseEnabled = false; // No pulse wave in Ch 1
+    this.player.isTrailEnabled = false;  // No trail during normal gameplay
+
+    // Set initial FOV for Chapter 1
+    this.engine.cameraSystem.camera.fov = 75;
+    this.engine.cameraSystem.camera.updateProjectionMatrix();
   }
 
   setupCamera() {
-    // VERY CLOSE camera for tight view - fills screen with action
-    this.engine.cameraSystem.offset = new THREE.Vector3(0, 3, 8); // Much closer
-    this.engine.cameraSystem.lookAheadOffset = new THREE.Vector3(0, 0, 0);
+    // VERY CLOSE camera for tight view
+    this.engine.cameraSystem.offset.set(0, 3, 8);
+    this.engine.cameraSystem.lookAheadOffset.set(0, 0, 0);
   }
 
   spawnObjects() {
@@ -169,34 +191,7 @@ export class Chapter1_TheAscent extends BaseChapter {
     console.log('🚀 Chapter 1 loaded: Race to Light Speed! Use WASD to move between lanes.');
   }
 
-  createNebulaBackground() {
-    // Create colorful nebula clouds in background
-    const nebulaGroup = new THREE.Group();
 
-    const nebulaColors = [0x4466aa, 0x6644aa, 0x446688, 0x884466];
-
-    for (let i = 0; i < 8; i++) {
-      const geometry = new THREE.PlaneGeometry(80 + Math.random() * 60, 60 + Math.random() * 40);
-      const material = new THREE.MeshBasicMaterial({
-        color: nebulaColors[i % nebulaColors.length],
-        transparent: true,
-        opacity: 0.15 + Math.random() * 0.1,
-        side: THREE.DoubleSide
-      });
-
-      const nebula = new THREE.Mesh(geometry, material);
-      nebula.position.set(
-        (Math.random() - 0.5) * 150,
-        (Math.random() - 0.5) * 80,
-        -100 - Math.random() * 150
-      );
-      nebula.rotation.z = Math.random() * Math.PI;
-      nebulaGroup.add(nebula);
-    }
-
-    this.nebulaBackground = nebulaGroup;
-    this.scene.add(nebulaGroup);
-  }
 
   createGridIndicators() {
     // Create subtle grid lane indicators
@@ -238,41 +233,26 @@ export class Chapter1_TheAscent extends BaseChapter {
   }
 
   createStarfield() {
-    // Initialize starfield relative to player position (or 0 if no player yet)
-    const baseZ = this.player ? this.player.mesh.position.z : 0;
-
-    const starCount = 3000;
+    const starCount = 3500;
     const positions = new Float32Array(starCount * 3);
     const colors = new Float32Array(starCount * 3);
 
+    const rangeX = 1200;
+    const rangeY = 800;
+    const rangeZ = 2500;
+
     for (let i = 0; i < starCount; i++) {
-      // Place stars in a cylinder ahead of current position
-      const radius = 100 + Math.random() * 400; // 100-500 units from center
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.random() * Math.PI;
+      positions[i * 3] = (Math.random() - 0.5) * rangeX;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * rangeY;
+      positions[i * 3 + 2] = -Math.random() * rangeZ;
 
-      positions[i * 3] = Math.sin(phi) * Math.cos(theta) * radius;
-      positions[i * 3 + 1] = Math.sin(phi) * Math.sin(theta) * radius;
-      // Place ALL stars ahead of current position, from -100 to -2000 relative
-      positions[i * 3 + 2] = baseZ - 100 - Math.random() * 1900;
-
-      // Varied star colors (white, blue, yellow) - brighter
       const colorType = Math.random();
-      if (colorType < 0.5) {
-        // White
-        colors[i * 3] = 1.0;
-        colors[i * 3 + 1] = 1.0;
-        colors[i * 3 + 2] = 1.0;
+      if (colorType < 0.6) {
+        colors[i * 3] = 1.0; colors[i * 3 + 1] = 1.0; colors[i * 3 + 2] = 1.0;
       } else if (colorType < 0.8) {
-        // Blue
-        colors[i * 3] = 0.7 + Math.random() * 0.2;
-        colors[i * 3 + 1] = 0.8 + Math.random() * 0.2;
-        colors[i * 3 + 2] = 1.0;
+        colors[i * 3] = 0.7; colors[i * 3 + 1] = 0.9; colors[i * 3 + 2] = 1.0;
       } else {
-        // Yellow/orange
-        colors[i * 3] = 1.0;
-        colors[i * 3 + 1] = 0.9 + Math.random() * 0.1;
-        colors[i * 3 + 2] = 0.6 + Math.random() * 0.3;
+        colors[i * 3] = 1.0; colors[i * 3 + 1] = 0.9; colors[i * 3 + 2] = 0.7;
       }
     }
 
@@ -281,44 +261,40 @@ export class Chapter1_TheAscent extends BaseChapter {
     geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
     const material = new THREE.PointsMaterial({
-      size: 2,  // Same as Level 0
+      size: 2.5,
       vertexColors: true,
       transparent: true,
-      opacity: 0.9,
+      opacity: 0.8,
       sizeAttenuation: false
     });
 
     this.starfield = new THREE.Points(geometry, material);
+    this.starfield.frustumCulled = false;
     this.scene.add(this.starfield);
   }
 
   createSpeedLines() {
     const lineCount = 50;
+    const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(lineCount * 6);
 
     for (let i = 0; i < lineCount; i++) {
-      const x = (Math.random() - 0.5) * this.mapWidth * 3;
-      const y = Math.random() * 15 - 5;
-      const z = Math.random() * -100;
-
-      positions[i * 6] = x;
-      positions[i * 6 + 1] = y;
-      positions[i * 6 + 2] = z;
-      positions[i * 6 + 3] = x;
-      positions[i * 6 + 4] = y;
-      positions[i * 6 + 5] = z + 5;
+      const x = (Math.random() - 0.5) * 50;
+      const y = (Math.random() - 0.5) * 40;
+      const z = -Math.random() * 100;
+      positions[i * 6] = x; positions[i * 6 + 1] = y; positions[i * 6 + 2] = z;
+      positions[i * 6 + 3] = x; positions[i * 6 + 4] = y; positions[i * 6 + 5] = z + 5;
     }
 
-    const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-
     const material = new THREE.LineBasicMaterial({
       color: 0x66aaff,
       transparent: true,
-      opacity: 0.0
+      opacity: 0.0,
+      blending: THREE.AdditiveBlending
     });
-
     this.speedLines = new THREE.LineSegments(geometry, material);
+    this.speedLines.frustumCulled = false;
     this.scene.add(this.speedLines);
   }
 
@@ -448,6 +424,32 @@ export class Chapter1_TheAscent extends BaseChapter {
   update(deltaTime) {
     // STOP everything when game is paused (level complete)
     if (this.gamePaused) return;
+
+    // Start delay - stay still but let visuals move
+    if (this.startDelay > 0) {
+      this.startDelay -= deltaTime;
+      this.gameTime += deltaTime; // Track time for animations
+
+      // Update background visuals
+      // Update background visuals
+      this.updateStarfield(deltaTime * 0.1);
+      this.updateGridIndicators(deltaTime);
+
+      // Update player visuals (glow, breathing) even during delay
+      this.player.update(deltaTime, this.engine.inputManager);
+
+      // Override position back to origin during delay
+      this.player.body.position.set(0, 0, 0);
+      this.player.mesh.position.set(0, 0, 0);
+
+
+      return;
+    }
+
+    if (!this.gameStarted) {
+      this.gameStarted = true;
+      console.log('🏁 Chapter 1: GO!');
+    }
 
     this.gameTime += deltaTime;
 
@@ -651,34 +653,11 @@ export class Chapter1_TheAscent extends BaseChapter {
     this.player.currentLumen -= (this.player.energyDecayRate || 0.05) * deltaTime;
     this.player.currentLumen = Math.max(0, this.player.currentLumen);
 
-    // Visual speed effects
-    this.updatePlayerVisuals();
+    // FIXED: Call player.update to ensure breathingTimer and intensityMultiplier update
+    this.player.update(deltaTime, inputManager, this.entities, this);
   }
 
-  updatePlayerVisuals() {
-    const speedRatio = this.currentSpeed / this.maxSpeed;
 
-    // Emissive intensity based on speed - start with good base glow like Level 0
-    this.player.mesh.material.emissiveIntensity = 2 + speedRatio * 2;
-    this.player.light.intensity = 3 + speedRatio * 4;
-    this.player.light.distance = 10 + speedRatio * 10;
-
-    // Default: Keep original orange color from Player.js (0xffaa00)
-    this.player.mesh.material.emissive.setHex(0xffaa00);
-    this.player.light.color.setHex(0xffaa00);
-
-    // Slingshot boost visual - override to cyan
-    if (this.slingshotDuration > 0) {
-      this.player.mesh.material.emissive.setHex(0x00ffaa);
-      this.player.light.color.setHex(0x00ffaa);
-      this.player.mesh.material.emissiveIntensity = 3;
-    }
-    // Black hole pull warning - override to red
-    else if (this.isBeingPulled) {
-      const pullFlash = Math.sin(this.gameTime * 15) * 0.3 + 0.7;
-      this.player.mesh.material.emissive.setRGB(1 * pullFlash, 0.3 * pullFlash, 0.3 * pullFlash);
-    }
-  }
 
   activateSlingshot() {
     if (!this.nearestBlackHole) return;
@@ -725,15 +704,14 @@ export class Chapter1_TheAscent extends BaseChapter {
       // Keep player slowed
       this.player.speed = this.player.baseSpeed * 0.4;
 
-      // Visual feedback - purple tint flicker
-      if (Math.sin(this.gameTime * 10) > 0) {
-        this.player.mesh.material.emissive.setHex(0x6600aa);
-      }
+      // Visual feedback - let player handle the purple tint logic
+      this.player.setVisualState('danger');
 
       if (this.slowDebuffTime <= 0) {
-        // Restore normal speed
+        // Restore normal state
         this.player.speed = this.player.baseSpeed;
         this.slowDebuffTime = 0;
+        this.player.setVisualState('normal');
         console.log('⚡ Speed restored!');
       }
     }
@@ -759,7 +737,11 @@ export class Chapter1_TheAscent extends BaseChapter {
     // Ultra-fast forward movement
     const ultraSpeed = 60;
     this.player.body.position.z -= ultraSpeed * deltaTime;
+
+    // Updated: Call player.update to handle trail emission and visual state logic centrally
+    this.player.update(deltaTime, this.engine.inputManager, this.entities, this);
     this.player.mesh.position.copy(this.player.body.position);
+    this.player.setVisualState('boost');
 
     // Gentle screen shake - reduced intensity
     const shakeIntensity = 0.15 + Math.sin(this.lightSpeedSequenceTime * 6) * 0.08;
@@ -772,26 +754,9 @@ export class Chapter1_TheAscent extends BaseChapter {
     this.player.body.position.x *= 0.96;
     this.player.body.position.y *= 0.96;
 
-    // Player rotation - continuous spinning during light speed
-    this.player.mesh.rotation.x += deltaTime * 2.0;  // Faster during light speed
-    this.player.mesh.rotation.y += deltaTime * 3.0;
-    this.player.mesh.rotation.z += deltaTime * 1.0;
-
-    // Update particle trail
-    if (this.player.particleTrail) {
-      this.player.particleTrail.update(deltaTime, this.player.mesh.position);
-    }
-
     // Update speed lines (max intensity)
     this.updateSpeedLines(deltaTime);
     this.updateStarfield(deltaTime);
-
-    // Keep player color consistent - bright cyan/white at max speed
-    // No rainbow cycling
-    this.player.mesh.material.emissiveIntensity = 3.5;
-    this.player.light.intensity = 8;
-    this.player.mesh.material.emissive.setRGB(0.5, 0.9, 1.0); // Bright cyan
-    this.player.light.color.setRGB(0.5, 0.9, 1.0);
 
     // Keep background consistent - no color shift
     this.scene.background = new THREE.Color(0x0a0e27); // Same as normal gameplay
@@ -803,9 +768,9 @@ export class Chapter1_TheAscent extends BaseChapter {
       // Portal handles its own collision and transition via Portal.js
     }
 
-    // Bloom pulsing
+    // Softer bloom pulsing
     if (this.engine.bloomPass) {
-      this.engine.bloomPass.strength = 2.5 + Math.sin(this.lightSpeedSequenceTime * 4) * 0.8;
+      this.engine.bloomPass.strength = 1.2 + Math.sin(this.lightSpeedSequenceTime * 4) * 0.5;
     }
 
     // Time limit check - if portal not reached, force portal enter
@@ -819,6 +784,9 @@ export class Chapter1_TheAscent extends BaseChapter {
     this.lightSpeedTriggered = true;
 
     console.log('🌟 LIGHT SPEED BREAK! Maximum velocity achieved!');
+
+    // Enable trail for epic end sequence
+    this.player.isTrailEnabled = true;
 
     // Smoothly clear obstacles over time instead of instant
     this.entities.forEach(entity => {
@@ -834,7 +802,7 @@ export class Chapter1_TheAscent extends BaseChapter {
     // Gradual bloom increase instead of sudden
     if (this.engine.bloomPass) {
       const originalStrength = this.engine.bloomPass.strength;
-      this.engine.bloomPass.strength = originalStrength + 2; // Gentler increase
+      this.engine.bloomPass.strength = originalStrength + 1.0; // Gentler increase (was +2)
     }
 
     // Keep background consistent - no sudden change
@@ -848,62 +816,12 @@ export class Chapter1_TheAscent extends BaseChapter {
 
     // Play epic sound
     this.engine.audioSystem?.playSpecificNote('C5', 0.5, { type: 'sine' });
-    setTimeout(() => {
-      this.engine.audioSystem?.playSpecificNote('E5', 0.4, { type: 'sine' });
-    }, 150);
-    setTimeout(() => {
-      this.engine.audioSystem?.playSpecificNote('G5', 0.3, { type: 'sine' });
-    }, 300);
-
-    // Create screen edge glow effect
-    this.createEdgeGlow();
 
     // Enter light speed sequence
     this.isInLightSpeedSequence = true;
   }
 
-  createEdgeGlow() {
-    // Create glowing borders around screen (in 3D space)
-    this.edgeGlow = new THREE.Group();
 
-    const glowMaterial = new THREE.MeshBasicMaterial({
-      color: 0x66aaff,
-      transparent: true,
-      opacity: 0.5,
-      side: THREE.DoubleSide
-    });
-
-    // Create rectangular frame
-    const frameWidth = 50;
-    const frameHeight = 30;
-    const thickness = 2;
-
-    // Top edge
-    const topGeo = new THREE.PlaneGeometry(frameWidth, thickness);
-    const topEdge = new THREE.Mesh(topGeo, glowMaterial.clone());
-    topEdge.position.y = frameHeight / 2;
-    this.edgeGlow.add(topEdge);
-
-    // Bottom edge
-    const bottomEdge = new THREE.Mesh(topGeo, glowMaterial.clone());
-    bottomEdge.position.y = -frameHeight / 2;
-    this.edgeGlow.add(bottomEdge);
-
-    // Left edge
-    const sideGeo = new THREE.PlaneGeometry(thickness, frameHeight);
-    const leftEdge = new THREE.Mesh(sideGeo, glowMaterial.clone());
-    leftEdge.position.x = -frameWidth / 2;
-    this.edgeGlow.add(leftEdge);
-
-    // Right edge
-    const rightEdge = new THREE.Mesh(sideGeo, glowMaterial.clone());
-    rightEdge.position.x = frameWidth / 2;
-    this.edgeGlow.add(rightEdge);
-
-    // Position relative to camera
-    this.edgeGlow.position.z = -30;
-    this.engine.cameraSystem.camera.add(this.edgeGlow);
-  }
 
   spawnFinalPortal() {
     const portalZ = this.player.mesh.position.z - this.portalDistance;
@@ -935,106 +853,12 @@ export class Chapter1_TheAscent extends BaseChapter {
       this.engine.cameraSystem.camera.remove(this.edgeGlow);
     }
 
-    // White flash overlay - SAME STYLE AS LEVEL 0 PORTAL
-    const overlay = document.createElement('div');
-    overlay.id = 'portal-flash';
-    overlay.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: white;
-      opacity: 0;
-      z-index: 9999;
-      pointer-events: none;
-      transition: opacity 0.5s ease;
-    `;
-    document.body.appendChild(overlay);
-
-    // Fade in white
-    setTimeout(() => {
-      overlay.style.opacity = '1';
-    }, 50);
-
-    // Show "Chapter Complete" message first (no buttons yet)
-    setTimeout(() => {
-      overlay.style.pointerEvents = 'auto';
-      overlay.innerHTML = `
-        <div style="
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          height: 100%;
-          font-family: 'Courier New', monospace;
-          color: #000;
-          text-align: center;
-        ">
-          <h1 style="font-size: 48px; margin-bottom: 20px;">✨ CHAPTER COMPLETE ✨</h1>
-          <p style="font-size: 24px; color: #666;">The Ascent has been conquered.</p>
-        </div>
-      `;
-    }, 500);
-
-    // Show buttons after a delay (like Chapter 0)
-    setTimeout(() => {
-      overlay.innerHTML = `
-        <div style="
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          height: 100%;
-          font-family: 'Courier New', monospace;
-          color: #000;
-          text-align: center;
-        ">
-          <h1 style="font-size: 48px; margin-bottom: 20px;">✨ CHAPTER COMPLETE ✨</h1>
-          <p style="font-size: 24px; color: #666; margin-bottom: 40px;">The Ascent has been conquered.</p>
-          <div style="display: flex; gap: 20px;">
-            <button id="continueBtn" style="
-              padding: 15px 40px;
-              font-size: 20px;
-              font-family: 'Courier New', monospace;
-              background: rgba(100, 100, 100, 0.5);
-              color: #999;
-              border: 2px solid #666;
-              cursor: not-allowed;
-              opacity: 0.5;
-            " disabled>Continue (Coming Soon)</button>
-            <button id="returnToMenuBtn" style="
-              padding: 15px 40px;
-              font-size: 20px;
-              font-family: 'Courier New', monospace;
-              background: rgba(0, 0, 0, 0.8);
-              color: #fff;
-              border: 2px solid #fff;
-              cursor: pointer;
-              transition: all 0.3s ease;
-            ">Return to Main Menu</button>
-          </div>
-        </div>
-      `;
-
-      // Add button hover effect and click handler
-      const btn = document.getElementById('returnToMenuBtn');
-      if (btn) {
-        btn.addEventListener('mouseenter', () => {
-          btn.style.background = '#fff';
-          btn.style.color = '#000';
-        });
-        btn.addEventListener('mouseleave', () => {
-          btn.style.background = 'rgba(0, 0, 0, 0.8)';
-          btn.style.color = '#fff';
-        });
-        btn.addEventListener('click', () => {
-          overlay.remove();
-          // returnToMenu() will handle all cleanup
-          window.returnToMenu();
-        });
-      }
-    }, 2000);
+    if (this.engine.uiManager) {
+      this.engine.uiManager.showChapterComplete(1, {
+        title: this.completionTitle,
+        subtitle: this.completionSubtitle
+      });
+    }
 
     // Pause the engine so player stops flying
     setTimeout(() => {
@@ -1078,20 +902,15 @@ export class Chapter1_TheAscent extends BaseChapter {
   }
 
   updateSpeedLines(deltaTime) {
-    if (!this.speedLines) return;
+    if (!this.speedLines || !this.player) return;
 
     const speedRatio = this.isInLightSpeedSequence ? 1 : this.currentSpeed / this.maxSpeed;
     this.speedLines.material.opacity = speedRatio * 0.6;
 
-    const positions = this.speedLines.geometry.attributes.position.array;
-    const playerZ = this.player.mesh.position.z;
-
-    for (let i = 0; i < positions.length / 6; i++) {
-      positions[i * 6 + 2] = playerZ - 15 - Math.random() * 60;
-      positions[i * 6 + 5] = positions[i * 6 + 2] + 3 + speedRatio * 12;
-    }
-
-    this.speedLines.geometry.attributes.position.needsUpdate = true;
+    // Follow player position in world space
+    this.speedLines.position.x = this.player.mesh.position.x;
+    this.speedLines.position.y = this.player.mesh.position.y;
+    this.speedLines.position.z = this.player.mesh.position.z;
   }
 
   updateSpeedEffects(deltaTime) {
@@ -1120,32 +939,30 @@ export class Chapter1_TheAscent extends BaseChapter {
   }
 
   updateStarfield(deltaTime) {
-    if (!this.starfield) return;
+    if (!this.starfield || !this.player) return;
 
-    const playerZ = this.player.mesh.position.z;
     const positions = this.starfield.geometry.attributes.position.array;
     const starCount = positions.length / 3;
+    const playerZ = this.player.mesh.position.z;
 
-    // Aggressively recycle stars to maintain continuous field ahead
+    // stars drift towards camera
+    const driftSpeed = (this.currentSpeed || 15) * 1.5;
+
+    // Sync group position roughly with player to avoid floating point errors
+    this.starfield.position.z = playerZ;
+    this.starfield.position.x = this.player.mesh.position.x * 0.1;
+    this.starfield.position.y = this.player.mesh.position.y * 0.1;
+
     for (let i = 0; i < starCount; i++) {
       const idx = i * 3;
-      const starZ = positions[idx + 2];
+      // Move stars backward in local group space
+      positions[idx + 2] += driftSpeed * deltaTime;
 
-      // Recycle if star is more than 300 units behind player
-      // OR more than 2000 units ahead (refresh cycling)
-      const isBehind = starZ > playerZ + 300;
-      const isTooFarAhead = starZ < playerZ - 2000;
-
-      if (isBehind || isTooFarAhead) {
-        // Place stars in wide zone ahead of player (100-1800 units ahead)
-        // This ensures continuous visibility even at high speed
-        const radius = 100 + Math.random() * 400;
-        const theta = Math.random() * Math.PI * 2;
-        const phi = Math.random() * Math.PI;
-
-        positions[idx] = Math.sin(phi) * Math.cos(theta) * radius;
-        positions[idx + 1] = Math.sin(phi) * Math.sin(theta) * radius;
-        positions[idx + 2] = playerZ - 100 - Math.random() * 1700;  // 100-1800 units ahead
+      // Recycle if passed player (local Z > 100)
+      if (positions[idx + 2] > 100) {
+        positions[idx + 2] = -2400;
+        positions[idx] = (Math.random() - 0.5) * 1200;
+        positions[idx + 1] = (Math.random() - 0.5) * 800;
       }
     }
 
@@ -1342,7 +1159,7 @@ export class Chapter1_TheAscent extends BaseChapter {
       // - Comet speed: 80 units/s horizontally
       // - Comet travels from X=50 to X=-50 (or vice versa) = 100 units
       // - Comet travel time: 100/80 = 1.25s
-      // 
+      //
       // We want: Player arrives at targetZ exactly when comet is crossing (middle of screen)
       // Total time for comet to reach center: warningTime + (50/cometSpeed) = 1.5 + 0.625 = 2.125s
       // Distance player travels in that time: playerSpeed * 2.125
@@ -1452,16 +1269,12 @@ export class Chapter1_TheAscent extends BaseChapter {
       this.speedOverlay.style.opacity = 0;
     }
 
+
+
     if (this.starfield) {
       this.scene.remove(this.starfield);
       this.starfield.geometry.dispose();
       this.starfield.material.dispose();
-    }
-
-    if (this.speedLines) {
-      this.scene.remove(this.speedLines);
-      this.speedLines.geometry.dispose();
-      this.speedLines.material.dispose();
     }
 
     if (this.gridIndicators) {
@@ -1472,25 +1285,16 @@ export class Chapter1_TheAscent extends BaseChapter {
       });
     }
 
-    if (this.nebulaBackground) {
-      this.scene.remove(this.nebulaBackground);
-      this.nebulaBackground.children.forEach(child => {
-        child.geometry.dispose();
-        child.material.dispose();
-      });
-    }
 
-    if (this.edgeGlow) {
-      this.engine.cameraSystem.camera.remove(this.edgeGlow);
-      this.edgeGlow.children.forEach(child => {
-        child.geometry.dispose();
-        child.material.dispose();
-      });
-    }
 
     if (this.finalPortal) {
       // Use Portal.js destroy method
       this.finalPortal.destroy();
+    }
+
+    // Explicit bloom reset
+    if (this.engine.bloomPass) {
+      this.engine.bloomPass.strength = 1.5;
     }
 
     super.unload();
