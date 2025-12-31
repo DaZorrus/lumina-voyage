@@ -38,11 +38,13 @@ export class HUD {
             }
         }
 
-        // Check if Level 1 (has speed percentage method)
         if (this.engine.currentLevel.getSpeedPercentage) {
-            // Level 1 mode - show speed bar, hide orb display
+            // Level 1 mode - show speed bar, hide orb level AND energy/pulse hud
             if (this.hudLevel1) this.hudLevel1.classList.remove('hidden');
             if (this.hudRight) this.hudRight.classList.add('hidden');
+
+            const hudLeft = document.getElementById('hud');
+            if (hudLeft) hudLeft.classList.add('hidden'); // Hide whole left hud
 
             const speedPercent = this.engine.currentLevel.getSpeedPercentage();
 
@@ -62,9 +64,9 @@ export class HUD {
                 this.speedDisplay.textContent = kmh;
             }
         } else {
-            // Level 0 mode - show orb display, hide speed bar
             if (this.hudLevel1) this.hudLevel1.classList.add('hidden');
             if (this.hudRight) this.hudRight.classList.remove('hidden');
+            if (this.pulseIndicator) this.pulseIndicator.style.display = 'block'; // Show pulse in Ch 0
 
             // Update speed display (convert to km/h - multiply by ~50 for game feel)
             if (this.speedDisplay) {

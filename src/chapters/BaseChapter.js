@@ -18,32 +18,32 @@ export class BaseChapter {
     console.log('📍 BaseChapter.load() starting...');
     this.setupEnvironment();
     console.log('✅ Environment setup');
-    
+
     this.setupLighting();
     console.log('✅ Lighting setup');
-    
+
     this.spawnPlayer();
     console.log('✅ Player spawned:', this.player);
-    
+
     this.spawnObjects();
     console.log('✅ Objects spawned');
-    
+
     // Start ambient music if not already playing
     if (this.engine.audioSystem && !this.engine.audioSystem.ambientPlaying) {
       this.engine.audioSystem.startAmbient();
       console.log('🎵 Chapter music started');
     }
-    
+
     // Restore music layers if player has collected orbs previously
     this.restoreMusicLayers();
   }
-  
+
   restoreMusicLayers() {
     // Only restore music layers if player has actually collected 5 orbs (completed Chapter 0)
     try {
       const saved = localStorage.getItem('luminaVoyage_orbsCollected');
       const orbsCollected = saved ? parseInt(saved) : 0;
-      
+
       // Only restore if player collected all 5 orbs (meaning they played Chapter 0)
       if (orbsCollected >= 5 && this.engine.audioSystem) {
         console.log(`🎵 Restoring ${orbsCollected} music layers (Chapter 0 completed)...`);
@@ -97,13 +97,20 @@ export class BaseChapter {
     return false; // Override in child
   }
 
-  complete() {
+  complete(options = {}) {
     if (this.isComplete) return;
-    
+
     this.isComplete = true;
-    console.log('🎉 Chapter Complete!');
-    
-    // TODO: Spawn portal and transition
+    const { showUI = true } = options;
+
+    console.log(`🎉 Chapter ${this.name || ''} Complete!`);
+
+    if (showUI && this.engine && this.engine.uiManager) {
+      // Show completion screen after a short delay
+      setTimeout(() => {
+        this.engine.uiManager.showChapterComplete(this.engine.sceneManager.getLevelIndex(this.constructor.name), options);
+      }, 1000);
+    }
   }
 
   unload() {
@@ -119,9 +126,14 @@ export class BaseChapter {
     });
 
     this.entities = [];
-    
+
+    // Reset bloom strength to engine default (1.5)
+    if (this.engine.bloomPass) {
+      this.engine.bloomPass.strength = 1.5;
+    }
+
     // Clear scene
-    while(this.scene.children.length > 0) {
+    while (this.scene.children.length > 0) {
       const child = this.scene.children[0];
       if (child.geometry) child.geometry.dispose();
       if (child.material) {

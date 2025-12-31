@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -55,7 +56,7 @@
       height: 40px;
       border-radius: 50%;
       background: radial-gradient(circle, #ffaa00 0%, #ff6600 40%, transparent 70%);
-      box-shadow: 
+      box-shadow:
         0 0 30px rgba(255, 170, 0, 0.8),
         0 0 60px rgba(255, 170, 0, 0.5),
         0 0 100px rgba(255, 170, 0, 0.3);
@@ -64,18 +65,23 @@
     }
 
     @keyframes heartbeat {
-      0%, 100% {
+
+      0%,
+      100% {
         transform: scale(1);
         opacity: 0.6;
       }
+
       25% {
         transform: scale(1.15);
         opacity: 1;
       }
+
       35% {
         transform: scale(0.95);
         opacity: 0.7;
       }
+
       50% {
         transform: scale(1.1);
         opacity: 0.9;
@@ -134,9 +140,10 @@
       justify-content: center;
       align-items: center;
       z-index: 1000;
-      background: transparent; /* Starfield shows through */
+      background: transparent;
+      /* Starfield shows through */
     }
-    
+
     /* Dark overlay for readability */
     #main-menu::before {
       content: '';
@@ -157,7 +164,7 @@
       font-size: 72px;
       font-weight: bold;
       color: #ffaa00;
-      text-shadow: 
+      text-shadow:
         0 0 20px rgba(255, 170, 0, 0.8),
         0 0 40px rgba(255, 170, 0, 0.5),
         0 0 80px rgba(255, 170, 0, 0.3);
@@ -167,13 +174,16 @@
     }
 
     @keyframes title-glow {
-      0%, 100% { 
-        text-shadow: 
+
+      0%,
+      100% {
+        text-shadow:
           0 0 20px rgba(255, 170, 0, 0.8),
           0 0 40px rgba(255, 170, 0, 0.5);
       }
-      50% { 
-        text-shadow: 
+
+      50% {
+        text-shadow:
           0 0 30px rgba(255, 170, 0, 1),
           0 0 60px rgba(255, 170, 0, 0.7),
           0 0 100px rgba(255, 170, 0, 0.4);
@@ -210,7 +220,7 @@
     .menu-btn:hover {
       background: rgba(0, 217, 255, 0.15);
       transform: scale(1.05);
-      box-shadow: 
+      box-shadow:
         0 0 20px rgba(0, 217, 255, 0.4),
         inset 0 0 20px rgba(0, 217, 255, 0.1);
     }
@@ -223,7 +233,7 @@
 
     .menu-btn.primary:hover {
       background: rgba(255, 170, 0, 0.15);
-      box-shadow: 
+      box-shadow:
         0 0 20px rgba(255, 170, 0, 0.4),
         inset 0 0 20px rgba(255, 170, 0, 0.1);
     }
@@ -316,7 +326,7 @@
 
     .chapter-star.unlocked .star-glow {
       background: radial-gradient(circle, #ffdd00 0%, #ffaa00 30%, transparent 70%);
-      box-shadow: 
+      box-shadow:
         0 0 20px rgba(255, 200, 0, 0.8),
         0 0 40px rgba(255, 200, 0, 0.5);
       animation: star-pulse 2s ease-in-out infinite;
@@ -328,13 +338,22 @@
     }
 
     @keyframes star-pulse {
-      0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
-      50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+
+      0%,
+      100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.8;
+      }
+
+      50% {
+        transform: translate(-50%, -50%) scale(1.1);
+        opacity: 1;
+      }
     }
 
     .chapter-star:hover.unlocked .star-glow {
       transform: translate(-50%, -50%) scale(1.3);
-      box-shadow: 
+      box-shadow:
         0 0 30px rgba(255, 200, 0, 1),
         0 0 60px rgba(255, 200, 0, 0.7);
     }
@@ -541,13 +560,11 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: radial-gradient(
-        ellipse at center,
-        transparent 40%,
-        rgba(0, 100, 200, 0.1) 70%,
-        rgba(0, 50, 150, 0.3) 90%,
-        rgba(0, 20, 80, 0.5) 100%
-      );
+      background: radial-gradient(ellipse at center,
+          transparent 40%,
+          rgba(0, 100, 200, 0.1) 70%,
+          rgba(0, 50, 150, 0.3) 90%,
+          rgba(0, 20, 80, 0.5) 100%);
     }
 
     .radial-blur {
@@ -556,12 +573,10 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: radial-gradient(
-        ellipse at center,
-        transparent 50%,
-        rgba(100, 180, 255, 0.05) 70%,
-        rgba(100, 180, 255, 0.15) 100%
-      );
+      background: radial-gradient(ellipse at center,
+          transparent 50%,
+          rgba(100, 180, 255, 0.05) 70%,
+          rgba(100, 180, 255, 0.15) 100%);
       filter: blur(3px);
     }
 
@@ -577,7 +592,7 @@
       opacity: 1;
       transition: opacity 0.5s ease;
     }
-    
+
     #hud.hidden {
       opacity: 0;
       pointer-events: none;
@@ -619,7 +634,7 @@
       opacity: 1;
       transition: opacity 0.5s ease;
     }
-    
+
     #hud-right.hidden {
       opacity: 0;
     }
@@ -725,8 +740,15 @@
     }
 
     @keyframes speed-glow {
-      0%, 100% { opacity: 0.3; }
-      50% { opacity: 0.8; }
+
+      0%,
+      100% {
+        opacity: 0.3;
+      }
+
+      50% {
+        opacity: 0.8;
+      }
     }
 
     #speed-bar-percent {
@@ -745,8 +767,15 @@
     }
 
     @keyframes pulse-hint {
-      0%, 100% { opacity: 0.6; }
-      50% { opacity: 1; }
+
+      0%,
+      100% {
+        opacity: 0.6;
+      }
+
+      50% {
+        opacity: 1;
+      }
     }
 
     /* ========================================
@@ -895,8 +924,43 @@
     #pause-hint.hidden {
       display: none;
     }
+
+    /* Chapter Title Overlay at start of level */
+    #chapter-title-overlay {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 500;
+      text-align: center;
+      pointer-events: none;
+      transition: opacity 1s ease, transform 1s ease;
+      font-family: 'Courier New', monospace;
+    }
+
+    #chapter-title-overlay.hidden {
+      opacity: 0;
+      transform: translate(-50%, -40%);
+    }
+
+    #chapter-title-text {
+      font-size: 48px;
+      color: #fff;
+      text-shadow: 0 0 20px rgba(0, 217, 255, 0.8);
+      letter-spacing: 12px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+
+    #chapter-subtitle-text {
+      font-size: 18px;
+      color: rgba(255, 255, 255, 0.5);
+      letter-spacing: 6px;
+      text-transform: uppercase;
+    }
   </style>
 </head>
+
 <body>
   <!-- ========== LOADING SCREEN ========== -->
   <div id="loading-screen">
@@ -922,7 +986,7 @@
   <!-- ========== LEVEL SELECT ========== -->
   <div id="level-select" class="hidden">
     <h2 class="level-select-title">SELECT CHAPTER</h2>
-    
+
     <div class="constellation-map">
       <!-- SVG Connection lines -->
       <svg class="constellation-svg" viewBox="0 0 600 400">
@@ -938,7 +1002,7 @@
         <!-- Line from Chapter 1 to Chapter 2 -->
         <line x1="300" y1="150" x2="500" y2="210" />
       </svg>
-      
+
       <!-- Chapter 0 -->
       <div class="chapter-star star-0 unlocked" data-chapter="0">
         <div class="star-glow"></div>
@@ -947,7 +1011,7 @@
           <div class="star-sublabel">Chapter 0</div>
         </div>
       </div>
-      
+
       <!-- Chapter 1 -->
       <div class="chapter-star star-1 unlocked" data-chapter="1">
         <div class="star-glow"></div>
@@ -956,7 +1020,7 @@
           <div class="star-sublabel">Chapter 1</div>
         </div>
       </div>
-      
+
       <!-- Chapter 2 -->
       <div class="chapter-star star-2 locked" data-chapter="2">
         <div class="star-glow"></div>
@@ -966,14 +1030,14 @@
         </div>
       </div>
     </div>
-    
+
     <button class="btn-back" id="btn-back-levels">← BACK</button>
   </div>
 
   <!-- ========== SETTINGS MENU ========== -->
   <div id="settings-menu" class="hidden">
     <h2 class="settings-title">SETTINGS</h2>
-    
+
     <div class="settings-container">
       <div class="settings-row">
         <span class="settings-label">MASTER VOLUME</span>
@@ -982,7 +1046,7 @@
           <span class="settings-value" id="master-value">80%</span>
         </div>
       </div>
-      
+
       <div class="settings-row">
         <span class="settings-label">MUSIC</span>
         <div class="settings-control">
@@ -990,7 +1054,7 @@
           <span class="settings-value" id="music-value">50%</span>
         </div>
       </div>
-      
+
       <div class="settings-row">
         <span class="settings-label">SFX</span>
         <div class="settings-control">
@@ -999,31 +1063,31 @@
         </div>
       </div>
     </div>
-    
+
     <button class="btn-back" id="btn-back-settings">← BACK</button>
   </div>
 
   <!-- ========== CREDITS SCREEN ========== -->
   <div id="credits-screen" class="hidden">
     <h2 class="credits-title">LUMINA VOYAGE</h2>
-    
+
     <div class="credits-content">
       <div class="credits-section">
         <h4>Created By</h4>
         <p>Ngo Hoang Nam Hung</p>
       </div>
-      
+
       <div class="credits-section">
         <h4>Technology</h4>
         <p>Three.js • Tone.js • Vite</p>
       </div>
-      
+
       <div class="credits-section">
         <h4>Special Thanks</h4>
         <p>To all who journey through the light</p>
       </div>
     </div>
-    
+
     <button class="btn-back" id="btn-back-credits">← BACK</button>
   </div>
 
@@ -1085,25 +1149,25 @@
   <div id="settings-panel" class="hidden">
     <div class="settings-panel-content">
       <h2>SETTINGS</h2>
-      
+
       <div class="setting-item">
         <label for="pause-master-volume">Master Volume</label>
         <input type="range" id="pause-master-volume" min="0" max="100" value="80">
         <span id="pause-master-value">80%</span>
       </div>
-      
+
       <div class="setting-item">
         <label for="pause-music-volume">Music Volume</label>
         <input type="range" id="pause-music-volume" min="0" max="100" value="50">
         <span id="pause-music-value">50%</span>
       </div>
-      
+
       <div class="setting-item">
         <label for="pause-sfx-volume">SFX Volume</label>
         <input type="range" id="pause-sfx-volume" min="0" max="100" value="80">
         <span id="pause-sfx-value">80%</span>
       </div>
-      
+
       <button class="pause-btn" id="settings-close">BACK</button>
     </div>
   </div>
@@ -1111,6 +1175,13 @@
   <!-- ESC hint -->
   <div id="pause-hint" class="hidden">Press ESC to pause</div>
 
+  <!-- Chapter Start Title -->
+  <div id="chapter-title-overlay" class="hidden">
+    <h1 id="chapter-title-text">Chapter 1</h1>
+    <h3 id="chapter-subtitle-text">The Ascent</h3>
+  </div>
+
   <script type="module" src="/src/main.js"></script>
 </body>
+
 </html>
