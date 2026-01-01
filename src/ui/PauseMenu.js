@@ -15,6 +15,9 @@ export class PauseMenu {
         // ESC key listener
         window.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
+                // Prevent ESC from exiting fullscreen
+                e.preventDefault();
+                
                 // Don't pause if not running or level complete
                 if (!this.engine.isRunning) return;
 

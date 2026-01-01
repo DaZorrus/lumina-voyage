@@ -215,6 +215,8 @@ export class UIManager {
   async ensureAudioInitialized() {
     if (this.engine?.audioSystem && !this.engine.audioSystem.initialized) {
       await this.engine.audioSystem.init();
+      // Start menu ambient music after initialization
+      this.engine.audioSystem.startAmbient();
     }
   }
 
