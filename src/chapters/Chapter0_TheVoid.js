@@ -145,6 +145,11 @@ export class Chapter0_TheVoid extends BaseChapter {
   update(deltaTime) {
     super.update(deltaTime);
 
+    // Toggle controls hint with H key (only when game is active)
+    if (this.engine.inputManager.justPressed('h') && !this.paused) {
+      this.toggleControlsHint();
+    }
+
     // Update game time
     this.gameTime += deltaTime;
 
@@ -307,7 +312,27 @@ export class Chapter0_TheVoid extends BaseChapter {
     );
   }
 
+  toggleControlsHint() {
+    const hintElement = document.getElementById('controls-hint');
+    const chapter0Section = document.getElementById('hint-chapter0');
+    const chapter1Section = document.getElementById('hint-chapter1');
+
+    if (hintElement.classList.contains('hidden')) {
+      // Show controls hint
+      hintElement.classList.remove('hidden');
+      // Show only Chapter 0 controls
+      if (chapter0Section) chapter0Section.style.display = 'flex';
+      if (chapter1Section) chapter1Section.style.display = 'none';
+    } else {
+      // Hide controls hint
+      hintElement.classList.add('hidden');
+    }
+  }
+
   unload() {
+    // Hide controls hint when leaving chapter
+    document.getElementById('controls-hint')?.classList.add('hidden');
+
     if (this.portal) {
       this.portal.destroy();
       this.portal = null;

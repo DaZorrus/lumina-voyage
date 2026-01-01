@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="/src/styles/game/level-select.css">
   <link rel="stylesheet" href="/src/styles/game/hud.css">
   <link rel="stylesheet" href="/src/styles/game/pause.css">
+  <link rel="stylesheet" href="/src/styles/game/controls-hint.css">
 </head>
 
 <body>
@@ -42,6 +43,7 @@
       <button class="menu-btn" id="btn-instructions">HOW TO PLAY</button>
       <button class="menu-btn" id="btn-settings">SETTINGS</button>
       <button class="menu-btn" id="btn-credits">CREDITS</button>
+      <button class="menu-btn danger" id="btn-quit-game">QUIT GAME</button>
     </div>
   </div>
 
@@ -238,90 +240,158 @@
 
       <!-- CONTROLS -->
       <div class="tab-content" id="tab-controls">
-        <h3>Ship Controls</h3>
+        <h3>Controls</h3>
         <div class="tab-subtitle">Control Schemes • Mode Dependent</div>
 
-        <div class="controls-layout">
-          <!-- Left Column: Chapter 0 (Free Flight) -->
-          <div class="control-section">
-            <h4 style="border-bottom: 2px solid #ffaa00; padding-bottom: 8px;">
-              <span style="color: #ffaa00;">CHAPTER 0</span> • FREE FLIGHT
-            </h4>
-
-            <div class="control-row">
-              <div class="key-group">
-                <span class="key-cap">W</span>
-                <span class="key-cap">S</span>
+        <div class="controls-main-layout">
+          <!-- LEFT: Chapter Carousel -->
+          <div class="chapter-carousel-container">
+            <div class="carousel-header">
+              <div class="carousel-label">CHAPTER CONTROLS</div>
+              <div class="carousel-pagination">
+                <span class="carousel-dot active" data-page="0"></span>
+                <span class="carousel-dot" data-page="1"></span>
               </div>
-              <span class="control-desc">Forward / Backward</span>
             </div>
 
-            <div class="control-row">
-              <div class="key-group">
-                <span class="key-cap">A</span>
-                <span class="key-cap">D</span>
-              </div>
-              <span class="control-desc">Move Left / Right</span>
-            </div>
+            <div class="carousel-wrapper">
+              <button class="carousel-btn carousel-prev" id="carousel-prev">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
 
-            <div class="control-row">
-              <div class="key-group">
-                <span class="key-cap">E</span>
-                <span class="key-cap">Q</span>
-              </div>
-              <span class="control-desc">Fly Up / Down</span>
-            </div>
+              <div class="carousel-track">
+                <!-- PAGE 1: Chapter 0 & 1 -->
+                <div class="carousel-page active">
+                  <div class="chapter-card">
+                    <div class="chapter-card-header ch0">
+                      <span class="chapter-badge">CH 0</span>
+                      <span class="chapter-name">FREE FLIGHT</span>
+                    </div>
+                    <div class="chapter-card-body">
+                      <div class="control-row">
+                        <div class="key-group">
+                          <span class="key-cap">W</span>
+                          <span class="key-cap">S</span>
+                        </div>
+                        <span class="control-desc">Forward / Backward</span>
+                      </div>
+                      <div class="control-row">
+                        <div class="key-group">
+                          <span class="key-cap">A</span>
+                          <span class="key-cap">D</span>
+                        </div>
+                        <span class="control-desc">Move Left / Right</span>
+                      </div>
+                      <div class="control-row">
+                        <div class="key-group">
+                          <span class="key-cap">E</span>
+                          <span class="key-cap">Q</span>
+                        </div>
+                        <span class="control-desc">Fly Up / Down</span>
+                      </div>
+                      <div class="control-row">
+                        <span class="key-cap">F</span>
+                        <span class="control-desc">Sonar Pulse</span>
+                      </div>
+                    </div>
+                  </div>
 
-            <div class="control-row">
-              <span class="key-cap">F</span>
-              <span class="control-desc">Sonar Pulse (Find Orbs)</span>
+                  <div class="chapter-card">
+                    <div class="chapter-card-header ch1">
+                      <span class="chapter-badge">CH 1</span>
+                      <span class="chapter-name">LANE RUNNER</span>
+                    </div>
+                    <div class="chapter-card-body">
+                      <div class="control-row">
+                        <div class="key-group">
+                          <span class="key-cap">W</span>
+                          <span class="key-cap">S</span>
+                        </div>
+                        <span class="control-desc">Switch Lane Up/Down</span>
+                      </div>
+                      <div class="control-row">
+                        <div class="key-group">
+                          <span class="key-cap">A</span>
+                          <span class="key-cap">D</span>
+                        </div>
+                        <span class="control-desc">Switch Lane Left/Right</span>
+                      </div>
+                      <div class="control-row">
+                        <span class="key-cap">F</span>
+                        <span class="control-desc">Slingshot Boost</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- PAGE 2: Chapter 2 & 3 (Future expansion) -->
+                <div class="carousel-page">
+                  <div class="chapter-card locked">
+                    <div class="chapter-card-header ch2">
+                      <span class="chapter-badge">CH 2</span>
+                      <span class="chapter-name">NEBULA</span>
+                    </div>
+                    <div class="chapter-card-body">
+                      <div class="locked-message">
+                        <div class="lock-icon">🔒</div>
+                        <div>Coming Soon</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="chapter-card locked">
+                    <div class="chapter-card-header ch3">
+                      <span class="chapter-badge">CH 3</span>
+                      <span class="chapter-name">???</span>
+                    </div>
+                    <div class="chapter-card-body">
+                      <div class="locked-message">
+                        <div class="lock-icon">🔒</div>
+                        <div>Coming Soon</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <button class="carousel-btn carousel-next" id="carousel-next">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
             </div>
           </div>
 
-          <!-- Right Column: Chapter 1 (Lane Runner) -->
-          <div class="control-section">
-            <h4 style="border-bottom: 2px solid #00D9FF; padding-bottom: 8px;">
-              <span style="color: #00D9FF;">CHAPTER 1</span> • LANE RUNNER
-            </h4>
-
-            <div class="control-row">
-              <div class="key-group">
-                <span class="key-cap">W</span>
-                <span class="key-cap">S</span>
+          <!-- RIGHT: Universal Controls Panel -->
+          <div class="universal-panel">
+            <div class="universal-header">
+              <div class="universal-icon">⚙</div>
+              <div class="universal-label">UNIVERSAL</div>
+            </div>
+            <div class="universal-body">
+              <div class="universal-control">
+                <span class="key-cap">ESC</span>
+                <span class="control-desc">Pause</span>
               </div>
-              <span class="control-desc">Switch Lane Up / Down</span>
-            </div>
-
-            <div class="control-row">
-              <div class="key-group">
-                <span class="key-cap">A</span>
-                <span class="key-cap">D</span>
+              <div class="universal-control">
+                <span class="key-cap">H</span>
+                <span class="control-desc">Control Hints</span>
               </div>
-              <span class="control-desc">Switch Lane Left / Right</span>
+              <div class="universal-control">
+                <span class="key-cap" style="min-width: 65px; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px 4px;">
+                  <span style="line-height: 1; font-size: 16px;">🖱️</span>
+                  <span style="margin-top: 3px; line-height: 1; font-size: 11px; letter-spacing: 1px;">SCROLL</span>
+                </span>
+                <span class="control-desc">Camera Distance</span>
+              </div>
             </div>
-
-            <div class="control-row">
-              <span class="key-cap">F</span>
-              <span class="control-desc">Slingshot Boost (Timing)</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Global Controls Section (Full Width Below) -->
-        <div style="margin-top: 35px; padding-top: 20px; border-top: 1px solid rgba(0, 217, 255, 0.15);">
-          <h4 style="color: rgba(255,255,255,0.5); font-size: 14px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; text-align: center;">
-            <span style="color: #fff;">UNIVERSAL</span> • ALL CHAPTERS
-          </h4>
-
-          <div style="display: flex; justify-content: center; gap: 60px; flex-wrap: wrap;">
-            <div class="control-row" style="border: none; width: auto; margin-bottom: 0;">
-              <span class="key-cap" style="margin-right: 15px;">ESC</span>
-              <span class="control-desc">Pause Menu</span>
-            </div>
-
-            <div class="control-row" style="border: none; width: auto; margin-bottom: 0; align-items: center;">
-              <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 70px; padding: 6px 12px; background: linear-gradient(to bottom, #333, #111); color: #00D9FF; border: 1px solid #555; border-bottom: 3px solid #000; border-radius: 4px; font-size: 14px; font-weight: bold; box-shadow: 0 4px 4px rgba(0, 0, 0, 0.4); margin-right: 15px;">🖱️ Scroll</span>
-              <span class="control-desc">Adjust Camera Distance</span>
+            <div class="universal-tip">
+              <div class="tip-icon">💡</div>
+              <div class="tip-text">
+                Press <span class="key-cap-inline">H</span> for key reminders
+              </div>
             </div>
           </div>
         </div>
@@ -390,6 +460,61 @@
 
   <!-- ESC hint -->
   <div id="pause-hint" class="hidden">Press ESC to pause</div>
+
+  <!-- Controls Hint Overlay -->
+  <div id="controls-hint" class="hidden">
+    <div class="controls-hint-header">
+      <h3>CONTROLS</h3>
+      <div class="controls-hint-subtitle">Press <span class="key-cap-small">H</span> to hide</div>
+    </div>
+    <div class="controls-hint-content">
+      <div class="hint-section" id="hint-chapter0">
+        <h4><span class="hint-chapter-label ch0">CHAPTER 0</span> • FREE FLIGHT</h4>
+        <div class="hint-row">
+          <div class="key-group"><span class="key-cap-small">W</span><span class="key-cap-small">S</span></div>
+          <span>Forward / Backward</span>
+        </div>
+        <div class="hint-row">
+          <div class="key-group"><span class="key-cap-small">A</span><span class="key-cap-small">D</span></div>
+          <span>Move Left / Right</span>
+        </div>
+        <div class="hint-row">
+          <div class="key-group"><span class="key-cap-small">E</span><span class="key-cap-small">Q</span></div>
+          <span>Fly Up / Down</span>
+        </div>
+        <div class="hint-row">
+          <span class="key-cap-small">F</span>
+          <span>Sonar Pulse</span>
+        </div>
+      </div>
+      <div class="hint-section" id="hint-chapter1">
+        <h4><span class="hint-chapter-label ch1">CHAPTER 1</span> • LANE RUNNER</h4>
+        <div class="hint-row">
+          <div class="key-group"><span class="key-cap-small">W</span><span class="key-cap-small">S</span></div>
+          <span>Switch Lane Up / Down</span>
+        </div>
+        <div class="hint-row">
+          <div class="key-group"><span class="key-cap-small">A</span><span class="key-cap-small">D</span></div>
+          <span>Switch Lane Left / Right</span>
+        </div>
+        <div class="hint-row">
+          <span class="key-cap-small">F</span>
+          <span>Slingshot Boost</span>
+        </div>
+      </div>
+      <div class="hint-section hint-universal">
+        <h4>UNIVERSAL</h4>
+        <div class="hint-row">
+          <span class="key-cap-small">ESC</span>
+          <span>Pause Menu</span>
+        </div>
+        <div class="hint-row">
+          <span class="key-cap-small" style="min-width: 50px;">🖱️ Scroll</span>
+          <span>Camera Distance</span>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Chapter Start Title -->
   <div id="chapter-title-overlay" class="hidden">
