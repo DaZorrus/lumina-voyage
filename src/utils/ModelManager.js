@@ -13,12 +13,12 @@ class ModelManagerClass {
     
     // Model paths
     this.modelPaths = {
-      asteroid: '/assets/models/Asteroid.glb',
-      asteroidField: '/assets/models/asteroid_field.glb',
-      asteroidRock: '/assets/models/asteroid_rock.glb',
-      asteroidRock1: '/assets/models/asteroid_rock1.glb',
-      asteroidRock2: '/assets/models/asteroid_rock2.glb',
-      comet: '/assets/models/Comet.glb'
+      asteroid: 'assets/models/Asteroid.glb',
+      asteroidField: 'assets/models/asteroid_field.glb',
+      asteroidRock: 'assets/models/asteroid_rock.glb',
+      asteroidRock1: 'assets/models/asteroid_rock1.glb',
+      asteroidRock2: 'assets/models/asteroid_rock2.glb',
+      comet: 'assets/models/Comet.glb'
     };
     
     // Color corrections for specific models
