@@ -106,6 +106,11 @@ export class UIManager {
       if (el) el.classList.add('hidden');
     });
 
+    // Reset input state when showing menu screens to prevent key carry-over
+    if (screenName !== 'none' && this.engine?.inputManager) {
+      this.engine.inputManager.reset();
+    }
+
     // Ẩn màn hình Instruction thông qua class riêng
     this.instructionScreen.hide();
 
@@ -278,6 +283,68 @@ export class UIManager {
         }
       });
     });
+
+    // Controls Carousel Navigation
+    this.setupCarouselNavigation();
+  }
+
+  /**
+   * Setup carousel navigation for controls tab
+   */
+  setupCarouselNavigation() {
+    this.currentCarouselPage = 0;
+    this.totalCarouselPages = 2;
+
+    const prevBtn = document.getElementById('carousel-prev');
+    const nextBtn = document.getElementById('carousel-next');
+    const pages = document.querySelectorAll('.carousel-page');
+    const dots = document.querySelectorAll('.carousel-dot');
+
+    const updateCarousel = () => {
+      // Update pages
+      pages.forEach((page, index) => {
+        page.classList.toggle('active', index === this.currentCarouselPage);
+      });
+
+      // Update dots
+      dots.forEach((dot, index) => {
+        dot.classList.toggle('active', index === this.currentCarouselPage);
+      });
+
+      // Update button states
+      if (prevBtn) prevBtn.disabled = this.currentCarouselPage === 0;
+      if (nextBtn) nextBtn.disabled = this.currentCarouselPage === this.totalCarouselPages - 1;
+    };
+
+    // Previous button
+    prevBtn?.addEventListener('click', () => {
+      if (this.currentCarouselPage > 0) {
+        this.playClickSound();
+        this.currentCarouselPage--;
+        updateCarousel();
+      }
+    });
+
+    // Next button
+    nextBtn?.addEventListener('click', () => {
+      if (this.currentCarouselPage < this.totalCarouselPages - 1) {
+        this.playClickSound();
+        this.currentCarouselPage++;
+        updateCarousel();
+      }
+    });
+
+    // Dot navigation
+    dots.forEach((dot, index) => {
+      dot.addEventListener('click', () => {
+        this.playClickSound();
+        this.currentCarouselPage = index;
+        updateCarousel();
+      });
+    });
+
+    // Initialize
+    updateCarousel();
   }
 
   /**
