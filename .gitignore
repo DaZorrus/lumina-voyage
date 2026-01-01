@@ -17,11 +17,6 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Exclude documentation and reference folders
-doc/
-lumina voyage/
-DOC_GUIDE.md
-
 # Logs
 *.log
 npm-debug.log*
