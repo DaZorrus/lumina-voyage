@@ -126,6 +126,9 @@ export class ChapterComplete {
 
             // Button actions
             nextBtn.onclick = async () => {
+                // Hide cursor when moving to next level
+                document.body.style.cursor = 'none';
+
                 if (onContinue) {
                     onContinue();
                     this.remove();
