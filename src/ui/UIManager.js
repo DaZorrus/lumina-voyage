@@ -129,6 +129,18 @@ export class UIManager {
 
     this.currentScreen = screenName;
 
+    // Show/hide floating fullscreen button
+    const floatingBtn = document.getElementById('floating-fullscreen-btn');
+    if (floatingBtn) {
+      if (screenName === 'main-menu' || screenName === 'level-select' || 
+          screenName === 'settings-menu' || screenName === 'credits-screen' || 
+          screenName === 'instructions-screen') {
+        floatingBtn.classList.remove('hidden');
+      } else {
+        floatingBtn.classList.add('hidden');
+      }
+    }
+
     // Update level select stars if showing
     if (screenName === 'level-select') {
       this.updateLevelSelectStars();
@@ -212,6 +224,11 @@ export class UIManager {
     document.getElementById('btn-start')?.addEventListener('click', () => {
       this.playClickSound();
       this.showScreen('level-select');
+    });
+
+    // Floating fullscreen button
+    document.getElementById('floating-fullscreen-btn')?.addEventListener('click', () => {
+      this.toggleFullscreen();
     });
 
     document.getElementById('btn-settings')?.addEventListener('click', () => {
@@ -512,6 +529,21 @@ export class UIManager {
     }
 
     document.body.style.cursor = 'default';
+  }
+
+  /**
+   * Toggle fullscreen mode
+   */
+  toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(err => {
+        console.warn('Fullscreen request failed:', err);
+      });
+    } else {
+      document.exitFullscreen().catch(err => {
+        console.warn('Exit fullscreen failed:', err);
+      });
+    }
   }
 
   /**
