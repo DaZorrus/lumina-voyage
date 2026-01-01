@@ -9,11 +9,9 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: false // Keep console for development
-      }
+    minify: 'esbuild',
+    esbuild: {
+      drop: [] // Keep console logs
     }
   }
 });
