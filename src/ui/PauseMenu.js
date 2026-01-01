@@ -36,27 +36,32 @@ export class PauseMenu {
 
         // Resume button
         document.getElementById('resume-btn')?.addEventListener('click', () => {
+            this.playClickSound();
             this.toggle();
         });
 
         // Restart button
         document.getElementById('restart-btn')?.addEventListener('click', () => {
+            this.playClickSound();
             this.restartLevel();
         });
 
         // Settings button
         document.getElementById('pause-settings-btn')?.addEventListener('click', () => {
+            this.playClickSound();
             this.settingsPanel.classList.remove('hidden');
             this.setupSettings();
         });
 
         // Settings close
         document.getElementById('settings-close')?.addEventListener('click', () => {
+            this.playClickSound();
             this.settingsPanel.classList.add('hidden');
         });
 
         // Quit button
         document.getElementById('quit-btn')?.addEventListener('click', () => {
+            this.playClickSound();
             this.quitToMenu();
         });
     }
@@ -109,6 +114,11 @@ export class PauseMenu {
             // We know UIManager handles this but we don't have ref to it directly unless we pass it.
             // But main.js sets window.returnToMenu so we are good.
         }
+    }
+
+    playClickSound() {
+        // Dùng chung sound với UIManager thông qua AudioSystem
+        this.engine?.audioSystem?.playUIClick();
     }
 
     setupSettings() {

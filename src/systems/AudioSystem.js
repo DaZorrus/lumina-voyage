@@ -117,6 +117,12 @@ export class AudioSystem {
     setTimeout(() => synth.dispose(), 1000);
   }
 
+  // UI Click sound - centralized for all menus
+  playUIClick() {
+    if (!this.initialized) return;
+    this.playSpecificNote('E4', 0.4, { type: 'sine', duration: '16n' });
+  }
+
   playPulseSound() {
     if (!this.initialized) return;
 

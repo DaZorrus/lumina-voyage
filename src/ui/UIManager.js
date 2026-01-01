@@ -162,23 +162,34 @@ export class UIManager {
   }
 
   /**
+   * Play UI click sound - dùng chung cho tất cả menu
+   */
+  playClickSound() {
+    this.engine?.audioSystem?.playUIClick();
+  }
+
+  /**
    * Setup UI event listeners
    */
   setupEventListeners() {
     // Main Menu buttons
     document.getElementById('btn-start')?.addEventListener('click', () => {
+      this.playClickSound();
       this.showScreen('level-select');
     });
 
     document.getElementById('btn-settings')?.addEventListener('click', () => {
+      this.playClickSound();
       this.showScreen('settings-menu');
     });
 
     document.getElementById('btn-credits')?.addEventListener('click', () => {
+      this.playClickSound();
       this.showScreen('credits-screen');
     });
 
     document.getElementById('btn-instructions')?.addEventListener('click', () => {
+      this.playClickSound();
       this.showScreen('instructions-screen');
     });
 
@@ -203,14 +214,17 @@ export class UIManager {
 
     // Back buttons
     document.getElementById('btn-back-settings')?.addEventListener('click', () => {
+      this.playClickSound();
       this.showScreen('main-menu');
     });
 
     document.getElementById('btn-back-credits')?.addEventListener('click', () => {
+      this.playClickSound();
       this.showScreen('main-menu');
     });
 
     document.getElementById('btn-back-levels')?.addEventListener('click', () => {
+      this.playClickSound();
       this.showScreen('main-menu');
     });
 
@@ -223,6 +237,7 @@ export class UIManager {
         const index = parseInt(star.dataset.chapter);
 
         if (this.unlockedLevels[index]) {
+          this.playClickSound();
           this.startLevel(index).catch(console.error);
         }
       });
