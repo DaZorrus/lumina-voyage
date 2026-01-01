@@ -1,6 +1,7 @@
 # Lumina Voyage
 
 A 3D space exploration game built with Three.js featuring echolocation mechanics and procedural audio.
+
 **[🎮 Play Live Demo](https://DaZorrus.github.io/lumina-voyage/)**
 <p align="center">
   <img src="./docs/screenshots/gameplay-00.png" width="80%" alt="Main Menu" />
