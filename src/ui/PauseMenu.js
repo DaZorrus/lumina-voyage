@@ -5,7 +5,7 @@ export class PauseMenu {
         this.engine = engine;
 
         this.element = document.getElementById('pause-menu');
-        this.settingsPanel = document.getElementById('settings-panel');
+        this.settingsMenu = document.getElementById('settings-menu');
         this.isVisible = false;
 
         this.setupEventListeners();
@@ -25,8 +25,8 @@ export class PauseMenu {
                 if (this.engine.currentLevel?.gamePaused) return;
 
                 // Close settings if open
-                if (this.settingsPanel && !this.settingsPanel.classList.contains('hidden')) {
-                    this.settingsPanel.classList.add('hidden');
+                if (this.settingsMenu && !this.settingsMenu.classList.contains('hidden')) {
+                    this.hideSettings();
                     return;
                 }
 
@@ -49,14 +49,13 @@ export class PauseMenu {
         // Settings button
         document.getElementById('pause-settings-btn')?.addEventListener('click', () => {
             this.playClickSound();
-            this.settingsPanel.classList.remove('hidden');
-            this.setupSettings();
+            this.showSettings();
         });
 
-        // Settings close
-        document.getElementById('settings-close')?.addEventListener('click', () => {
+        // Settings close (từ pause menu)
+        document.getElementById('btn-back-settings-ingame')?.addEventListener('click', () => {
             this.playClickSound();
-            this.settingsPanel.classList.add('hidden');
+            this.hideSettings();
         });
 
         // Quit button
@@ -84,14 +83,14 @@ export class PauseMenu {
     resume() {
         this.engine.resume();
         this.element.classList.add('hidden');
-        if (this.settingsPanel) this.settingsPanel.classList.add('hidden');
+        this.hideSettings();
         this.isVisible = false;
         document.body.style.cursor = 'none';
     }
 
     restartLevel() {
         this.element.classList.add('hidden');
-        if (this.settingsPanel) this.settingsPanel.classList.add('hidden');
+        this.hideSettings();
         this.isVisible = false;
         this.engine.isPaused = false;
         document.body.style.cursor = 'none';
@@ -121,60 +120,59 @@ export class PauseMenu {
         this.engine?.audioSystem?.playUIClick();
     }
 
-    setupSettings() {
-        let settings = Storage.loadSettings();
-
-        const sliders = {
-            master: document.getElementById('pause-master-volume'),
-            music: document.getElementById('pause-music-volume'),
-            sfx: document.getElementById('pause-sfx-volume')
-        };
-
-        const values = {
-            master: document.getElementById('pause-master-value'),
-            music: document.getElementById('pause-music-value'),
-            sfx: document.getElementById('pause-sfx-value')
-        };
-
-        const updateValue = (key, value) => {
-            if (values[key]) values[key].textContent = `${value}%`;
-        };
-
-        ['master', 'music', 'sfx'].forEach(key => {
-            if (sliders[key]) {
-                sliders[key].value = settings[key === 'master' ? 'masterVolume' : key + 'Volume'] || 50; // Map keys if needed
-                // Storage uses masterVolume, musicVolume, sfxVolume.
-                // But HUD/Menu IDs and logic used settings.master in main.js
-                // Storage.loadSettings returns {masterVolume, ...}
-
-                // Wait, Storage returns {masterVolume: 80, ...}
-                // But PauseMenu logic in Engine used settings.master. 
-                // I should stick to Storage keys: masterVolume, musicVolume, sfxVolume.
-
-                const storageKey = key === 'master' ? 'masterVolume' : key + 'Volume';
-                const val = settings[storageKey];
-                sliders[key].value = val;
-                updateValue(key, val);
-
-                sliders[key].oninput = (e) => {
-                    const newVal = parseInt(e.target.value);
-                    settings[storageKey] = newVal;
-                    updateValue(key, newVal);
-                    Storage.saveSettings(settings);
-                    // Apply immediately? Engine needs apply logic.
-                    // Engine doesn't expose applySettings.
-                    // UIManager does.
-                    // We might need to access audioSystem directly.
-                    if (this.engine.audioSystem) {
-                        // Calculate and set similar to UIManager
-                        const master = settings.masterVolume / 100;
-                        const music = (settings.musicVolume / 100) * master;
-                        const sfx = (settings.sfxVolume / 100) * master;
-                        this.engine.audioSystem.setMusicVolume(music);
-                        this.engine.audioSystem.setSFXVolume(sfx);
-                    }
-                };
-            }
-        });
+    showSettings() {
+        // Sync settings values từ Storage vào UI trước khi hiển thị
+        const settings = Storage.loadSettings();
+        
+        // Update slider values từ Storage
+        const masterSlider = document.getElementById('slider-master');
+        const musicSlider = document.getElementById('slider-music');
+        const sfxSlider = document.getElementById('slider-sfx');
+        
+        if (masterSlider) {
+            masterSlider.value = settings.masterVolume;
+            document.getElementById('master-value').textContent = settings.masterVolume + '%';
+        }
+        if (musicSlider) {
+            musicSlider.value = settings.musicVolume;
+            document.getElementById('music-value').textContent = settings.musicVolume + '%';
+        }
+        if (sfxSlider) {
+            sfxSlider.value = settings.sfxVolume;
+            document.getElementById('sfx-value').textContent = settings.sfxVolume + '%';
+        }
+        
+        // Hiển thị settings-menu với styling cho in-game
+        this.settingsMenu.classList.remove('hidden');
+        this.settingsMenu.classList.add('in-game');
+        
+        // Ẩn pause menu
+        this.element.classList.add('hidden');
+        
+        // Hiển thị nút back in-game, ẩn nút back bình thường
+        document.getElementById('btn-back-settings').style.display = 'none';
+        document.getElementById('btn-back-settings-ingame').style.display = 'block';
+    }
+    
+    hideSettings() {
+        if (!this.settingsMenu) return;
+        
+        // Check nếu settings đang mở thì mới hide và restore pause menu
+        const isSettingsOpen = !this.settingsMenu.classList.contains('hidden');
+        
+        // Ẩn settings-menu
+        this.settingsMenu.classList.add('hidden');
+        this.settingsMenu.classList.remove('in-game');
+        
+        // Chỉ hiển thị lại pause menu nếu settings đang mở (không phải đã ẩn rồi)
+        if (isSettingsOpen) {
+            this.element.classList.remove('hidden');
+        }
+        
+        // Restore nút back về trạng thái bình thường
+        const btnBackSettings = document.getElementById('btn-back-settings');
+        const btnBackSettingsIngame = document.getElementById('btn-back-settings-ingame');
+        if (btnBackSettings) btnBackSettings.style.display = 'block';
+        if (btnBackSettingsIngame) btnBackSettingsIngame.style.display = 'none';
     }
 }

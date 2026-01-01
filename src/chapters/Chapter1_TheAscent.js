@@ -121,7 +121,7 @@ export class Chapter1_TheAscent extends BaseChapter {
 
     // Speed effect overlay
     this.speedOverlay = document.getElementById('speed-overlay');
-    this.baseFov = 75;  // Base FOV
+    this.baseFov = 70;  // Base FOV - lower for closer view
     this.targetFov = 80;
   }
 
@@ -173,13 +173,13 @@ export class Chapter1_TheAscent extends BaseChapter {
     this.player.isTrailEnabled = false;  
 
     // Set initial FOV for Chapter 1
-    this.engine.cameraSystem.camera.fov = 75;
+    this.engine.cameraSystem.camera.fov = 70;
     this.engine.cameraSystem.camera.updateProjectionMatrix();
   }
 
   setupCamera() {
-    // VERY CLOSE camera for tight view
-    this.engine.cameraSystem.offset.set(0, 3, 8);
+    // Closer camera for better player visibility
+    this.engine.cameraSystem.offset.set(0, 3, 6);
     this.engine.cameraSystem.lookAheadOffset.set(0, 0, 0);
   }
 
@@ -944,7 +944,7 @@ export class Chapter1_TheAscent extends BaseChapter {
 
     // Dynamic FOV increase with speed
     if (this.targetFov !== undefined) {
-      this.targetFov = this.baseFov + speedRatio * 15;  // 75 to 90 FOV
+      this.targetFov = this.baseFov + speedRatio * 15;  // 70 to 85 FOV
       const currentFov = this.engine.cameraSystem.camera.fov;
       const newFov = currentFov + (this.targetFov - currentFov) * deltaTime * 3;
       this.engine.cameraSystem.camera.fov = newFov;
@@ -974,9 +974,13 @@ export class Chapter1_TheAscent extends BaseChapter {
 
       // Recycle if passed player (local Z > 100)
       if (positions[idx + 2] > 100) {
-        positions[idx + 2] = -2400;
-        positions[idx] = (Math.random() - 0.5) * 1200;
-        positions[idx + 1] = (Math.random() - 0.5) * 800;
+        // Respawn ahead at consistent distance for smooth streaming
+        positions[idx + 2] = -2000 - Math.random() * 500; // -2000 to -2500
+        // Random cylindrical distribution
+        const radius = 100 + Math.random() * 400;
+        const theta = Math.random() * Math.PI * 2;
+        positions[idx] = Math.cos(theta) * radius;
+        positions[idx + 1] = Math.sin(theta) * radius;
       }
     }
 
@@ -1273,7 +1277,7 @@ export class Chapter1_TheAscent extends BaseChapter {
   unload() {
     // Reset FOV to default
     if (this.engine.cameraSystem && this.engine.cameraSystem.camera) {
-      this.engine.cameraSystem.camera.fov = 75;
+      this.engine.cameraSystem.camera.fov = 70;
       this.engine.cameraSystem.camera.updateProjectionMatrix();
     }
 

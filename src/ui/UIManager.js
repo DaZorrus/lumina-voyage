@@ -128,6 +128,37 @@ export class UIManager {
     if (screenName === 'level-select') {
       this.updateLevelSelectStars();
     }
+
+    // Sync settings UI khi mở settings-menu (có thể đã thay đổi từ pause menu)
+    if (screenName === 'settings-menu') {
+      this.syncSettingsUI();
+    }
+  }
+
+  /**
+   * Sync settings UI với giá trị từ Storage
+   */
+  syncSettingsUI() {
+    // Reload settings từ Storage để đảm bảo sync
+    this.settings = Storage.loadSettings();
+
+    // Update UI sliders
+    const masterSlider = document.getElementById('slider-master');
+    const musicSlider = document.getElementById('slider-music');
+    const sfxSlider = document.getElementById('slider-sfx');
+
+    if (masterSlider) {
+      masterSlider.value = this.settings.masterVolume;
+      document.getElementById('master-value').textContent = this.settings.masterVolume + '%';
+    }
+    if (musicSlider) {
+      musicSlider.value = this.settings.musicVolume;
+      document.getElementById('music-value').textContent = this.settings.musicVolume + '%';
+    }
+    if (sfxSlider) {
+      sfxSlider.value = this.settings.sfxVolume;
+      document.getElementById('sfx-value').textContent = this.settings.sfxVolume + '%';
+    }
   }
 
   /**
