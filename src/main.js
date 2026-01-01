@@ -76,7 +76,7 @@ function startMenuAnimation() {
     lastTime = time;
 
     // Only animate/render if we are in a menu screen
-    const menuScreens = ['main-menu', 'level-select', 'settings-menu', 'credits-screen'];
+    const menuScreens = ['main-menu', 'level-select', 'settings-menu', 'credits-screen', 'instructions-screen'];
     if (menuScreens.includes(uiManager.currentScreen)) {
       uiManager.updateMenuBackground(deltaTime);
       if (engine.renderer) {

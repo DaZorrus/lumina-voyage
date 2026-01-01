@@ -22,11 +22,9 @@ export class InstructionScreen {
         // 2. Xử lý nút Back
         if (this.backBtn) {
             this.backBtn.addEventListener('click', () => {
+                this.uiManager.playClickSound();
                 this.hide();
                 this.uiManager.showScreen('main-menu');
-
-                // Phát âm thanh click (nếu có hệ thống âm thanh)
-                this.playClickSound();
             });
         }
     }
@@ -50,25 +48,17 @@ export class InstructionScreen {
         }
 
         // Phát âm thanh nhẹ khi chuyển tab
-        this.playClickSound();
+        this.uiManager.playClickSound();
     }
 
     show() {
         this.container.classList.remove('hidden');
 
-        // Reset về tab đầu tiên mỗi khi mở lên (tùy chọn)
-        // this.switchTab(this.tabs[0]); 
+        // Reset về tab đầu tiên mỗi khi mở lên
+        this.switchTab(this.tabs[0]);
     }
 
     hide() {
         this.container.classList.add('hidden');
-    }
-
-    playClickSound() {
-        // Gọi ngược về engine thông qua uiManager để phát tiếng
-        if (this.uiManager.engine?.audioSystem) {
-            // Note C4 nhẹ nhàng cho UI
-            this.uiManager.engine.audioSystem.playSpecificNote('C4', 0.05, { type: 'sine' });
-        }
     }
 }
