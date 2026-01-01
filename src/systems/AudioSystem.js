@@ -72,17 +72,19 @@ export class AudioSystem {
   }
 
   async init() {
-    if (this.initialized) return;
+    if (this.initialized) {
+      console.log('Audio already initialized');
+      return;
+    }
 
     try {
+      console.log('Starting Tone.js...');
       await Tone.start();
-      console.log('Audio system initialized');
+      console.log('✅ Audio system initialized');
       this.initialized = true;
-
-      // Start ambient immediately when audio is initialized
-      this.startAmbient();
     } catch (error) {
-      console.error('Failed to initialize audio:', error);
+      console.error('❌ Failed to initialize audio:', error);
+      this.initialized = false;
     }
   }
 

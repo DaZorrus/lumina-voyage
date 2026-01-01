@@ -25,19 +25,28 @@ async function init() {
   uiManager.setLoadProgress(50);
 
   // Initialize menu background
-  uiManager.initMenuBackground();
+  try {
+    uiManager.initMenuBackground();
+    console.log('✅ Menu background initialized');
+  } catch (error) {
+    console.error('Failed to init menu background:', error);
+  }
   uiManager.setLoadProgress(80);
 
   // Setup UI listeners
   uiManager.setupEventListeners();
 
-  // Initialize audio (try auto-start)
+  // Initialize audio with timeout (don't block loading)
+  const audioTimeout = new Promise(resolve => setTimeout(resolve, 2000));
   try {
-    await engine.audioSystem.init();
+    await Promise.race([
+      engine.audioSystem.init(),
+      audioTimeout
+    ]);
     engine.audioSystem.startAmbient();
     console.log('🎵 Menu music initialized');
   } catch (error) {
-    console.warn('Audio auto-start blocked (interaction needed)');
+    console.warn('Audio initialization skipped:', error);
   }
 
   uiManager.setLoadProgress(100);
