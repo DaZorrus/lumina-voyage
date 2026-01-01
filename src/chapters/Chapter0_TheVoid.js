@@ -75,7 +75,7 @@ export class Chapter0_TheVoid extends BaseChapter {
 
     // Set camera to follow player - Restore original close view
     this.engine.cameraSystem.follow(this.player);
-    this.engine.cameraSystem.offset.set(0, 3, 8); // Closer view
+    this.engine.cameraSystem.offset.set(0, 3, 7); // Closer view
 
     // Explicitly set camera FOV for Chapter 0 view - Start focused (60)
     this.engine.cameraSystem.camera.fov = 60;

@@ -179,7 +179,7 @@ export class Chapter1_TheAscent extends BaseChapter {
 
   setupCamera() {
     // Closer camera for better player visibility
-    this.engine.cameraSystem.offset.set(0, 3, 6);
+    this.engine.cameraSystem.offset.set(0, 2.6, 5.3);
     this.engine.cameraSystem.lookAheadOffset.set(0, 0, 0);
   }
 
