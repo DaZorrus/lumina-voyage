@@ -1,0 +1,51 @@
+/* ========================================
+   CREDITS SCREEN
+   ======================================== */
+#credits-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.9);
+}
+
+#credits-screen.hidden {
+  display: none;
+}
+
+.credits-title {
+  font-size: 48px;
+  color: #ffaa00;
+  letter-spacing: 4px;
+  margin-bottom: 40px;
+  text-shadow: 0 0 20px rgba(255, 170, 0, 0.5);
+}
+
+.credits-content {
+  text-align: center;
+  max-width: 500px;
+}
+
+.credits-section {
+  margin-bottom: 30px;
+}
+
+.credits-section h4 {
+  font-size: 16px;
+  color: #00D9FF;
+  letter-spacing: 3px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.credits-section p {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.8;
+}

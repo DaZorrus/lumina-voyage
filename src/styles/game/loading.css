@@ -1,0 +1,98 @@
+/* ========================================
+   LOADING SCREEN
+   ======================================== */
+#loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  transition: opacity 1s ease;
+}
+
+#loading-screen.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Pulsing light orb - heartbeat effect */
+.loading-orb {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffaa00 0%, #ff6600 40%, transparent 70%);
+  box-shadow:
+    0 0 30px rgba(255, 170, 0, 0.8),
+    0 0 60px rgba(255, 170, 0, 0.5),
+    0 0 100px rgba(255, 170, 0, 0.3);
+  animation: heartbeat 1.5s ease-in-out infinite;
+  margin-bottom: 60px;
+}
+
+@keyframes heartbeat {
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+
+  25% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+
+  35% {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+
+  50% {
+    transform: scale(1.1);
+    opacity: 0.9;
+  }
+}
+
+/* Progress bar - thin light beam */
+.loading-bar-container {
+  width: 300px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+#loading-progress {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #ffaa00, #ffdd00);
+  transition: width 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+#loading-progress-glow {
+  position: absolute;
+  top: -5px;
+  left: 0;
+  height: 13px;
+  width: 0%;
+  background: linear-gradient(90deg, transparent, rgba(255, 200, 100, 0.5));
+  filter: blur(3px);
+  transition: width 0.3s ease;
+}
+
+.loading-text {
+  margin-top: 30px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+}

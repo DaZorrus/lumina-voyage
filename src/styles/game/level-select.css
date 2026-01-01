@@ -1,0 +1,169 @@
+/* ========================================
+   LEVEL SELECT - CONSTELLATION MAP
+   ======================================== */
+#level-select {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.85);
+}
+
+#level-select.hidden {
+  display: none;
+}
+
+.level-select-title {
+  font-size: 42px;
+  color: #00D9FF;
+  letter-spacing: 6px;
+  margin-bottom: 60px;
+  text-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+}
+
+.constellation-map {
+  position: relative;
+  width: 600px;
+  height: 400px;
+}
+
+/* SVG constellation lines */
+.constellation-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.constellation-svg line {
+  stroke: url(#lineGradient);
+  stroke-width: 2;
+  opacity: 0.6;
+}
+
+/* Chapter stars */
+.chapter-star {
+  position: absolute;
+  width: 70px;
+  height: 70px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.chapter-star.star-0 {
+  left: 70px;
+  top: 180px;
+}
+
+.chapter-star.star-1 {
+  left: 270px;
+  top: 120px;
+}
+
+.chapter-star.star-2 {
+  left: 470px;
+  top: 180px;
+}
+
+.star-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.chapter-star.unlocked .star-glow {
+  background: radial-gradient(circle, #ffdd00 0%, #ffaa00 30%, transparent 70%);
+  box-shadow:
+    0 0 20px rgba(255, 200, 0, 0.8),
+    0 0 40px rgba(255, 200, 0, 0.5);
+  animation: star-pulse 2s ease-in-out infinite;
+}
+
+.chapter-star.locked .star-glow {
+  background: radial-gradient(circle, rgba(100, 100, 120, 0.5) 0%, rgba(50, 50, 70, 0.3) 50%, transparent 70%);
+  box-shadow: 0 0 10px rgba(100, 100, 120, 0.3);
+}
+
+@keyframes star-pulse {
+
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.8;
+  }
+
+  50% {
+    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 1;
+  }
+}
+
+.chapter-star:hover.unlocked .star-glow {
+  transform: translate(-50%, -50%) scale(1.3);
+  box-shadow:
+    0 0 30px rgba(255, 200, 0, 1),
+    0 0 60px rgba(255, 200, 0, 0.7);
+}
+
+.star-label {
+  position: absolute;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%) scale(1);
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.8);
+  white-space: nowrap;
+  text-align: center;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.chapter-star:hover .star-label {
+  transform: translateX(-50%) scale(1.1);
+  color: #fff;
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
+}
+
+.chapter-star.locked .star-label {
+  color: rgba(100, 100, 120, 0.6);
+}
+
+.star-sublabel {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 4px;
+}
+
+.chapter-star.locked .star-sublabel {
+  color: rgba(100, 100, 120, 0.4);
+}
+
+.btn-back {
+  margin-top: 60px;
+  padding: 12px 40px;
+  font-size: 14px;
+  font-family: 'Courier New', monospace;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 2px;
+}
+
+.btn-back:hover {
+  border-color: #00D9FF;
+  color: #00D9FF;
+}

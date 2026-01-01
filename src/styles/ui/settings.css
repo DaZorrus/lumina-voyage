@@ -1,0 +1,86 @@
+/* ========================================
+   SETTINGS MENU
+   ======================================== */
+#settings-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.9);
+}
+
+#settings-menu.hidden {
+  display: none;
+}
+
+.settings-title {
+  font-size: 36px;
+  color: #00D9FF;
+  letter-spacing: 6px;
+  margin-bottom: 50px;
+  text-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+}
+
+.settings-container {
+  width: 400px;
+}
+
+.settings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding: 15px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.settings-label {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.8);
+  letter-spacing: 2px;
+}
+
+.settings-control {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.settings-slider {
+  width: 150px;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  outline: none;
+}
+
+.settings-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #00D9FF;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0, 217, 255, 0.8);
+}
+
+.settings-value {
+  min-width: 45px;
+  text-align: right;
+  font-size: 14px;
+  color: #00D9FF;
+}
+
+/* Settings menu có thể dùng từ pause menu hoặc main menu */
+#settings-menu.in-game {
+  z-index: 2100;
+}

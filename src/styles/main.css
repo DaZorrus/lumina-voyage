@@ -1,0 +1,28 @@
+/* ========================================
+   BASE STYLES & RESET
+   ======================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  /* Disable text selection*/
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+body {
+  font-family: 'Courier New', monospace;
+  background: #000;
+  color: #fff;
+  overflow: hidden;
+}
+
+#canvas-container {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+}

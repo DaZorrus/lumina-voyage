@@ -1,0 +1,278 @@
+/* ========================================
+   HUD (HEADS-UP DISPLAY) - IN-GAME UI
+   ======================================== */
+
+/* Speed Effect Overlay */
+#speed-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 50;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+#speed-overlay.active {
+  opacity: 1;
+}
+
+.vignette {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at center,
+      transparent 40%,
+      rgba(0, 100, 200, 0.1) 70%,
+      rgba(0, 50, 150, 0.3) 90%,
+      rgba(0, 20, 80, 0.5) 100%);
+}
+
+.radial-blur {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at center,
+      transparent 50%,
+      rgba(100, 180, 255, 0.05) 70%,
+      rgba(100, 180, 255, 0.15) 100%);
+  filter: blur(3px);
+}
+
+/* ========================================
+   LEFT HUD (Energy + Pulse)
+   ======================================== */
+#hud {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+}
+
+#hud.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#lumen-bar-container {
+  width: 200px;
+  height: 10px;
+  border: 2px solid #00D9FF;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+#lumen-bar {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #00D9FF, #FFA41B);
+  transition: width 0.3s ease;
+}
+
+#pulse-indicator {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #00D9FF;
+  text-shadow: 0 0 10px #00D9FF;
+}
+
+/* ========================================
+   RIGHT HUD (Speed + Orbs)
+   ======================================== */
+#hud-right {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 100;
+  pointer-events: none;
+  text-align: right;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+}
+
+#hud-right.hidden {
+  opacity: 0;
+}
+
+#speed-display {
+  font-size: 42px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 0 20px rgba(0, 217, 255, 0.8);
+  line-height: 1;
+}
+
+#speed-unit {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 2px;
+  margin-top: 2px;
+}
+
+#orb-display {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.orb-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255, 215, 0, 0.2);
+  border: 2px solid rgba(255, 215, 0, 0.4);
+  transition: all 0.3s ease;
+}
+
+.orb-icon.collected {
+  background: #FFD700;
+  border-color: #FFD700;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+}
+
+/* ========================================
+   LEVEL 1 HUD (Speed Progress Bar)
+   ======================================== */
+#hud-level1 {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  pointer-events: none;
+  text-align: center;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+}
+
+#hud-level1.hidden {
+  opacity: 0;
+}
+
+#speed-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+#speed-bar-label {
+  font-size: 12px;
+  color: #00ffff;
+  text-shadow: 0 0 10px #00ffff;
+  letter-spacing: 3px;
+  white-space: nowrap;
+}
+
+#speed-bar-track {
+  width: 300px;
+  height: 12px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid #00ffff;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+#speed-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #00aaff, #00ffff, #88ffff);
+  transition: width 0.2s ease;
+  position: relative;
+  z-index: 1;
+}
+
+#speed-bar-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5));
+  animation: speed-glow 1s ease-in-out infinite;
+}
+
+@keyframes speed-glow {
+
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+
+  50% {
+    opacity: 0.8;
+  }
+}
+
+#speed-bar-percent {
+  font-size: 18px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 0 10px #00ffff;
+  min-width: 50px;
+}
+
+#level1-hint {
+  margin-top: 10px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  animation: pulse-hint 3s ease-in-out infinite;
+}
+
+@keyframes pulse-hint {
+
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Chapter Title Overlay at start of level */
+#chapter-title-overlay {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 500;
+  text-align: center;
+  pointer-events: none;
+  transition: opacity 1s ease, transform 1s ease;
+  font-family: 'Courier New', monospace;
+}
+
+#chapter-title-overlay.hidden {
+  opacity: 0;
+  transform: translate(-50%, -40%);
+}
+
+#chapter-title-text {
+  font-size: 48px;
+  color: #fff;
+  text-shadow: 0 0 20px rgba(0, 217, 255, 0.8);
+  letter-spacing: 12px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+#chapter-subtitle-text {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 6px;
+  text-transform: uppercase;
+}
