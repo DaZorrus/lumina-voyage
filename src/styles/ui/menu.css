@@ -115,15 +115,15 @@
   top: 25px;
   right: 35px;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.5);
   font-family: 'Courier New', monospace;
   letter-spacing: 0.5px;
   animation: pulse-hint 4s ease-in-out infinite;
 }
 
 @keyframes pulse-hint {
-  0%, 100% { opacity: 0.35; }
-  50% { opacity: 0.7; }
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.85; }
 }
 
 #floating-fullscreen-btn {
