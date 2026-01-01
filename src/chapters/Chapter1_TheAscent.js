@@ -45,7 +45,7 @@ export class Chapter1_TheAscent extends BaseChapter {
     this.mapWidth = this.gridLaneWidth * 1.5;  // Total playable width
     this.mapHeight = this.gridLaneHeight * 1.5; // Total playable height
 
-    // === PROCEDURAL GENERATION (OPTIMIZED) ===
+    // === PROCEDURAL GENERATION ===
     this.spawnAheadDistance = 80;   // Spawn further ahead
     this.despawnBehindDistance = 15;  // Cleanup faster
     this.lastSpawnZ = 0;
@@ -107,10 +107,10 @@ export class Chapter1_TheAscent extends BaseChapter {
 
   setupEnvironment() {
     // Brighter space fog for deep depth visibility
-    this.scene.fog = new THREE.Fog(0x000000, 200, 2000);
-    this.scene.background = new THREE.Color(0x0a0c1a);
+    this.scene.fog = new THREE.Fog(0x000000, 200, 700);
+    this.scene.background = new THREE.Color(0x0a0e27);
 
-    // IMPORTANT: Add camera to scene so its children (Nebula, Starfield) render
+    // IMPORTANT: Add camera to scene so its children (Starfield) render
     if (this.engine.cameraSystem && this.engine.cameraSystem.camera) {
       this.scene.add(this.engine.cameraSystem.camera);
     }
@@ -169,8 +169,8 @@ export class Chapter1_TheAscent extends BaseChapter {
     this.setupCamera();
 
     // Feature flags for Chapter 1
-    this.player.isPulseEnabled = false; // No pulse wave in Ch 1
-    this.player.isTrailEnabled = false;  // No trail during normal gameplay
+    this.player.isPulseEnabled = false;
+    this.player.isTrailEnabled = false;  
 
     // Set initial FOV for Chapter 1
     this.engine.cameraSystem.camera.fov = 75;
@@ -233,26 +233,41 @@ export class Chapter1_TheAscent extends BaseChapter {
   }
 
   createStarfield() {
-    const starCount = 3500;
+    // Initialize starfield relative to player position (or 0 if no player yet)
+    const baseZ = this.player ? this.player.mesh.position.z : 0;
+
+    const starCount = 3000;
     const positions = new Float32Array(starCount * 3);
     const colors = new Float32Array(starCount * 3);
 
-    const rangeX = 1200;
-    const rangeY = 800;
-    const rangeZ = 2500;
-
     for (let i = 0; i < starCount; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * rangeX;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * rangeY;
-      positions[i * 3 + 2] = -Math.random() * rangeZ;
+      // Place stars in a cylinder ahead of current position
+      const radius = 100 + Math.random() * 400; // 100-500 units from center
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.random() * Math.PI;
 
+      positions[i * 3] = Math.sin(phi) * Math.cos(theta) * radius;
+      positions[i * 3 + 1] = Math.sin(phi) * Math.sin(theta) * radius;
+      // Place ALL stars ahead of current position, from -100 to -2000 relative
+      positions[i * 3 + 2] = baseZ - 100 - Math.random() * 1900;
+
+      // Varied star colors (white, blue, yellow) - brighter
       const colorType = Math.random();
-      if (colorType < 0.6) {
-        colors[i * 3] = 1.0; colors[i * 3 + 1] = 1.0; colors[i * 3 + 2] = 1.0;
+      if (colorType < 0.5) {
+        // White
+        colors[i * 3] = 1.0;
+        colors[i * 3 + 1] = 1.0;
+        colors[i * 3 + 2] = 1.0;
       } else if (colorType < 0.8) {
-        colors[i * 3] = 0.7; colors[i * 3 + 1] = 0.9; colors[i * 3 + 2] = 1.0;
+        // Blue
+        colors[i * 3] = 0.7 + Math.random() * 0.2;
+        colors[i * 3 + 1] = 0.8 + Math.random() * 0.2;
+        colors[i * 3 + 2] = 1.0;
       } else {
-        colors[i * 3] = 1.0; colors[i * 3 + 1] = 0.9; colors[i * 3 + 2] = 0.7;
+        // Yellow/orange
+        colors[i * 3] = 1.0;
+        colors[i * 3 + 1] = 0.9 + Math.random() * 0.1;
+        colors[i * 3 + 2] = 0.6 + Math.random() * 0.3;
       }
     }
 
@@ -261,15 +276,14 @@ export class Chapter1_TheAscent extends BaseChapter {
     geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
     const material = new THREE.PointsMaterial({
-      size: 2.5,
+      size: 2,  // Same as Level 0
       vertexColors: true,
       transparent: true,
-      opacity: 0.8,
+      opacity: 0.9,
       sizeAttenuation: false
     });
 
     this.starfield = new THREE.Points(geometry, material);
-    this.starfield.frustumCulled = false;
     this.scene.add(this.starfield);
   }
 
