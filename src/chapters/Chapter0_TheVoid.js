@@ -145,8 +145,8 @@ export class Chapter0_TheVoid extends BaseChapter {
   update(deltaTime) {
     super.update(deltaTime);
 
-    // Toggle controls hint with H key
-    if (this.engine.inputManager.justPressed('h')) {
+    // Toggle controls hint with H key (only when game is active)
+    if (this.engine.inputManager.justPressed('h') && !this.paused) {
       this.toggleControlsHint();
     }
 

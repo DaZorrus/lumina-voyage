@@ -439,8 +439,8 @@ export class Chapter1_TheAscent extends BaseChapter {
     // STOP everything when game is paused (level complete)
     if (this.gamePaused) return;
 
-    // Toggle controls hint with H key
-    if (this.engine.inputManager.justPressed('h')) {
+    // Toggle controls hint with H key (only when not paused)
+    if (this.engine.inputManager.justPressed('h') && !this.gamePaused) {
       this.toggleControlsHint();
     }
 

@@ -62,4 +62,13 @@ export class InputManager {
   justReleased(key) {
     return !this.keys[key] && this.previousKeys[key];
   }
+
+  /**
+   * Clear all input state (useful when returning to menu)
+   */
+  reset() {
+    this.keys = {};
+    this.previousKeys = {};
+    this.justPressedKeys.clear();
+  }
 }
