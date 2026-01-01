@@ -10,6 +10,11 @@
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      /* Disable text selection*/
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
     }
 
     body {
@@ -260,7 +265,7 @@
     }
 
     .level-select-title {
-      font-size: 36px;
+      font-size: 42px;
       color: #00D9FF;
       letter-spacing: 6px;
       margin-bottom: 60px;
@@ -292,8 +297,8 @@
     /* Chapter stars */
     .chapter-star {
       position: absolute;
-      width: 60px;
-      height: 60px;
+      width: 70px;
+      height: 70px;
       cursor: pointer;
       transition: all 0.3s ease;
     }
@@ -318,8 +323,8 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 40px;
-      height: 40px;
+      width: 48px;
+      height: 48px;
       border-radius: 50%;
       transition: all 0.3s ease;
     }
@@ -360,13 +365,20 @@
 
     .star-label {
       position: absolute;
-      top: 70px;
+      top: 80px;
       left: 50%;
-      transform: translateX(-50%);
-      font-size: 14px;
+      transform: translateX(-50%) scale(1);
+      font-size: 16px;
       color: rgba(255, 255, 255, 0.8);
       white-space: nowrap;
       text-align: center;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .chapter-star:hover .star-label {
+      transform: translateX(-50%) scale(1.1); 
+      color: #fff; 
+      text-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
     }
 
     .chapter-star.locked .star-label {
@@ -374,7 +386,7 @@
     }
 
     .star-sublabel {
-      font-size: 11px;
+      font-size: 13px;
       color: rgba(255, 255, 255, 0.4);
       margin-top: 4px;
     }
@@ -522,7 +534,7 @@
     }
 
     .credits-section h4 {
-      font-size: 14px;
+      font-size: 16px;
       color: #00D9FF;
       letter-spacing: 3px;
       margin-bottom: 10px;
@@ -530,7 +542,7 @@
     }
 
     .credits-section p {
-      font-size: 16px;
+      font-size: 18px;
       color: rgba(255, 255, 255, 0.7);
       line-height: 1.8;
     }
@@ -846,68 +858,9 @@
       box-shadow: 0 0 30px rgba(255, 68, 68, 0.5);
     }
 
-    /* Settings Panel (from pause menu) */
-    #settings-panel {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.95);
-      display: flex;
-      justify-content: center;
-      align-items: center;
+    /* Settings menu có thể dùng từ pause menu hoặc main menu */
+    #settings-menu.in-game {
       z-index: 2100;
-      backdrop-filter: blur(10px);
-    }
-
-    #settings-panel.hidden {
-      display: none;
-    }
-
-    .settings-panel-content {
-      background: rgba(10, 14, 39, 0.9);
-      border: 2px solid #00D9FF;
-      border-radius: 10px;
-      padding: 40px;
-      box-shadow: 0 0 40px rgba(0, 217, 255, 0.3);
-      min-width: 400px;
-    }
-
-    .settings-panel-content h2 {
-      font-size: 36px;
-      margin-bottom: 30px;
-      text-shadow: 0 0 20px #00D9FF;
-      color: #00D9FF;
-      letter-spacing: 6px;
-      text-align: center;
-    }
-
-    .setting-item {
-      margin-bottom: 25px;
-    }
-
-    .setting-item label {
-      display: block;
-      color: #00D9FF;
-      font-size: 16px;
-      margin-bottom: 10px;
-      text-shadow: 0 0 5px rgba(0, 217, 255, 0.5);
-    }
-
-    .setting-item input[type="range"] {
-      width: 100%;
-      margin-bottom: 5px;
-    }
-
-    .setting-item span {
-      color: #00D9FF;
-      font-size: 14px;
-    }
-
-    #settings-close {
-      margin-top: 20px;
-      width: 100%;
     }
 
     #pause-hint {
@@ -973,7 +926,7 @@
       justify-content: center;
       align-items: center;
       z-index: 1000;
-      background: rgba(0, 0, 0, 0.9);
+      background: rgba(0, 0, 0, 0.85);
       backdrop-filter: blur(3px);
     }
 
@@ -1092,7 +1045,7 @@
     }
 
     .tab-content h3 {
-      font-size: 24px;
+      font-size: 28px;
       color: #fff;
       margin-bottom: 5px;
       letter-spacing: 4px;
@@ -1100,7 +1053,7 @@
     }
 
     .tab-subtitle {
-      font-size: 14px;
+      font-size: 16px;
       color: rgba(255, 255, 255, 0.5);
       margin-bottom: 30px;
       font-style: italic;
@@ -1129,7 +1082,7 @@
     }
 
     .instr-card h4 {
-      font-size: 14px;
+      font-size: 16px;
       color: #00D9FF;
       margin-bottom: 10px;
       letter-spacing: 2px;
@@ -1150,9 +1103,9 @@
     /* Màu đỏ cho nguy hiểm */
 
     .instr-card p {
-      font-size: 14px;
+      font-size: 16px;
       color: rgba(255, 255, 255, 0.7);
-      line-height: 1.5;
+      line-height: 1.6;
     }
 
     .highlight-gold {
@@ -1192,7 +1145,7 @@
 
     .control-section h4 {
       color: rgba(255, 255, 255, 0.3);
-      font-size: 12px;
+      font-size: 14px;
       margin-bottom: 15px;
       text-transform: uppercase;
       letter-spacing: 2px;
@@ -1209,14 +1162,14 @@
 
     .control-desc {
       color: rgba(255, 255, 255, 0.8);
-      font-size: 14px;
+      font-size: 16px;
     }
 
     /* --- KEYCAP STYLE (Phím bấm đẹp) --- */
     .key-cap {
       display: inline-block;
-      min-width: 32px;
-      padding: 4px 8px;
+      min-width: 36px;
+      padding: 6px 10px;
       background: linear-gradient(to bottom, #333, #111);
       color: #00D9FF;
       border: 1px solid #555;
@@ -1224,7 +1177,7 @@
       border-radius: 4px;
       font-family: 'Courier New', monospace;
       font-weight: bold;
-      font-size: 13px;
+      font-size: 15px;
       text-align: center;
       box-shadow: 0 4px 4px rgba(0, 0, 0, 0.4);
       text-shadow: 0 0 5px rgba(0, 217, 255, 0.6);
@@ -1348,6 +1301,7 @@
     </div>
 
     <button class="btn-back" id="btn-back-settings">← BACK</button>
+    <button class="btn-back" id="btn-back-settings-ingame" style="display:none;">← BACK TO PAUSE</button>
   </div>
 
   <!-- ========== CREDITS SCREEN ========== -->
@@ -1441,7 +1395,7 @@
           <div class="instr-card">
             <h4>🌀 GRAVITY SLINGSHOT</h4>
             <p>Fly through the <span class="highlight-green">GREEN OUTER RING</span> of a Black Hole.</p>
-            <p style="margin-top:5px; font-size: 13px;">
+            <p style="margin-top:5px; font-size: 15px;">
               ➢ When you glow <span class="highlight-green">GREEN</span>, press <span class="key-cap">F</span> to
               Boost!
             </p>
@@ -1464,7 +1418,9 @@
         <div class="controls-layout">
           <!-- Left Column: Chapter 0 (Free Flight) -->
           <div class="control-section">
-            <h4 style="border-bottom-color: #ffaa00;"><span style="color: #ffaa00;">CHAPTER 0</span> • FREE FLIGHT</h4>
+            <h4 style="border-bottom: 2px solid #ffaa00; padding-bottom: 8px;">
+              <span style="color: #ffaa00;">CHAPTER 0</span> • FREE FLIGHT
+            </h4>
 
             <div class="control-row">
               <div class="key-group">
@@ -1496,9 +1452,11 @@
             </div>
           </div>
 
-          <!-- Right Column: Chapter 1 (3x3 Grid) -->
+          <!-- Right Column: Chapter 1 (Lane Runner) -->
           <div class="control-section">
-            <h4 style="border-bottom-color: #00D9FF;"><span style="color: #00D9FF;">CHAPTER 1</span> • LANE RUNNER</h4>
+            <h4 style="border-bottom: 2px solid #00D9FF; padding-bottom: 8px;">
+              <span style="color: #00D9FF;">CHAPTER 1</span> • LANE RUNNER
+            </h4>
 
             <div class="control-row">
               <div class="key-group">
@@ -1518,14 +1476,26 @@
 
             <div class="control-row">
               <span class="key-cap">F</span>
-              <span class="control-desc">Slingshot (Timing)</span>
+              <span class="control-desc">Slingshot Boost (Timing)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Global Controls Section (Full Width Below) -->
+        <div style="margin-top: 35px; padding-top: 20px; border-top: 1px solid rgba(0, 217, 255, 0.15);">
+          <h4 style="color: rgba(255,255,255,0.5); font-size: 14px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; text-align: center;">
+            <span style="color: #fff;">UNIVERSAL</span> • ALL CHAPTERS
+          </h4>
+
+          <div style="display: flex; justify-content: center; gap: 60px; flex-wrap: wrap;">
+            <div class="control-row" style="border: none; width: auto; margin-bottom: 0;">
+              <span class="key-cap" style="margin-right: 15px;">ESC</span>
+              <span class="control-desc">Pause Menu</span>
             </div>
 
-            <!-- Global Control -->
-            <div class="control-row"
-              style="margin-top: 25px; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 15px;">
-              <span class="key-cap">ESC</span>
-              <span class="control-desc">Pause Menu</span>
+            <div class="control-row" style="border: none; width: auto; margin-bottom: 0; align-items: center;">
+              <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 70px; padding: 6px 12px; background: linear-gradient(to bottom, #333, #111); color: #00D9FF; border: 1px solid #555; border-bottom: 3px solid #000; border-radius: 4px; font-size: 14px; font-weight: bold; box-shadow: 0 4px 4px rgba(0, 0, 0, 0.4); margin-right: 15px;">🖱️ Scroll</span>
+              <span class="control-desc">Adjust Camera FOV</span>
             </div>
           </div>
         </div>
@@ -1590,32 +1560,7 @@
     </div>
   </div>
 
-  <!-- Settings panel overlay (from pause menu) -->
-  <div id="settings-panel" class="hidden">
-    <div class="settings-panel-content">
-      <h2>SETTINGS</h2>
 
-      <div class="setting-item">
-        <label for="pause-master-volume">Master Volume</label>
-        <input type="range" id="pause-master-volume" min="0" max="100" value="80">
-        <span id="pause-master-value">80%</span>
-      </div>
-
-      <div class="setting-item">
-        <label for="pause-music-volume">Music Volume</label>
-        <input type="range" id="pause-music-volume" min="0" max="100" value="50">
-        <span id="pause-music-value">50%</span>
-      </div>
-
-      <div class="setting-item">
-        <label for="pause-sfx-volume">SFX Volume</label>
-        <input type="range" id="pause-sfx-volume" min="0" max="100" value="80">
-        <span id="pause-sfx-value">80%</span>
-      </div>
-
-      <button class="pause-btn" id="settings-close">BACK</button>
-    </div>
-  </div>
 
   <!-- ESC hint -->
   <div id="pause-hint" class="hidden">Press ESC to pause</div>
