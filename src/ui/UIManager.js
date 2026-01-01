@@ -224,6 +224,11 @@ export class UIManager {
       this.showScreen('instructions-screen');
     });
 
+    document.getElementById('btn-quit-game')?.addEventListener('click', () => {
+      this.playClickSound();
+      this.quitGame();
+    });
+
     // Settings sliders
     document.getElementById('slider-master')?.addEventListener('input', (e) => {
       this.settings.masterVolume = parseInt(e.target.value);
@@ -428,6 +433,7 @@ export class UIManager {
     document.getElementById('hud-level1')?.classList.add('hidden');
     document.getElementById('pause-hint')?.classList.add('hidden');
     document.getElementById('pause-menu')?.classList.add('hidden');
+    document.getElementById('controls-hint')?.classList.add('hidden');
 
     // Show menu
     this.showScreen('main-menu');
@@ -441,6 +447,26 @@ export class UIManager {
     document.body.style.cursor = 'default';
   }
 
+  /**
+   * Quit the game (for standalone/Electron builds)
+   */
+  quitGame() {
+    // Check if running in Electron
+    if (window.electronAPI) {
+      window.electronAPI.quitApp();
+    } 
+    // Check if running as Tauri app
+    else if (window.__TAURI__) {
+      window.__TAURI__.process.exit(0);
+    }
+    // Browser fallback - close window (may not work due to browser security)
+    else {
+      // Show a message that quit is not available in browser
+      alert('Quit is only available in the standalone application.\nTo exit, close the browser tab/window.');
+      // Attempt to close (will only work if window was opened by script)
+      window.close();
+    }
+  }
   showChapterComplete(levelIndex, options = {}) {
     this.chapterCompleteUI.show(levelIndex, options);
   }

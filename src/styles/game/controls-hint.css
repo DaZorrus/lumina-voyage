@@ -1,0 +1,137 @@
+/* ========================================
+   CONTROLS HINT OVERLAY (In-Game)
+   ======================================== */
+#controls-hint {
+  position: fixed;
+  top: 50%;
+  right: 30px;
+  transform: translateY(-50%);
+  z-index: 150;
+  background: rgba(10, 15, 25, 0.92);
+  border: 1px solid rgba(0, 217, 255, 0.3);
+  border-radius: 8px;
+  padding: 20px;
+  min-width: 280px;
+  max-width: 320px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(0, 217, 255, 0.2);
+  animation: slideInRight 0.3s ease-out;
+  pointer-events: none;
+}
+
+#controls-hint.hidden {
+  display: none;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+}
+
+.controls-hint-header {
+  border-bottom: 2px solid rgba(0, 217, 255, 0.3);
+  padding-bottom: 12px;
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.controls-hint-header h3 {
+  font-size: 18px;
+  color: #00D9FF;
+  letter-spacing: 3px;
+  margin: 0;
+  text-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
+}
+
+.controls-hint-subtitle {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 1px;
+}
+
+.controls-hint-content {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.hint-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hint-section h4 {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 2px;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+}
+
+.hint-chapter-label {
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.hint-chapter-label.ch0 {
+  color: #ffaa00;
+  background: rgba(255, 170, 0, 0.15);
+}
+
+.hint-chapter-label.ch1 {
+  color: #00D9FF;
+  background: rgba(0, 217, 255, 0.15);
+}
+
+.hint-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.hint-row:last-child {
+  border-bottom: none;
+}
+
+.hint-universal {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 12px;
+}
+
+.key-cap-small {
+  display: inline-block;
+  min-width: 26px;
+  padding: 3px 6px;
+  background: linear-gradient(to bottom, #333, #111);
+  color: #00D9FF;
+  border: 1px solid #555;
+  border-bottom: 2px solid #000;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  font-size: 11px;
+  text-align: center;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
+  text-shadow: 0 0 5px rgba(0, 217, 255, 0.6);
+  margin: 0 1px;
+}
+
+.hint-row .key-group {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}

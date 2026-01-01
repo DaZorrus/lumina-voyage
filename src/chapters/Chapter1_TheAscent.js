@@ -439,6 +439,11 @@ export class Chapter1_TheAscent extends BaseChapter {
     // STOP everything when game is paused (level complete)
     if (this.gamePaused) return;
 
+    // Toggle controls hint with H key
+    if (this.engine.inputManager.justPressed('h')) {
+      this.toggleControlsHint();
+    }
+
     // Start delay - stay still but let visuals move
     if (this.startDelay > 0) {
       this.startDelay -= deltaTime;
@@ -1275,6 +1280,9 @@ export class Chapter1_TheAscent extends BaseChapter {
   }
 
   unload() {
+    // Hide controls hint when leaving chapter
+    document.getElementById('controls-hint')?.classList.add('hidden');
+
     // Reset FOV to default
     if (this.engine.cameraSystem && this.engine.cameraSystem.camera) {
       this.engine.cameraSystem.camera.fov = 70;
@@ -1316,5 +1324,22 @@ export class Chapter1_TheAscent extends BaseChapter {
     }
 
     super.unload();
+  }
+
+  toggleControlsHint() {
+    const hintElement = document.getElementById('controls-hint');
+    const chapter0Section = document.getElementById('hint-chapter0');
+    const chapter1Section = document.getElementById('hint-chapter1');
+
+    if (hintElement.classList.contains('hidden')) {
+      // Show controls hint
+      hintElement.classList.remove('hidden');
+      // Show only Chapter 1 controls
+      if (chapter0Section) chapter0Section.style.display = 'none';
+      if (chapter1Section) chapter1Section.style.display = 'flex';
+    } else {
+      // Hide controls hint
+      hintElement.classList.add('hidden');
+    }
   }
 }

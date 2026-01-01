@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="/src/styles/game/level-select.css">
   <link rel="stylesheet" href="/src/styles/game/hud.css">
   <link rel="stylesheet" href="/src/styles/game/pause.css">
+  <link rel="stylesheet" href="/src/styles/game/controls-hint.css">
 </head>
 
 <body>
@@ -42,6 +43,7 @@
       <button class="menu-btn" id="btn-instructions">HOW TO PLAY</button>
       <button class="menu-btn" id="btn-settings">SETTINGS</button>
       <button class="menu-btn" id="btn-credits">CREDITS</button>
+      <button class="menu-btn danger" id="btn-quit-game">QUIT GAME</button>
     </div>
   </div>
 
@@ -319,9 +321,27 @@
               <span class="control-desc">Pause Menu</span>
             </div>
 
+            <div class="control-row" style="border: none; width: auto; margin-bottom: 0;">
+              <span class="key-cap" style="margin-right: 15px;">H</span>
+              <span class="control-desc">Show/Hide Controls (In-Game)</span>
+            </div>
+
             <div class="control-row" style="border: none; width: auto; margin-bottom: 0; align-items: center;">
               <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 70px; padding: 6px 12px; background: linear-gradient(to bottom, #333, #111); color: #00D9FF; border: 1px solid #555; border-bottom: 3px solid #000; border-radius: 4px; font-size: 14px; font-weight: bold; box-shadow: 0 4px 4px rgba(0, 0, 0, 0.4); margin-right: 15px;">🖱️ Scroll</span>
               <span class="control-desc">Adjust Camera Distance</span>
+            </div>
+          </div>
+
+          <!-- Quick Tip Box -->
+          <div style="margin-top: 30px; padding: 15px 25px; background: rgba(0, 217, 255, 0.08); border-left: 3px solid #00D9FF; border-radius: 4px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="font-size: 24px;">💡</span>
+              <div>
+                <div style="color: #00D9FF; font-size: 13px; font-weight: bold; letter-spacing: 1px; margin-bottom: 5px;">QUICK TIP</div>
+                <div style="color: rgba(255, 255, 255, 0.7); font-size: 14px; line-height: 1.5;">
+                  Press <span class="key-cap" style="display: inline-block; transform: scale(0.85); margin: 0 3px;">H</span> anytime during gameplay to see controls overlay without pausing the game.
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -390,6 +410,61 @@
 
   <!-- ESC hint -->
   <div id="pause-hint" class="hidden">Press ESC to pause</div>
+
+  <!-- Controls Hint Overlay -->
+  <div id="controls-hint" class="hidden">
+    <div class="controls-hint-header">
+      <h3>CONTROLS</h3>
+      <div class="controls-hint-subtitle">Press <span class="key-cap-small">H</span> to hide</div>
+    </div>
+    <div class="controls-hint-content">
+      <div class="hint-section" id="hint-chapter0">
+        <h4><span class="hint-chapter-label ch0">CHAPTER 0</span> • FREE FLIGHT</h4>
+        <div class="hint-row">
+          <div class="key-group"><span class="key-cap-small">W</span><span class="key-cap-small">S</span></div>
+          <span>Forward / Backward</span>
+        </div>
+        <div class="hint-row">
+          <div class="key-group"><span class="key-cap-small">A</span><span class="key-cap-small">D</span></div>
+          <span>Move Left / Right</span>
+        </div>
+        <div class="hint-row">
+          <div class="key-group"><span class="key-cap-small">E</span><span class="key-cap-small">Q</span></div>
+          <span>Fly Up / Down</span>
+        </div>
+        <div class="hint-row">
+          <span class="key-cap-small">F</span>
+          <span>Sonar Pulse</span>
+        </div>
+      </div>
+      <div class="hint-section" id="hint-chapter1">
+        <h4><span class="hint-chapter-label ch1">CHAPTER 1</span> • LANE RUNNER</h4>
+        <div class="hint-row">
+          <div class="key-group"><span class="key-cap-small">W</span><span class="key-cap-small">S</span></div>
+          <span>Switch Lane Up / Down</span>
+        </div>
+        <div class="hint-row">
+          <div class="key-group"><span class="key-cap-small">A</span><span class="key-cap-small">D</span></div>
+          <span>Switch Lane Left / Right</span>
+        </div>
+        <div class="hint-row">
+          <span class="key-cap-small">F</span>
+          <span>Slingshot Boost</span>
+        </div>
+      </div>
+      <div class="hint-section hint-universal">
+        <h4>UNIVERSAL</h4>
+        <div class="hint-row">
+          <span class="key-cap-small">ESC</span>
+          <span>Pause Menu</span>
+        </div>
+        <div class="hint-row">
+          <span class="key-cap-small" style="min-width: 50px;">🖱️ Scroll</span>
+          <span>Camera Distance</span>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Chapter Start Title -->
   <div id="chapter-title-overlay" class="hidden">
