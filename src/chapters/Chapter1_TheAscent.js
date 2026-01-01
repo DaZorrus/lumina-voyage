@@ -276,15 +276,32 @@ export class Chapter1_TheAscent extends BaseChapter {
     geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
     const material = new THREE.PointsMaterial({
-      size: 2,  // Same as Level 0
+      size: 3.5, // Larger for texture
       vertexColors: true,
       transparent: true,
-      opacity: 0.9,
+      opacity: 0.8,
+      map: this.createStarTexture(),
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
       sizeAttenuation: false
     });
 
     this.starfield = new THREE.Points(geometry, material);
     this.scene.add(this.starfield);
+
+    // Add a second "glow" layer for bloom feel
+    const glowMaterial = new THREE.PointsMaterial({
+      size: 8.0,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.3,
+      map: this.createStarTexture(),
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      sizeAttenuation: false
+    });
+    this.glowField = new THREE.Points(geometry, glowMaterial);
+    this.scene.add(this.glowField);
   }
 
   createSpeedLines() {
@@ -960,6 +977,17 @@ export class Chapter1_TheAscent extends BaseChapter {
   updateStarfield(deltaTime) {
     if (!this.starfield || !this.player) return;
 
+    // Twinkling effect - Ngưỡng min cao hơn (0.75 - 0.15 = 0.6)
+    this.starfield.material.opacity = 0.75 + Math.sin(this.gameTime * 2.5) * 0.15;
+    if (this.glowField) {
+      this.glowField.material.opacity = 0.2 + Math.sin(this.gameTime * 0.8) * 0.1;
+      this.glowField.material.size = 7.0 + Math.sin(this.gameTime * 1.3) * 3.0;
+      
+      // Sync glow field position/rotation with main starfield
+      this.glowField.position.copy(this.starfield.position);
+      this.glowField.rotation.copy(this.starfield.rotation);
+    }
+
     const positions = this.starfield.geometry.attributes.position.array;
     const starCount = positions.length / 3;
     const playerZ = this.player.mesh.position.z;
@@ -990,6 +1018,9 @@ export class Chapter1_TheAscent extends BaseChapter {
     }
 
     this.starfield.geometry.attributes.position.needsUpdate = true;
+    if (this.glowField) {
+      this.glowField.geometry.attributes.position.needsUpdate = true;
+    }
   }
 
   handleCollisions() {

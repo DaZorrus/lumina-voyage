@@ -12,6 +12,25 @@ export class BaseChapter {
     this.entities = [];
     this.isComplete = false;
     this.player = null;
+    this.gameTime = 0;
+  }
+
+  /**
+   * Create a circular gradient texture for glowing stars
+   */
+  createStarTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64;
+    canvas.height = 64;
+    const context = canvas.getContext('2d');
+    const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+    gradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.8)');
+    gradient.addColorStop(0.4, 'rgba(128, 128, 255, 0.4)');
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, 64, 64);
+    return new THREE.CanvasTexture(canvas);
   }
 
   load() {
@@ -75,6 +94,8 @@ export class BaseChapter {
   }
 
   update(deltaTime) {
+    this.gameTime += deltaTime;
+
     // Update player (pass chapter instance for pulse wave tracking)
     if (this.player) {
       this.player.update(deltaTime, this.engine.inputManager, this.entities, this);

@@ -112,7 +112,7 @@ export class Chapter0_TheVoid extends BaseChapter {
 
     for (let i = 0; i < starCount; i++) {
       // Random position in MUCH LARGER sphere (far background)
-      const radius = 250 + Math.random() * 250; // 100-200 units away (was 30-50)
+      const radius = 250 + Math.random() * 250; 
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.random() * Math.PI;
 
@@ -131,19 +131,46 @@ export class Chapter0_TheVoid extends BaseChapter {
     geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
     const material = new THREE.PointsMaterial({
-      size: 1.0, // Much bigger to be visible at distance
+      size: 2.5, // Slightly larger for texture
       vertexColors: true,
       transparent: true,
-      opacity: 1.0, // Full opacity to ensure visibility
-      sizeAttenuation: false // Don't shrink with distance
+      opacity: 0.8,
+      map: this.createStarTexture(),
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      sizeAttenuation: false
     });
 
     this.starfield = new THREE.Points(geometry, material);
     this.scene.add(this.starfield);
+
+    // Add a second "glow" layer for bloom feel
+    const glowMaterial = new THREE.PointsMaterial({
+      size: 6.0,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.3,
+      map: this.createStarTexture(),
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      sizeAttenuation: false
+    });
+    this.glowField = new THREE.Points(geometry, glowMaterial);
+    this.scene.add(this.glowField);
   }
 
   update(deltaTime) {
     super.update(deltaTime);
+
+    // Twinkling effect
+    if (this.starfield) {
+      // Tăng Base (0.75) và giảm Amplitude (0.15) để ngưỡng min cao hơn (0.75 - 0.15 = 0.6)
+      this.starfield.material.opacity = 0.9 + Math.sin(this.gameTime * 2.5) * 0.1;
+      if (this.glowField) {
+        this.glowField.material.opacity = 0.2 + Math.sin(this.gameTime * 0.7) * 0.1;
+        this.glowField.material.size = 5.0 + Math.sin(this.gameTime * 1.1) * 2.0;
+      }
+    }
 
     // Toggle controls hint with H key (only when game is active)
     if (this.engine.inputManager.justPressed('h') && !this.paused) {

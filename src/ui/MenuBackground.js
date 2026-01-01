@@ -8,6 +8,7 @@ export class MenuBackground {
         this.scene = null;
         this.camera = null;
         this.starfield = null;
+        this.time = 0;
     }
 
     /**
@@ -21,20 +22,23 @@ export class MenuBackground {
         }
 
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0x0a0e27);
+        this.scene.background = new THREE.Color(0x050510); // Deeper blue-black
 
         this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
         this.camera.position.set(0, 0, 0);
 
+        // Create star texture for better glow
+        const starTexture = this.createStarTexture();
+
         // Create starfield
-        const starCount = 1500;
+        const starCount = 2000; // More stars
         const positions = new Float32Array(starCount * 3);
         const colors = new Float32Array(starCount * 3);
         const sizes = new Float32Array(starCount);
 
         for (let i = 0; i < starCount; i++) {
             // Spherical distribution
-            const radius = 50 + Math.random() * 200;
+            const radius = 40 + Math.random() * 250;
             const theta = Math.random() * Math.PI * 2;
             const phi = Math.random() * Math.PI;
 
@@ -42,19 +46,23 @@ export class MenuBackground {
             positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
             positions[i * 3 + 2] = radius * Math.cos(phi);
 
-            // Blue-white stars with some golden ones
-            const isGolden = Math.random() < 0.1;
-            if (isGolden) {
+            // Blue-white stars with some golden and cyan ones
+            const rand = Math.random();
+            if (rand < 0.1) { // Golden
                 colors[i * 3] = 1.0;
-                colors[i * 3 + 1] = 0.85;
+                colors[i * 3 + 1] = 0.9;
                 colors[i * 3 + 2] = 0.5;
-            } else {
+            } else if (rand < 0.2) { // Cyan/Lumina
+                colors[i * 3] = 0.0;
+                colors[i * 3 + 1] = 0.8;
+                colors[i * 3 + 2] = 1.0;
+            } else { // White-blue
                 colors[i * 3] = 0.8 + Math.random() * 0.2;
                 colors[i * 3 + 1] = 0.9 + Math.random() * 0.1;
                 colors[i * 3 + 2] = 1.0;
             }
 
-            sizes[i] = 0.5 + Math.random() * 1.5;
+            sizes[i] = 0.8 + Math.random() * 2.5;
         }
 
         const geometry = new THREE.BufferGeometry();
@@ -63,19 +71,54 @@ export class MenuBackground {
         geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
 
         const material = new THREE.PointsMaterial({
-            size: 1.5,
+            size: 2.0,
             vertexColors: true,
             transparent: true,
-            opacity: 0.9,
+            opacity: 0.8,
+            map: starTexture,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
             sizeAttenuation: true
         });
 
         this.starfield = new THREE.Points(geometry, material);
         this.scene.add(this.starfield);
 
+        // Add a second "glow" layer (larger, softer stars)
+        const glowMaterial = new THREE.PointsMaterial({
+            size: 6.0,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.3,
+            map: starTexture,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            sizeAttenuation: true
+        });
+        this.glowField = new THREE.Points(geometry, glowMaterial);
+        this.scene.add(this.glowField);
+
         // Add ambient glow
-        const ambientLight = new THREE.AmbientLight(0x404080, 0.5);
-        this.scene.add(ambientLight);
+        this.ambientLight = new THREE.AmbientLight(0x404080, 0.6);
+        this.scene.add(this.ambientLight);
+    }
+
+    /**
+     * Create a circular gradient texture for glowing stars
+     */
+    createStarTexture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 64;
+        canvas.height = 64;
+        const context = canvas.getContext('2d');
+        const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 32);
+        gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+        gradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.8)');
+        gradient.addColorStop(0.4, 'rgba(128, 128, 255, 0.4)');
+        gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, 64, 64);
+        return new THREE.CanvasTexture(canvas);
     }
 
     /**
@@ -84,8 +127,31 @@ export class MenuBackground {
      */
     update(deltaTime) {
         if (this.starfield) {
-            this.starfield.rotation.y += deltaTime * 0.02;
-            this.starfield.rotation.x += deltaTime * 0.005;
+            this.time += deltaTime;
+            
+            // Rotation
+            this.starfield.rotation.y += deltaTime * 0.015;
+            this.starfield.rotation.x += deltaTime * 0.004;
+            
+            if (this.glowField) {
+                this.glowField.rotation.y = this.starfield.rotation.y;
+                this.glowField.rotation.x = this.starfield.rotation.x;
+            }
+
+            // Twinkling effect (more aggressive flicker)
+            // Primary stars flicker fast - Ngưỡng min cao hơn (0.8 - 0.15 = 0.65)
+            this.starfield.material.opacity = 0.8 + Math.sin(this.time * 2.5) * 0.15;
+            
+            // Glow layer pulses slowly for "bloom" feel
+            if (this.glowField) {
+                this.glowField.material.opacity = 0.25 + Math.sin(this.time * 0.8) * 0.1;
+                this.glowField.material.size = 6.0 + Math.sin(this.time * 1.2) * 2.0;
+            }
+
+            // Modulate ambient light for environmental glow
+            if (this.ambientLight) {
+                this.ambientLight.intensity = 0.5 + Math.sin(this.time * 0.6) * 0.3;
+            }
         }
     }
 
