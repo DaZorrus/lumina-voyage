@@ -1,58 +1,136 @@
-# 🌟 Lumina Voyage
+# Lumina Voyage
 
-**An atmospheric 3D space exploration game built with Vanilla Three.js**
+A 3D space exploration game built with Three.js featuring echolocation mechanics and procedural audio.
 
-Experience a meditative journey through the cosmos as a luminous orb, collecting energy and uncovering the mysteries of The Void.
+<p align="center">
+  <img src="./docs/screenshots/gameplay-00.png" width="80%" alt="Main Menu" />
+  <br>
+  <em>Main Menu - Atmospheric starfield with dynamic glow</em>
+</p>
 
-![Game Preview](https://img.shields.io/badge/Status-In%20Development-yellow)
-![Three.js](https://img.shields.io/badge/Three.js-r170-blue)
-![License](https://img.shields.io/badge/License-MIT-green)
+## Overview
 
-## ✨ Features
+Lumina Voyage is an atmospheric 3D space game where players control a luminous orb exploring zero-gravity environments. The game features an echolocation pulse system for environmental discovery, procedural audio that builds with progression, and chapter-based gameplay with distinct mechanics. Built with vanilla Three.js using a modular architecture.
 
-### Core Gameplay
-- **Echolocation Pulse Mechanic** - Press `F` to send out a pulse wave that reveals hidden energy orbs
-- **Real-time Guide Beam** - Dynamic beam that tracks and points to the nearest uncollected orb
-- **Magnetic Collection** - Orbs are drawn to you with beautiful comet trail effects
-- **Progressive Difficulty** - Each orb collected increases your speed and unlocks new music layers
+## Screenshots
 
-### Visual Effects
-- **Low-poly Aesthetic** - Clean, geometric art style with flat shading
-- **Comet Trail** - Beautiful particle system with orange-to-gold color gradients
-- **Bloom Post-processing** - Ethereal glow effects using UnrealBloomPass
-- **Dynamic Camera** - FOV shifts based on speed for enhanced sense of velocity
-- **Screen Shake** - Satisfying feedback when reaching max speed
-- **Portal VFX** - Massive glowing portal with spiral particles and white flash transition
+<table>
+  <tr>
+    <td width="50%">
+      <img src="./docs/screenshots/gameplay-01.png" alt="Chapter 0: The Void" />
+      <p align="center"><strong>Chapter 0: The Void</strong><br/>Echolocation tutorial with energy orb collection</p>
+    </td>
+    <td width="50%">
+      <img src="./docs/screenshots/gameplay-02.png" alt="Chapter 1: The Ascent" />
+      <p align="center"><strong>Chapter 1: The Ascent</strong><br/>High-speed obstacle avoidance gameplay</p>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <img src="./docs/screenshots/gameplay-03.png" alt="Chapter 1 Action" />
+      <p align="center"><strong>Light Speed Pursuit</strong><br/>3x3 grid movement with photon collection</p>
+    </td>
+  </tr>
+</table>
 
-### Audio Experience
-- **Ambient Soundscape** - Deep ethereal pads create space atmosphere from game start
-- **Procedural Music Layers** - Each orb unlocks a new music layer (bass, harmony, melody, rhythm)
-- **Tone.js Integration** - Dynamic audio that responds to gameplay
-- **Smooth Bass** - Warm, filtered low-end instead of harsh metallic sounds
+## Features
 
-## 🎮 Controls
+**Core Mechanics**
+- Echolocation pulse system for revealing hidden objects
+- 6-DOF zero-gravity movement with physics simulation
+- Progressive audio layers that unlock with gameplay events
+- Dynamic camera effects (FOV shifts, screen shake)
 
-| Key | Action |
-|-----|--------|
-| **W/A/S/D** | Move (forward/left/backward/right) |
-| **E/Q** | Vertical movement (up/down) |
-| **F** | Pulse (echolocation) |
-| **Mouse** | Look around |
-| **ESC** | Pause/Resume |
+**Visual Systems**
+- Low-poly aesthetic with flat shading
+- UnrealBloom post-processing for ethereal glow effects
+- Particle trail system with color gradients
+- Procedural starfield backgrounds
 
-## 🚀 Getting Started
+**Game Structure**
+- Chapter 0: Tutorial level with energy orb collection
+- Chapter 1: High-speed obstacle avoidance with 3x3 grid movement
+- Save/load system for progress and settings
+- Menu system with animated backgrounds
+
+## Technical Stack
+
+| Technology | Version | Purpose |
+|-----------|---------|---------|
+| Three.js | 0.160.0 | 3D rendering and scene management |
+| Cannon-es | 0.20.0 | Physics simulation |
+| Tone.js | 14.7.77 | Audio synthesis and procedural music |
+| GSAP | 3.12.5 | Animation tweening |
+| Vite | 5.0.11 | Build tool and dev server |
+
+## Architecture
+
+### Project Structure
+
+```
+src/
+├── core/                      # Core engine systems
+│   ├── Engine.js              # Main game loop, renderer, post-processing
+│   ├── InputManager.js        # Keyboard/mouse input handling
+│   └── SceneManager.js        # Chapter loading and transitions
+│
+├── systems/                   # Subsystems
+│   ├── PhysicsSystem.js       # Cannon-es integration
+│   ├── CameraSystem.js        # Camera follow and effects
+│   ├── AudioSystem.js         # Tone.js procedural audio
+│   └── ParticleSystem.js      # Particle effects and trails
+│
+├── chapters/                  # Level implementations
+│   ├── BaseChapter.js         # Abstract base class
+│   ├── Chapter0_TheVoid.js    # Tutorial level
+│   └── Chapter1_TheAscent.js  # High-speed obstacle level
+│
+├── entities/                  # Game objects
+│   ├── Player.js              # Player orb with pulse mechanic
+│   ├── EnergyOrb.js           # Collectible objects
+│   ├── Meteor.js              # Obstacles for Chapter 1
+│   ├── Photon.js              # Speed boost pickups
+│   ├── BlackHole.js           # Hazard entities
+│   ├── ShadowComet.js         # Advanced hazards
+│   ├── Portal.js              # Chapter exit portals
+│   ├── PortalBeam.js          # Visual effect for portal spawn
+│   └── PulseWave.js           # Echolocation wave sphere
+│
+├── ui/                        # User interface
+│   ├── UIManager.js           # Screen management
+│   ├── HUD.js                 # In-game heads-up display
+│   ├── PauseMenu.js           # Pause screen
+│   ├── MenuBackground.js      # Animated menu starfield
+│   ├── ChapterComplete.js     # Victory screen
+│   └── InstructionScreen.js   # Help screen
+│
+└── utils/                     # Utilities
+    ├── Storage.js             # LocalStorage persistence
+    └── ModelManager.js        # 3D model loading
+```
+
+### Design Patterns
+
+**Entity System**: Base classes for game objects with lifecycle methods (update, destroy)
+
+**System Architecture**: Decoupled systems for physics, audio, camera, particles
+
+**Chapter Pattern**: BaseChapter provides common functionality, child classes implement specific gameplay
+
+**Event-Driven Input**: InputManager centralizes keyboard/mouse handling
+
+## Installation
 
 ### Prerequisites
-- Node.js (v16 or higher)
+
+- Node.js >= 16.0.0
 - npm or yarn
 
-### Installation
+### Setup
 
 ```bash
-# Clone the repository
+# Clone repository
 git clone https://github.com/DaZorrus/lumina-voyage.git
-
-# Navigate to project directory
 cd lumina-voyage
 
 # Install dependencies
@@ -62,122 +140,86 @@ npm install
 npm run dev
 ```
 
-The game will be available at `http://localhost:3000`
+Development server runs at `http://localhost:5173`
 
-### Build for Production
+### Build
 
 ```bash
-npm run build
+npm run build    # Production build to dist/
+npm run preview  # Preview production build
 ```
 
-Built files will be in the `dist/` directory.
+## Controls
 
-## 🏗️ Architecture
+| Key | Action |
+|-----|--------|
+| W/S | Move forward/backward |
+| A/D | Move left/right |
+| Q/E | Move down/up |
+| F | Echolocation pulse/Slingshot |
+| Mouse | Camera Distance |
+| H | Key Controls Hint |
+| ESC | Pause menu |
 
-### Project Structure
-```
-lumina-voyage/
-├── src/
-│   ├── core/           # Core engine systems
-│   │   ├── Engine.js
-│   │   └── InputManager.js
-│   ├── systems/        # Game systems
-│   │   ├── PhysicsSystem.js
-│   │   ├── CameraSystem.js
-│   │   ├── AudioSystem.js
-│   │   └── ParticleSystem.js
-│   ├── entities/       # Game entities
-│   │   ├── Player.js
-│   │   ├── EnergyOrb.js
-│   │   ├── Portal.js
-│   │   ├── PortalBeam.js
-│   │   └── PulseWave.js
-│   ├── levels/         # Level definitions
-│   │   ├── BaseLevel.js
-│   │   └── Level0_TheVoid.js
-│   └── main.js         # Entry point
-├── public/             # Static assets
-├── index.html
-└── package.json
-```
+## Gameplay
 
-### Tech Stack
-- **Three.js** - 3D rendering engine
-- **Cannon-es** - Physics simulation (zero-gravity mechanics)
-- **Tone.js** - Web Audio API wrapper for procedural music
-- **Vite** - Fast build tool and dev server
+### Chapter 0: The Void
+Tutorial level teaching core mechanics. Collect 5 energy orbs to spawn portal and complete chapter. Each orb collected increases speed and unlocks audio layer. Pulse mechanic reveals hidden orbs.
 
-## 🎯 Level 0: The Void
+### Chapter 1: The Ascent
+High-speed obstacle course with 3x3 grid movement system. Collect photons to increase speed toward light speed threshold. Avoid meteors, black holes, and shadow comets. Reach 100% speed to trigger final portal sequence.
 
-The tutorial level where you learn the core mechanics:
+### Progression System
+- Collectibles increase player speed incrementally
+- Audio layers unlock progressively (pad, bass, harmony, melody, rhythm)
+- Camera FOV adjusts dynamically based on speed
+- LocalStorage saves chapter completion and settings
 
-1. **Spawn** as a dim light in darkness
-2. **Press F** to pulse and reveal 5 hidden energy orbs
-3. **Collect all orbs** - each one makes you faster and brighter
-4. **Watch the portal spawn** - 5 light beams fly from you to create the gateway
-5. **Enter the portal** - white flash transition to complete the level
+## Game Systems
 
-### Design Philosophy
-- **Wave-based Detection** - Pulse expands outward, revealing orbs when the wave reaches them
-- **Multi-sensory Feedback** - Visual (brightness), Audio (music layers), Kinetic (speed increase)
-- **Breadcrumb Trail** - Orbs guide you naturally through the space
-- **No Fail State** - Chill, exploration-focused experience
+### Physics
+Cannon-es provides rigid body physics with trigger detection. High linear/angular damping creates arcade-style zero-gravity movement.
 
-## 🛠️ Development
+### Audio
+Tone.js generates procedural music. Base ambient pad plays continuously. Five additional layers activate based on gameplay events. Each chapter uses different musical scales.
 
-### Key Systems
+### Camera
+Third-person follow camera with smooth lerp. FOV dynamically adjusts from 50 to 75 degrees. Screen shake effect at high speeds.
 
-#### Physics System
-- Uses Cannon-es for realistic zero-gravity movement
-- High damping for arcade-style controls
-- Trigger bodies for orb collection
+### Post-Processing
+EffectComposer with RenderPass and UnrealBloomPass. Bloom strength adjusts based on gameplay intensity.
 
-#### Camera System
-- Smooth follow with lerp
-- Dynamic FOV based on collected orbs (50° → 75°)
-- Subtle screen shake effects
+## Configuration
 
-#### Audio System
-- 5 progressive music layers activated by orb collection
-- Ambient pad starts immediately on game init
-- Warm, filtered bass for pleasant low-end
+Settings stored in LocalStorage:
+- Master volume
+- Music volume
+- SFX volume
+- Chapter unlock state
+- Orb collection progress
 
-#### Particle System
-- 150 particles with varied lifetimes
-- Color gradient from orange to white
-- Smooth fade-out with size variation
+## Development
 
-## 🎨 Visual Style
+Project uses ES6 modules. Vite handles bundling and hot module replacement. Three.js examples imported from `three/examples/jsm/`.
 
-- **Color Palette**: Deep blacks (#0a0e27), cyan highlights (#00D9FF), warm golds (#FFD700)
-- **Geometry**: Low-poly meshes with flat shading
-- **Lighting**: Point lights with bloom for ethereal glow
-- **Post-processing**: Unreal Bloom Pass for soft luminosity
+Main entry point: [src/main.js](src/main.js)
 
-## 🔮 Upcoming Features
+Core engine: [src/core/Engine.js](src/core/Engine.js)
 
-- Level 1: The Ascent (high-speed obstacle course)
-- Level 2: Refraction Valley (light puzzle mechanics)
-- Level 3: Symphony Orbit (rhythm-based gameplay)
-- Save system for progress tracking
-- Additional visual effects and polish
+## Documentation
 
-## 🤝 Contributing
+Additional documentation in `doc/` directory:
+- Game Design Document
+- Technical Design Document
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+## License
 
-## 📝 License
+MIT License
 
-This project is licensed under the MIT License.
+## Author
 
-## 🙏 Acknowledgments
-
-- Inspired by atmospheric games like Journey and GRIS
-- Built with love using Vanilla Three.js (no frameworks!)
-- Special thanks to the Three.js and Tone.js communities
+DaZorrus
 
 ---
 
-**Made with ✨ by DaZorrus**
-
-*Experience the void. Become the light.*
+Built with Three.js | 2025
