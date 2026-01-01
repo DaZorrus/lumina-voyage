@@ -210,6 +210,15 @@ export class UIManager {
   }
 
   /**
+   * Ensure audio is initialized (called on first user interaction)
+   */
+  async ensureAudioInitialized() {
+    if (this.engine?.audioSystem && !this.engine.audioSystem.initialized) {
+      await this.engine.audioSystem.init();
+    }
+  }
+
+  /**
    * Play UI click sound - dùng chung cho tất cả menu
    */
   playClickSound() {
@@ -221,7 +230,8 @@ export class UIManager {
    */
   setupEventListeners() {
     // Main Menu buttons
-    document.getElementById('btn-start')?.addEventListener('click', () => {
+    document.getElementById('btn-start')?.addEventListener('click', async () => {
+      await this.ensureAudioInitialized();
       this.playClickSound();
       this.showScreen('level-select');
     });
@@ -231,17 +241,20 @@ export class UIManager {
       this.toggleFullscreen();
     });
 
-    document.getElementById('btn-settings')?.addEventListener('click', () => {
+    document.getElementById('btn-settings')?.addEventListener('click', async () => {
+      await this.ensureAudioInitialized();
       this.playClickSound();
       this.showScreen('settings-menu');
     });
 
-    document.getElementById('btn-credits')?.addEventListener('click', () => {
+    document.getElementById('btn-credits')?.addEventListener('click', async () => {
+      await this.ensureAudioInitialized();
       this.playClickSound();
       this.showScreen('credits-screen');
     });
 
-    document.getElementById('btn-instructions')?.addEventListener('click', () => {
+    document.getElementById('btn-instructions')?.addEventListener('click', async () => {
+      await this.ensureAudioInitialized();
       this.playClickSound();
       this.showScreen('instructions-screen');
     });
