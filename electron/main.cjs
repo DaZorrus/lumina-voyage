@@ -10,7 +10,7 @@ function createWindow() {
       contextIsolation: true,
     },
     backgroundColor: '#000000',
-    icon: path.join(__dirname, '../public/assets/textures/icon.png') // Optional: add an icon if you have one
+    icon: path.join(__dirname, '../public/icons/android-chrome-512x512.png')
   });
 
   // In production, load the index.html from the dist folder

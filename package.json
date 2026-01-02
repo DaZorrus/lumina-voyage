@@ -22,8 +22,7 @@
       "electron/**/*"
     ],
     "win": {
-      "target": "portable",
-      "icon": "public/favicon.ico"
+      "target": "portable"
     }
   },
   "dependencies": {
