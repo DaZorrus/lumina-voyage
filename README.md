@@ -207,6 +207,16 @@ Main entry point: [src/main.js](src/main.js)
 
 Core engine: [src/core/Engine.js](src/core/Engine.js)
 
+### Desktop Version (Electron)
+
+The game can be built as a standalone desktop application for Windows:
+
+1. Install dependencies: `npm install`
+2. Run in development mode: `npm run electron:dev`
+3. Build for Windows (.exe): `npm run electron:build`
+
+The executable will be generated in the `release/` directory.
+
 ## Documentation
 
 Additional documentation in `doc/` directory:
