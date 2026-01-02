@@ -613,8 +613,6 @@ export class UIManager {
     }
     // Browser fallback - close window (may not work due to browser security)
     else {
-      // Show a message that quit is not available in browser
-      alert('Quit is only available in the standalone application.\nTo exit, close the browser tab/window.');
       // Attempt to close (will only work if window was opened by script)
       window.close();
     }
