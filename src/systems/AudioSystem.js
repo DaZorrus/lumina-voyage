@@ -125,6 +125,12 @@ export class AudioSystem {
     this.playSpecificNote('E4', 0.4, { type: 'sine', duration: '16n' });
   }
 
+  // UI Hover sound - subtle feedback for button hover
+  playUIHover() {
+    if (!this.initialized) return;
+    this.playSpecificNote('C4', 0.2, { type: 'sine', duration: '32n', attack: 0.005, decay: 0.1, release: 0.15 });
+  }
+
   playPulseSound() {
     if (!this.initialized) return;
 

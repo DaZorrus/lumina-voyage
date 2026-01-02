@@ -228,6 +228,13 @@ export class UIManager {
   }
 
   /**
+   * Play UI hover sound - subtle feedback when hovering buttons
+   */
+  playHoverSound() {
+    this.engine?.audioSystem?.playUIHover();
+  }
+
+  /**
    * Setup UI event listeners
    */
   setupEventListeners() {
@@ -241,6 +248,7 @@ export class UIManager {
     // Floating fullscreen button
     document.getElementById('floating-fullscreen-btn')?.addEventListener('click', async () => {
       await this.ensureAudioInitialized();
+      this.playClickSound();
       this.toggleFullscreen();
     });
 
@@ -319,6 +327,35 @@ export class UIManager {
 
     // Controls Carousel Navigation
     this.setupCarouselNavigation();
+
+    // Add hover sound to all buttons
+    this.setupHoverSounds();
+  }
+
+  /**
+   * Setup hover sounds for all interactive buttons
+   */
+  setupHoverSounds() {
+    const buttonSelectors = [
+      '.menu-btn',
+      '.chapter-star.unlocked',
+      '#floating-fullscreen-btn',
+      '#carousel-prev',
+      '#carousel-next',
+      '.carousel-dot',
+      '#resume-btn',
+      '#restart-btn',
+      '#pause-settings-btn',
+      '#quit-btn'
+    ];
+
+    buttonSelectors.forEach(selector => {
+      document.querySelectorAll(selector).forEach(element => {
+        element.addEventListener('mouseenter', () => {
+          this.playHoverSound();
+        });
+      });
+    });
   }
 
   /**
