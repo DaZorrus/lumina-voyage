@@ -15,9 +15,6 @@ export class PauseMenu {
         // ESC key listener
         window.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                // Prevent ESC from exiting fullscreen
-                e.preventDefault();
-                
                 // Don't pause if not running or level complete
                 if (!this.engine.isRunning) return;
 
@@ -34,6 +31,21 @@ export class PauseMenu {
                 }
 
                 this.toggle();
+            }
+        });
+
+        // Fullscreen change listener - auto pause when exiting fullscreen during gameplay
+        document.addEventListener('fullscreenchange', () => {
+            // Only auto-pause if:
+            // 1. Game is running
+            // 2. Exiting fullscreen (not entering)
+            // 3. Game is not already paused
+            // 4. Not showing completion UI
+            if (this.engine.isRunning && 
+                !document.fullscreenElement && 
+                !this.engine.isPaused &&
+                !this.engine.uiManager?.chapterCompleteUI?.active) {
+                this.pause();
             }
         });
 

@@ -239,7 +239,8 @@ export class UIManager {
     });
 
     // Floating fullscreen button
-    document.getElementById('floating-fullscreen-btn')?.addEventListener('click', () => {
+    document.getElementById('floating-fullscreen-btn')?.addEventListener('click', async () => {
+      await this.ensureAudioInitialized();
       this.toggleFullscreen();
     });
 
