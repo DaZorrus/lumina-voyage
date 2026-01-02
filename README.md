@@ -217,6 +217,10 @@ The game can be built as a standalone desktop application for Windows:
 
 The executable will be generated in the `release/` directory.
 
+Note:
+Windows may show a security warning because this application is not code-signed.
+This is expected for personal/academic projects.
+
 ## Documentation
 
 Additional documentation in `doc/` directory:
