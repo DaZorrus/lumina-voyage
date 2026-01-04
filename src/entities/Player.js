@@ -383,15 +383,18 @@ export class Player {
 
     // Create beam geometry with many segments for smooth curve
     const points = this.calculateBeamPoints(this.mesh.position, nearestOrb.mesh.position);
-    const geometry = new THREE.BufferGeometry().setFromPoints(points);
-    const material = new THREE.LineBasicMaterial({
+    
+    // Use TubeGeometry for visible 3D beam (linewidth doesn't work in WebGL)
+    const curve = new THREE.CatmullRomCurve3(points);
+    const geometry = new THREE.TubeGeometry(curve, 64, 0.05, 8, false);
+    const material = new THREE.MeshBasicMaterial({
       color: 0x00ffff,
       transparent: true,
-      opacity: 0.8,
-      linewidth: 2
+      opacity: 0.6,
+      side: THREE.DoubleSide
     });
 
-    this.guideBeam = new THREE.Line(geometry, material);
+    this.guideBeam = new THREE.Mesh(geometry, material);
     this.scene.add(this.guideBeam);
 
     // Make nearest orb IMMEDIATELY glow bright (most important!)
@@ -414,10 +417,14 @@ export class Player {
         return;
       }
 
-      // Update beam points to follow player
+      // Update beam by recreating geometry with new points
       const newPoints = this.calculateBeamPoints(this.mesh.position, this.guideBeamTarget.mesh.position);
-      this.guideBeam.geometry.setFromPoints(newPoints);
-      this.guideBeam.geometry.attributes.position.needsUpdate = true;
+      const newCurve = new THREE.CatmullRomCurve3(newPoints);
+      const newGeometry = new THREE.TubeGeometry(newCurve, 64, 0.02, 8, false);
+      
+      // Dispose old geometry and replace
+      this.guideBeam.geometry.dispose();
+      this.guideBeam.geometry = newGeometry;
     }, 16);
 
     // Remove beam after 3 seconds
