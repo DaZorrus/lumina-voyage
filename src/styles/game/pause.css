@@ -21,22 +21,22 @@
 }
 
 #pause-menu h2 {
-  font-size: 48px;
-  margin-bottom: 40px;
+  font-size: clamp(2rem, 5vw, 3rem);
+  margin-bottom: 2.5rem;
   text-shadow: 0 0 20px #00D9FF;
   color: #00D9FF;
-  letter-spacing: 8px;
+  letter-spacing: 0.5rem;
 }
 
 .pause-menu-buttons {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 1rem;
 }
 
 .pause-btn {
-  padding: 15px 60px;
-  font-size: 18px;
+  padding: 1rem 3.75rem;
+  font-size: clamp(0.875rem, 2vw, 1.125rem);
   font-family: 'Courier New', monospace;
   background: transparent;
   border: 2px solid #00D9FF;
@@ -44,7 +44,7 @@
   cursor: pointer;
   transition: all 0.3s;
   text-shadow: 0 0 10px #00D9FF;
-  min-width: 250px;
+  min-width: clamp(12rem, 25vw, 15.625rem);
 }
 
 .pause-btn:hover {
@@ -68,10 +68,10 @@
 
 #pause-hint {
   position: fixed;
-  bottom: 20px;
+  bottom: 1.25rem;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 14px;
+  font-size: 0.875rem;
   color: rgba(255, 255, 255, 0.4);
   z-index: 100;
   pointer-events: none;

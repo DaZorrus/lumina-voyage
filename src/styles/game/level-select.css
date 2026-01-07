@@ -20,17 +20,18 @@
 }
 
 .level-select-title {
-  font-size: 42px;
+  font-size: clamp(1.75rem, 4vw, 2.625rem);
   color: #00D9FF;
-  letter-spacing: 6px;
-  margin-bottom: 60px;
+  letter-spacing: 0.375rem;
+  margin-bottom: 3.75rem;
   text-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
 }
 
 .constellation-map {
   position: relative;
-  width: 600px;
-  height: 400px;
+  width: clamp(25rem, 70vw, 37.5rem);
+  height: auto;
+  aspect-ratio: 600 / 400;
 }
 
 /* SVG constellation lines */
@@ -41,6 +42,7 @@
   width: 100%;
   height: 100%;
   pointer-events: none;
+  overflow: visible;
 }
 
 .constellation-svg line {
@@ -52,25 +54,26 @@
 /* Chapter stars */
 .chapter-star {
   position: absolute;
-  width: 70px;
-  height: 70px;
+  width: 4.375rem;
+  height: 4.375rem;
   cursor: pointer;
   transition: all 0.3s ease;
+  transform: translate(-50%, -50%); /* Center on position */
 }
 
 .chapter-star.star-0 {
-  left: 70px;
-  top: 180px;
+  left: 17.5%; /* 105/600 */
+  top: 53.75%; /* 215/400 */
 }
 
 .chapter-star.star-1 {
-  left: 270px;
-  top: 120px;
+  left: 50.83%; /* 305/600 */
+  top: 38.75%; /* 155/400 */
 }
 
 .chapter-star.star-2 {
-  left: 470px;
-  top: 180px;
+  left: 84.16%; /* 505/600 */
+  top: 53.75%; /* 215/400 */
 }
 
 .star-glow {
@@ -78,8 +81,8 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 48px;
-  height: 48px;
+  width: 3rem;
+  height: 3rem;
   border-radius: 50%;
   transition: all 0.3s ease;
 }
@@ -120,10 +123,10 @@
 
 .star-label {
   position: absolute;
-  top: 80px;
+  top: 5rem;
   left: 50%;
   transform: translateX(-50%) scale(1);
-  font-size: 16px;
+  font-size: 1rem;
   color: rgba(255, 255, 255, 0.8);
   white-space: nowrap;
   text-align: center;
@@ -141,9 +144,9 @@
 }
 
 .star-sublabel {
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: rgba(255, 255, 255, 0.4);
-  margin-top: 4px;
+  margin-top: 0.25rem;
 }
 
 .chapter-star.locked .star-sublabel {
@@ -151,16 +154,16 @@
 }
 
 .btn-back {
-  margin-top: 60px;
-  padding: 12px 40px;
-  font-size: 14px;
+  margin-top: 3.75rem;
+  padding: 0.75rem 2.5rem;
+  font-size: 0.875rem;
   font-family: 'Courier New', monospace;
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.3);
   color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
   transition: all 0.3s ease;
-  letter-spacing: 2px;
+  letter-spacing: 0.125rem;
 }
 
 .btn-back:hover {

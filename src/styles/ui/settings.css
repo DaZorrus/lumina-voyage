@@ -20,53 +20,53 @@
 }
 
 .settings-title {
-  font-size: 36px;
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
   color: #00D9FF;
-  letter-spacing: 6px;
-  margin-bottom: 50px;
+  letter-spacing: 0.375rem;
+  margin-bottom: 3.125rem;
   text-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
 }
 
 .settings-container {
-  width: 400px;
+  width: clamp(20rem, 40vw, 25rem);
 }
 
 .settings-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
-  padding: 15px 0;
+  margin-bottom: 1.875rem;
+  padding: 1rem 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .settings-label {
-  font-size: 16px;
+  font-size: clamp(0.875rem, 2vw, 1rem);
   color: rgba(255, 255, 255, 0.8);
-  letter-spacing: 2px;
+  letter-spacing: 0.125rem;
 }
 
 .settings-control {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 1rem;
 }
 
 .settings-slider {
-  width: 150px;
-  height: 4px;
+  width: clamp(8rem, 15vw, 10rem);
+  height: 0.25rem;
   -webkit-appearance: none;
   appearance: none;
   background: rgba(255, 255, 255, 0.2);
-  border-radius: 2px;
+  border-radius: 0.125rem;
   outline: none;
 }
 
 .settings-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 1rem;
+  height: 1rem;
   border-radius: 50%;
   background: #00D9FF;
   cursor: pointer;
@@ -74,9 +74,9 @@
 }
 
 .settings-value {
-  min-width: 45px;
+  min-width: 2.8125rem;
   text-align: right;
-  font-size: 14px;
+  font-size: 0.875rem;
   color: #00D9FF;
 }
 

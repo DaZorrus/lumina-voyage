@@ -4,15 +4,15 @@
 #controls-hint {
   position: fixed;
   top: 50%;
-  right: 30px;
+  right: 2rem;
   transform: translateY(-50%);
   z-index: 150;
   background: rgba(10, 15, 25, 0.92);
   border: 1px solid rgba(0, 217, 255, 0.3);
-  border-radius: 8px;
-  padding: 20px;
-  min-width: 280px;
-  max-width: 320px;
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  min-width: clamp(15rem, 25vw, 20rem);
+  max-width: 20rem;
   backdrop-filter: blur(8px);
   box-shadow: 0 0 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(0, 217, 255, 0.2);
   animation: slideInRight 0.3s ease-out;
@@ -36,51 +36,51 @@
 
 .controls-hint-header {
   border-bottom: 2px solid rgba(0, 217, 255, 0.3);
-  padding-bottom: 12px;
-  margin-bottom: 15px;
+  padding-bottom: 0.75rem;
+  margin-bottom: 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .controls-hint-header h3 {
-  font-size: 18px;
+  font-size: 1.125rem;
   color: #00D9FF;
-  letter-spacing: 3px;
+  letter-spacing: 0.1875rem;
   margin: 0;
   text-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
 }
 
 .controls-hint-subtitle {
-  font-size: 11px;
+  font-size: 0.6875rem;
   color: rgba(255, 255, 255, 0.4);
-  letter-spacing: 1px;
+  letter-spacing: 0.0625rem;
 }
 
 .controls-hint-content {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 1.125rem;
 }
 
 .hint-section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .hint-section h4 {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.5);
-  letter-spacing: 2px;
-  margin-bottom: 5px;
+  letter-spacing: 0.125rem;
+  margin-bottom: 0.3125rem;
   text-transform: uppercase;
 }
 
 .hint-chapter-label {
   font-weight: bold;
-  padding: 2px 6px;
-  border-radius: 3px;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.1875rem;
 }
 
 .hint-chapter-label.ch0 {
@@ -97,9 +97,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 0;
+  padding: 0.375rem 0;
   border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: rgba(255, 255, 255, 0.75);
 }
 
@@ -109,29 +109,29 @@
 
 .hint-universal {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding-top: 12px;
+  padding-top: 0.75rem;
 }
 
 .key-cap-small {
   display: inline-block;
-  min-width: 26px;
-  padding: 3px 6px;
+  min-width: 1.625rem;
+  padding: 0.1875rem 0.375rem;
   background: linear-gradient(to bottom, #333, #111);
   color: #00D9FF;
   border: 1px solid #555;
   border-bottom: 2px solid #000;
-  border-radius: 3px;
+  border-radius: 0.1875rem;
   font-family: 'Courier New', monospace;
   font-weight: bold;
-  font-size: 11px;
+  font-size: 0.6875rem;
   text-align: center;
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
   text-shadow: 0 0 5px rgba(0, 217, 255, 0.6);
-  margin: 0 1px;
+  margin: 0 0.0625rem;
 }
 
 .hint-row .key-group {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 0.1875rem;
 }

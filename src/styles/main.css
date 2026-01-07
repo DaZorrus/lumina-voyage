@@ -17,6 +17,22 @@ body {
   background: #000;
   color: #fff;
   overflow: hidden;
+  /* Multiplier for all rem units */
+  font-size: 16px;
+}
+
+@media (min-width: 1024px) {
+  html {
+    /* Increase UI size by ~1.125x (18/16) on desktop */
+    font-size: 112.5%; 
+  }
+}
+
+@media (min-width: 1440px) {
+  html {
+    /* Increase UI size by ~1.25x (20/16) on larger screens */
+    font-size: 125%;
+  }
 }
 
 #canvas-container {

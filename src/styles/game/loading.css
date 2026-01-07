@@ -23,8 +23,8 @@
 
 /* Pulsing light orb - heartbeat effect */
 .loading-orb {
-  width: 40px;
-  height: 40px;
+  width: 2.5rem;
+  height: 2.5rem;
   border-radius: 50%;
   background: radial-gradient(circle, #ffaa00 0%, #ff6600 40%, transparent 70%);
   box-shadow:
@@ -32,7 +32,7 @@
     0 0 60px rgba(255, 170, 0, 0.5),
     0 0 100px rgba(255, 170, 0, 0.3);
   animation: heartbeat 1.5s ease-in-out infinite;
-  margin-bottom: 60px;
+  margin-bottom: 3.75rem;
 }
 
 @keyframes heartbeat {
@@ -61,10 +61,10 @@
 
 /* Progress bar - thin light beam */
 .loading-bar-container {
-  width: 300px;
-  height: 3px;
+  width: clamp(15rem, 30vw, 20rem);
+  height: 0.1875rem;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
+  border-radius: 0.125rem;
   overflow: hidden;
   position: relative;
 }
@@ -80,9 +80,9 @@
 
 #loading-progress-glow {
   position: absolute;
-  top: -5px;
+  top: -0.3125rem;
   left: 0;
-  height: 13px;
+  height: 0.8125rem;
   width: 0%;
   background: linear-gradient(90deg, transparent, rgba(255, 200, 100, 0.5));
   filter: blur(3px);
@@ -90,9 +90,9 @@
 }
 
 .loading-text {
-  margin-top: 30px;
-  font-size: 14px;
+  margin-top: 1.875rem;
+  font-size: 0.875rem;
   color: rgba(255, 255, 255, 0.5);
-  letter-spacing: 4px;
+  letter-spacing: 0.25rem;
   text-transform: uppercase;
 }
