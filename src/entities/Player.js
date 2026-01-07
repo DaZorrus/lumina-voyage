@@ -381,24 +381,39 @@ export class Player {
 
     console.log('📍 Guide beam pointing to nearest orb');
 
-    // Create beam geometry with many segments for smooth curve
-    const points = this.calculateBeamPoints(this.mesh.position, nearestOrb.mesh.position);
-    
-    // Use TubeGeometry for visible 3D beam (linewidth doesn't work in WebGL)
-    const curve = new THREE.CatmullRomCurve3(points);
-    const geometry = new THREE.TubeGeometry(curve, 64, 0.05, 8, false);
+    // Create simple cylinder beam between player and orb
+    const distance = this.mesh.position.distanceTo(nearestOrb.mesh.position);
+    const geometry = new THREE.CylinderGeometry(0.03, 0.03, distance, 8);
     const material = new THREE.MeshBasicMaterial({
       color: 0x00ffff,
       transparent: true,
-      opacity: 0.6,
-      side: THREE.DoubleSide
+      opacity: 0.6
     });
 
     this.guideBeam = new THREE.Mesh(geometry, material);
+    
+    // Position and orient the beam
+    const midpoint = new THREE.Vector3().addVectors(this.mesh.position, nearestOrb.mesh.position).multiplyScalar(0.5);
+    this.guideBeam.position.copy(midpoint);
+    this.guideBeam.lookAt(nearestOrb.mesh.position);
+    this.guideBeam.rotateX(Math.PI / 2); // Align with cylinder's axis
+    
     this.scene.add(this.guideBeam);
+    
+    console.log('✅ Guide beam created:', {
+      distance: distance.toFixed(2),
+      position: midpoint,
+      visible: this.guideBeam.visible
+    });
 
     // Make nearest orb IMMEDIATELY glow bright (most important!)
     if (nearestOrb.mesh && nearestOrb.mesh.material) {
+      console.log('💡 Making orb glow:', {
+        orbPosition: nearestOrb.mesh.position,
+        isRevealed: nearestOrb.isRevealed,
+        material: nearestOrb.mesh.material.type
+      });
+      
       nearestOrb.isRevealed = true;
       nearestOrb.revealTimer = 5; // Stay revealed for 5 seconds
       nearestOrb.mesh.material.emissiveIntensity = 4;
@@ -417,14 +432,18 @@ export class Player {
         return;
       }
 
-      // Update beam by recreating geometry with new points
-      const newPoints = this.calculateBeamPoints(this.mesh.position, this.guideBeamTarget.mesh.position);
-      const newCurve = new THREE.CatmullRomCurve3(newPoints);
-      const newGeometry = new THREE.TubeGeometry(newCurve, 64, 0.02, 8, false);
+      // Update beam position and orientation
+      const distance = this.mesh.position.distanceTo(this.guideBeamTarget.mesh.position);
+      const midpoint = new THREE.Vector3()
+        .addVectors(this.mesh.position, this.guideBeamTarget.mesh.position)
+        .multiplyScalar(0.5);
       
-      // Dispose old geometry and replace
-      this.guideBeam.geometry.dispose();
-      this.guideBeam.geometry = newGeometry;
+      this.guideBeam.position.copy(midpoint);
+      this.guideBeam.lookAt(this.guideBeamTarget.mesh.position);
+      this.guideBeam.rotateX(Math.PI / 2);
+      
+      // Update beam length if distance changed
+      this.guideBeam.scale.y = distance / this.guideBeam.geometry.parameters.height;
     }, 16);
 
     // Remove beam after 3 seconds
