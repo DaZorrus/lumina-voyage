@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import { ParticleTrail } from '../systems/ParticleSystem.js';
 import { PulseWave } from './PulseWave.js';
+import { EnergyOrb } from './EnergyOrb.js';
 
 /**
  * Player - The Lumina Orb (main character)
@@ -358,8 +359,8 @@ export class Player {
       this.guideBeamInterval = null;
     }
 
-    // Find nearest uncollected orb
-    const uncollectedOrbs = entities.filter(e => e.constructor.name === 'EnergyOrb' && !e.collected);
+    // Find nearest uncollected orb - Use instanceof for minification safety
+    const uncollectedOrbs = entities.filter(e => e instanceof EnergyOrb && !e.collected);
 
     if (uncollectedOrbs.length === 0) return;
 
