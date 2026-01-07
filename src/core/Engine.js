@@ -100,6 +100,8 @@ export class Engine {
   }
 
   quitToMenu() {
+    console.log('🏠 Quit to menu called from Engine');
+    
     // Stop the game
     this.isRunning = false;
     this.isPaused = false;
@@ -109,11 +111,20 @@ export class Engine {
       this.currentLevel.unload();
       this.currentLevel = null;
     }
+    
+    // Stop rendering loop
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
 
     // Show cursor
     document.body.style.cursor = 'auto';
-
-    console.log('🏠 Quit to menu called from Engine');
+    
+    // Hide mobile controls
+    if (this.inputManager?.mobileControls) {
+      this.inputManager.mobileControls.hide();
+    }
   }
 
   updateHUD() {

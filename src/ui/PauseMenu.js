@@ -117,16 +117,19 @@ export class PauseMenu {
     }
 
     quitToMenu() {
-        this.resume(); // Hide menu and unpause state internally
-        this.engine.stop(); // Stop engine
+        this.element.classList.add('hidden');
+        this.hideSettings();
+        this.isVisible = false;
+        this.engine.isPaused = false;
+        
+        // Properly stop the engine and cleanup level
+        this.engine.quitToMenu();
 
         if (window.returnToMenu) {
             window.returnToMenu();
         } else {
             // Fallback
             console.warn('returnToMenu not found on window');
-            // We know UIManager handles this but we don't have ref to it directly unless we pass it.
-            // But main.js sets window.returnToMenu so we are good.
         }
     }
 

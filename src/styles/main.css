@@ -17,21 +17,24 @@ body {
   background: #000;
   color: #fff;
   overflow: hidden;
-  /* Multiplier for all rem units */
+}
+
+html {
+  /* Base font size for rem units */
   font-size: 16px;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1280px) {
   html {
-    /* Increase UI size by ~1.125x (18/16) on desktop */
-    font-size: 112.5%; 
+    /* Slight UI size increase on medium-large screens */
+    font-size: 105%;
   }
 }
 
-@media (min-width: 1440px) {
+@media (min-width: 1920px) {
   html {
-    /* Increase UI size by ~1.25x (20/16) on larger screens */
-    font-size: 125%;
+    /* Moderate UI size increase on large screens only */
+    font-size: 112.5%;
   }
 }
 
