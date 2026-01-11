@@ -21,6 +21,7 @@
   <link rel="stylesheet" href="src/styles/ui/settings.css">
   <link rel="stylesheet" href="src/styles/ui/instructions.css">
   <link rel="stylesheet" href="src/styles/ui/credits.css">
+  <link rel="stylesheet" href="src/styles/ui/leaderboard.css">
   
   <!-- Game Styles -->
   <link rel="stylesheet" href="src/styles/game/loading.css">
@@ -111,6 +112,34 @@
     </div>
 
     <button class="btn-back" id="btn-back-levels">← BACK</button>
+    <button class="btn-leaderboard" id="btn-leaderboard">🏆 LEADERBOARD</button>
+  </div>
+
+  <!-- ========== LEADERBOARD ========== -->
+  <div id="leaderboard-screen" class="hidden">
+    <h2 class="leaderboard-title">🏆 LEADERBOARD</h2>
+    
+    <div class="leaderboard-tabs">
+      <button class="leaderboard-tab active" data-chapter="0">CH 0</button>
+      <button class="leaderboard-tab" data-chapter="1">CH 1</button>
+      <button class="leaderboard-tab" data-chapter="2">CH 2</button>
+    </div>
+    
+    <div class="leaderboard-content">
+      <div class="leaderboard-header">
+        <span class="lb-rank">RANK</span>
+        <span class="lb-time">TIME</span>
+        <span class="lb-date">DATE</span>
+      </div>
+      <div id="leaderboard-entries" class="leaderboard-entries">
+        <!-- Entries will be populated dynamically -->
+      </div>
+    </div>
+    
+    <div class="leaderboard-actions">
+      <button class="btn-clear-times" id="btn-clear-times">CLEAR TIMES</button>
+      <button class="btn-back" id="btn-back-leaderboard">← BACK</button>
+    </div>
   </div>
 
   <!-- ========== SETTINGS MENU ========== -->
@@ -434,17 +463,30 @@
     <div id="pulse-indicator">Press F to Pulse</div>
   </div>
 
-  <!-- RIGHT HUD: Speed + Orbs -->
+  <!-- TOP CENTER HUD: Speedrun Timer -->
+  <div id="hud-timer" class="hidden">
+    <div class="timer-icon">⏱</div>
+    <div id="timer-display">00:00.000</div>
+  </div>
+
+  <!-- TOP CENTER: Orb Progress (Chapter 0) -->
+  <div id="orb-progress-center" class="hidden">
+    <div class="orb-progress-container">
+      <div class="orb-progress-label">ORBS</div>
+      <div id="orb-display">
+        <div class="orb-icon" data-orb="1"></div>
+        <div class="orb-icon" data-orb="2"></div>
+        <div class="orb-icon" data-orb="3"></div>
+        <div class="orb-icon" data-orb="4"></div>
+        <div class="orb-icon" data-orb="5"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOP RIGHT: Speed Display (Chapter 0) -->
   <div id="hud-right" class="hidden">
     <div id="speed-display">0</div>
     <div id="speed-unit">KM/H</div>
-    <div id="orb-display">
-      <div class="orb-icon" data-orb="1"></div>
-      <div class="orb-icon" data-orb="2"></div>
-      <div class="orb-icon" data-orb="3"></div>
-      <div class="orb-icon" data-orb="4"></div>
-      <div class="orb-icon" data-orb="5"></div>
-    </div>
   </div>
 
   <!-- LEVEL 1 HUD: Speed Progress Bar -->
