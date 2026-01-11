@@ -10,6 +10,8 @@ import { CameraSystem } from '../systems/CameraSystem.js';
 import { AudioSystem } from '../systems/AudioSystem.js';
 import { HUD } from '../ui/HUD.js';
 import { PauseMenu } from '../ui/PauseMenu.js';
+import { SpeedrunTimer } from '../ui/SpeedrunTimer.js';
+import { Leaderboard } from '../ui/Leaderboard.js';
 
 /**
  * Engine - Main game engine
@@ -35,6 +37,8 @@ export class Engine {
     // UI Systems
     this.hud = null;
     this.pauseMenu = null;
+    this.speedrunTimer = null;
+    this.leaderboard = null;
   }
 
   async init() {
@@ -68,6 +72,8 @@ export class Engine {
     // Setup HUD and Pause Menu
     this.hud = new HUD(this);
     this.pauseMenu = new PauseMenu(this);
+    this.speedrunTimer = new SpeedrunTimer();
+    this.leaderboard = new Leaderboard();
 
     console.log('✅ Engine initialized');
   }
@@ -169,11 +175,19 @@ export class Engine {
 
   pause() {
     this.isPaused = true;
+    // Pause speedrun timer
+    if (this.speedrunTimer) {
+      this.speedrunTimer.pause();
+    }
     console.log('⏸️  Game paused');
   }
 
   resume() {
     this.isPaused = false;
+    // Resume speedrun timer
+    if (this.speedrunTimer) {
+      this.speedrunTimer.resume();
+    }
     console.log('▶️  Game resumed');
   }
 
