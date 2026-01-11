@@ -182,6 +182,9 @@ export class Player {
     // === UPDATE PULSE WAVES ===
     this.activePulses = this.activePulses.filter(pulse => pulse.update(deltaTime));
 
+    // === UPDATE GUIDE BEAM ===
+    this.updateGuideBeam();
+
     // Smoothly transition colors and intensity multipliers
     this.currentColor.lerp(this.targetColor, deltaTime * 5);
     this.intensityMultiplier += (this.targetIntensityMultiplier - this.intensityMultiplier) * deltaTime * 5;
@@ -268,7 +271,8 @@ export class Player {
       this.scene,
       pulseOrigin,
       this.pulseRadius,
-      3.0 // Duration
+      3.0, // Duration
+      this // Pass player reference for position tracking
     );
     this.activePulses.push(pulseWave);
     console.log('   Active pulses:', this.activePulses.length);
@@ -353,12 +357,6 @@ export class Player {
       this.guideBeam = null;
     }
 
-    // Clear previous beam update interval
-    if (this.guideBeamInterval) {
-      clearInterval(this.guideBeamInterval);
-      this.guideBeamInterval = null;
-    }
-
     // Find nearest uncollected orb - Use instanceof for minification safety
     const uncollectedOrbs = entities.filter(e => e instanceof EnergyOrb && !e.collected);
 
@@ -426,31 +424,45 @@ export class Player {
       nearestOrb.light.color.setHex(0xFFD700);
     }
 
-    // Real-time beam update every 16ms (60fps)
-    this.guideBeamInterval = setInterval(() => {
-      if (!this.guideBeam || !this.guideBeamTarget || this.guideBeamTarget.collected) {
-        this.removeGuideBeam();
-        return;
-      }
-
-      // Update beam position and orientation
-      const distance = this.mesh.position.distanceTo(this.guideBeamTarget.mesh.position);
-      const midpoint = new THREE.Vector3()
-        .addVectors(this.mesh.position, this.guideBeamTarget.mesh.position)
-        .multiplyScalar(0.5);
-      
-      this.guideBeam.position.copy(midpoint);
-      this.guideBeam.lookAt(this.guideBeamTarget.mesh.position);
-      this.guideBeam.rotateX(Math.PI / 2);
-      
-      // Update beam length if distance changed
-      this.guideBeam.scale.y = distance / this.guideBeam.geometry.parameters.height;
-    }, 16);
-
     // Remove beam after 3 seconds
     setTimeout(() => {
       this.removeGuideBeam();
     }, 3000);
+  }
+
+  /**
+   * Update guide beam position and orientation (called every frame)
+   */
+  updateGuideBeam() {
+    if (!this.guideBeam || !this.guideBeamTarget || this.guideBeamTarget.collected) {
+      if (this.guideBeam) {
+        this.removeGuideBeam();
+      }
+      return;
+    }
+
+    // Calculate distance and midpoint between player and orb
+    const playerPos = this.mesh.position;
+    const orbPos = this.guideBeamTarget.mesh.position;
+    const distance = playerPos.distanceTo(orbPos);
+    
+    // Calculate exact midpoint
+    const midpoint = new THREE.Vector3(
+      (playerPos.x + orbPos.x) * 0.5,
+      (playerPos.y + orbPos.y) * 0.5,
+      (playerPos.z + orbPos.z) * 0.5
+    );
+
+    // Direct position update (no lerp) for precise connection
+    this.guideBeam.position.set(midpoint.x, midpoint.y, midpoint.z);
+    
+    // Orient beam to point at orb
+    this.guideBeam.lookAt(orbPos);
+    this.guideBeam.rotateX(Math.PI / 2); // Cylinder default orientation
+    
+    // Update beam length to exactly match distance
+    const baseHeight = this.guideBeam.geometry.parameters.height;
+    this.guideBeam.scale.y = distance / baseHeight;
   }
 
   /**

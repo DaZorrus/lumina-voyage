@@ -5,13 +5,14 @@ import * as THREE from 'three';
  * Inspired by React Three Fiber PulseRing component
  */
 export class PulseWave {
-  constructor(scene, origin, maxRadius = 10, duration = 3.0) {
+  constructor(scene, origin, maxRadius = 10, duration = 3.0, playerRef = null) {
     this.scene = scene;
     this.origin = origin.clone();
     this.maxRadius = maxRadius;
     this.duration = duration;
     this.time = 0;
     this.active = true;
+    this.playerRef = playerRef; // Reference to player for position tracking
 
     // Create expanding ring geometry - Clean proportions like React reference
     // Inner radius 0.9, outer 1.0 = thin elegant ring
@@ -43,6 +44,12 @@ export class PulseWave {
     if (progress >= 1) {
       this.destroy();
       return false;
+    }
+
+    // Follow player position smoothly while maintaining expansion
+    if (this.playerRef && this.playerRef.mesh) {
+      // Smooth lerp to player position (keep wave centered on player)
+      this.mesh.position.lerp(this.playerRef.mesh.position, deltaTime * 8);
     }
 
     // Expand scale
