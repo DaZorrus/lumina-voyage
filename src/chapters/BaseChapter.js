@@ -13,6 +13,7 @@ export class BaseChapter {
     this.isComplete = false;
     this.player = null;
     this.gameTime = 0;
+    this.chapterIndex = 0; // Override in child classes
   }
 
   /**
@@ -55,6 +56,11 @@ export class BaseChapter {
 
     // Restore music layers if player has collected orbs previously
     this.restoreMusicLayers();
+
+    // Start speedrun timer
+    if (this.engine.speedrunTimer) {
+      this.engine.speedrunTimer.start(this.chapterIndex);
+    }
   }
 
   restoreMusicLayers() {
@@ -126,15 +132,42 @@ export class BaseChapter {
 
     console.log(`🎉 Chapter ${this.name || ''} Complete!`);
 
+    // Stop speedrun timer and save time
+    let completionTime = null;
+    let isNewRecord = false;
+    if (this.engine.speedrunTimer) {
+      completionTime = this.engine.speedrunTimer.stop();
+      
+      // Save to leaderboard
+      if (this.engine.leaderboard && completionTime) {
+        const result = this.engine.leaderboard.addTime(this.chapterIndex, completionTime);
+        isNewRecord = result.isNewRecord;
+        
+        if (isNewRecord) {
+          this.engine.speedrunTimer.markAsNewRecord();
+          console.log('🏆 NEW RECORD!');
+        }
+      }
+    }
+
     if (showUI && this.engine && this.engine.uiManager) {
       // Show completion screen after a short delay
       setTimeout(() => {
-        this.engine.uiManager.showChapterComplete(this.engine.sceneManager.getLevelIndex(this.constructor.name), options);
+        this.engine.uiManager.showChapterComplete(this.engine.sceneManager.getLevelIndex(this.constructor.name), {
+          ...options,
+          completionTime,
+          isNewRecord
+        });
       }, 1000);
     }
   }
 
   unload() {
+    // Reset speedrun timer
+    if (this.engine.speedrunTimer) {
+      this.engine.speedrunTimer.reset();
+    }
+
     // Cleanup
     if (this.player) {
       this.player.destroy();
