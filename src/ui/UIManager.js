@@ -100,7 +100,7 @@ export class UIManager {
    */
   showScreen(screenName) {
     // Hide all screens
-    const screens = ['loading-screen', 'main-menu', 'level-select', 'settings-menu', 'credits-screen'];
+    const screens = ['loading-screen', 'main-menu', 'level-select', 'settings-menu', 'credits-screen', 'leaderboard-screen'];
     screens.forEach(id => {
       const el = document.getElementById(id);
       if (el) el.classList.add('hidden');
@@ -134,7 +134,7 @@ export class UIManager {
     if (floatingBtn) {
       if (screenName === 'main-menu' || screenName === 'level-select' || 
           screenName === 'settings-menu' || screenName === 'credits-screen' || 
-          screenName === 'instructions-screen') {
+          screenName === 'instructions-screen' || screenName === 'leaderboard-screen') {
         floatingBtn.classList.remove('hidden');
       } else {
         floatingBtn.classList.add('hidden');
@@ -144,6 +144,11 @@ export class UIManager {
     // Update level select stars if showing
     if (screenName === 'level-select') {
       this.updateLevelSelectStars();
+    }
+
+    // Show leaderboard if requested
+    if (screenName === 'leaderboard-screen' && this.engine.leaderboard) {
+      this.engine.leaderboard.show(0);
     }
 
     // Sync settings UI khi mở settings-menu (có thể đã thay đổi từ pause menu)
@@ -308,6 +313,35 @@ export class UIManager {
     document.getElementById('btn-back-levels')?.addEventListener('click', () => {
       this.playClickSound();
       this.showScreen('main-menu');
+    });
+
+    // Leaderboard buttons
+    document.getElementById('btn-leaderboard')?.addEventListener('click', () => {
+      this.playClickSound();
+      this.showScreen('leaderboard-screen');
+    });
+
+    document.getElementById('btn-back-leaderboard')?.addEventListener('click', () => {
+      this.playClickSound();
+      this.showScreen('level-select');
+    });
+
+    document.getElementById('btn-clear-times')?.addEventListener('click', () => {
+      this.playClickSound();
+      if (this.engine.leaderboard) {
+        this.engine.leaderboard.clearTimes();
+      }
+    });
+
+    // Leaderboard chapter tabs
+    document.querySelectorAll('.leaderboard-tab').forEach((tab) => {
+      tab.addEventListener('click', () => {
+        this.playClickSound();
+        const chapterIndex = parseInt(tab.dataset.chapter);
+        if (this.engine.leaderboard) {
+          this.engine.leaderboard.selectChapter(chapterIndex);
+        }
+      });
     });
 
     // Level stars
@@ -567,7 +601,9 @@ export class UIManager {
     // Hide HUDs
     document.getElementById('hud')?.classList.add('hidden');
     document.getElementById('hud-right')?.classList.add('hidden');
+    document.getElementById('orb-progress-center')?.classList.add('hidden');
     document.getElementById('hud-level1')?.classList.add('hidden');
+    document.getElementById('hud-timer')?.classList.add('hidden');
     document.getElementById('pause-hint')?.classList.add('hidden');
     document.getElementById('pause-menu')?.classList.add('hidden');
     document.getElementById('controls-hint')?.classList.add('hidden');

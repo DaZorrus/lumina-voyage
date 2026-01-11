@@ -19,6 +19,7 @@ export class Chapter1_TheAscent extends BaseChapter {
   constructor(engine) {
     super(engine);
     this.name = 'The Ascent';
+    this.chapterIndex = 1; // For speedrun leaderboard
     this.completionTitle = '🚀 LIGHT SPEED REACHED 🚀';
     this.completionSubtitle = 'The Ascent has been conquered.';
 
@@ -821,6 +822,12 @@ export class Chapter1_TheAscent extends BaseChapter {
 
     console.log('🌟 LIGHT SPEED BREAK! Maximum velocity achieved!');
 
+    // Stop speedrun timer when win condition is met
+    if (this.engine.speedrunTimer && !this.isComplete) {
+      const completionTime = this.engine.speedrunTimer.stop();
+      console.log(`⏱️ Timer stopped at win condition: ${this.engine.speedrunTimer.formatTime(completionTime)}`);
+    }
+
     // Enable trail for epic end sequence
     this.player.isTrailEnabled = true;
 
@@ -880,7 +887,6 @@ export class Chapter1_TheAscent extends BaseChapter {
 
   onPortalEnter() {
     if (this.isComplete) return;
-    this.isComplete = true;
 
     console.log('🌀 Entering portal! Level Complete!');
 
@@ -889,6 +895,25 @@ export class Chapter1_TheAscent extends BaseChapter {
       this.engine.cameraSystem.camera.remove(this.edgeGlow);
     }
 
+    // Mark complete and save to leaderboard (timer already stopped at win condition)
+    // Only save if timer was running
+    if (this.engine.speedrunTimer && this.engine.speedrunTimer.elapsedTime > 0) {
+      const completionTime = this.engine.speedrunTimer.elapsedTime;
+      
+      // Save to leaderboard
+      if (this.engine.leaderboard && completionTime) {
+        const result = this.engine.leaderboard.addTime(this.chapterIndex, completionTime);
+        
+        if (result.isNewRecord) {
+          this.engine.speedrunTimer.markAsNewRecord();
+          console.log('🏆 NEW RECORD!');
+        }
+      }
+    }
+
+    this.isComplete = true;
+
+    // Show completion UI
     if (this.engine.uiManager) {
       this.engine.uiManager.showChapterComplete(1, {
         title: this.completionTitle,

@@ -87,5 +87,59 @@ export const Storage = {
         } catch (e) {
             console.warn('Storage: Failed to save orbs collected', e);
         }
+    },
+
+    /**
+     * Load leaderboard times for a specific chapter
+     * @param {number} chapterIndex - Chapter index (0, 1, 2, etc.)
+     * @returns {Array} Array of time entries [{time: ms, date: ISO string}]
+     */
+    loadLeaderboard(chapterIndex) {
+        try {
+            const key = `luminaVoyage_leaderboard_ch${chapterIndex}`;
+            const saved = localStorage.getItem(key);
+            return saved ? JSON.parse(saved) : [];
+        } catch (e) {
+            console.warn(`Storage: Failed to load leaderboard for chapter ${chapterIndex}`, e);
+            return [];
+        }
+    },
+
+    /**
+     * Save leaderboard times for a specific chapter
+     * @param {number} chapterIndex - Chapter index
+     * @param {Array} times - Array of time entries
+     */
+    saveLeaderboard(chapterIndex, times) {
+        try {
+            const key = `luminaVoyage_leaderboard_ch${chapterIndex}`;
+            localStorage.setItem(key, JSON.stringify(times));
+        } catch (e) {
+            console.warn(`Storage: Failed to save leaderboard for chapter ${chapterIndex}`, e);
+        }
+    },
+
+    /**
+     * Get best time for a chapter
+     * @param {number} chapterIndex 
+     * @returns {number|null} Best time in ms or null
+     */
+    getBestTime(chapterIndex) {
+        const times = this.loadLeaderboard(chapterIndex);
+        return times.length > 0 ? times[0].time : null;
+    },
+
+    /**
+     * Clear all leaderboard data
+     */
+    clearAllLeaderboards() {
+        try {
+            // Clear for chapters 0-9 (expandable)
+            for (let i = 0; i < 10; i++) {
+                localStorage.removeItem(`luminaVoyage_leaderboard_ch${i}`);
+            }
+        } catch (e) {
+            console.warn('Storage: Failed to clear leaderboards', e);
+        }
     }
 };

@@ -13,6 +13,7 @@ export class Chapter0_TheVoid extends BaseChapter {
   constructor(engine) {
     super(engine);
     this.name = 'The Void';
+    this.chapterIndex = 0; // For speedrun leaderboard
     this.totalOrbs = 5;
     this.portal = null;
     this.climaxTriggered = false;

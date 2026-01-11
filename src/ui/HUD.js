@@ -14,6 +14,7 @@ export class HUD {
         this.speedBarPercent = document.getElementById('speed-bar-percent');
         this.hudLevel1 = document.getElementById('hud-level1');
         this.hudRight = document.getElementById('hud-right');
+        this.orbProgressCenter = document.getElementById('orb-progress-center');
     }
 
     update() {
@@ -39,9 +40,10 @@ export class HUD {
         }
 
         if (this.engine.currentLevel.getSpeedPercentage) {
-            // Level 1 mode - show speed bar, hide orb level AND energy/pulse hud
+            // Level 1 mode - show speed bar, hide orb and speed displays
             if (this.hudLevel1) this.hudLevel1.classList.remove('hidden');
             if (this.hudRight) this.hudRight.classList.add('hidden');
+            if (this.orbProgressCenter) this.orbProgressCenter.classList.add('hidden');
 
             const hudLeft = document.getElementById('hud');
             if (hudLeft) hudLeft.classList.add('hidden'); // Hide whole left hud
@@ -64,8 +66,10 @@ export class HUD {
                 this.speedDisplay.textContent = kmh;
             }
         } else {
+            // Chapter 0 mode - show orb progress center and speed right
             if (this.hudLevel1) this.hudLevel1.classList.add('hidden');
             if (this.hudRight) this.hudRight.classList.remove('hidden');
+            if (this.orbProgressCenter) this.orbProgressCenter.classList.remove('hidden');
             if (this.pulseIndicator) this.pulseIndicator.style.display = 'block'; // Show pulse in Ch 0
 
             // Update speed display (convert to km/h - multiply by ~50 for game feel)
@@ -98,6 +102,7 @@ export class HUD {
     hide() {
         document.getElementById('hud')?.classList.add('hidden');
         document.getElementById('hud-right')?.classList.add('hidden');
+        document.getElementById('orb-progress-center')?.classList.add('hidden');
         document.getElementById('hud-level1')?.classList.add('hidden');
     }
 }
