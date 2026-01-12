@@ -23,6 +23,9 @@ export class Chapter1_TheAscent extends BaseChapter {
     this.completionTitle = '🚀 LIGHT SPEED REACHED 🚀';
     this.completionSubtitle = 'The Ascent has been conquered.';
 
+    // Delay timer start for Chapter 1 (timer starts on GO, not on load)
+    this.delayTimerStart = true;
+
     // Start delay timer
     this.startDelay = 2.5; // 1s for fade out + 1.5s of frozen visibility
     this.gameStarted = false;
@@ -486,6 +489,11 @@ export class Chapter1_TheAscent extends BaseChapter {
     if (!this.gameStarted) {
       this.gameStarted = true;
       console.log('🏁 Chapter 1: GO!');
+      
+      // Start speedrun timer when gameplay actually begins (after delay)
+      if (this.engine.speedrunTimer) {
+        this.engine.speedrunTimer.start(this.chapterIndex);
+      }
     }
 
     this.gameTime += deltaTime;

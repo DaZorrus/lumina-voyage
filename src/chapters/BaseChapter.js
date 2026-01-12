@@ -57,8 +57,8 @@ export class BaseChapter {
     // Restore music layers if player has collected orbs previously
     this.restoreMusicLayers();
 
-    // Start speedrun timer
-    if (this.engine.speedrunTimer) {
+    // Start speedrun timer (unless chapter overrides this - e.g., Chapter 1 starts on GO)
+    if (this.engine.speedrunTimer && !this.delayTimerStart) {
       this.engine.speedrunTimer.start(this.chapterIndex);
     }
   }
